@@ -1,7 +1,7 @@
 # Databricks notebook source
 # MAGIC %md
 # MAGIC # Silverテーブルの作成
-# MAGIC 
+# MAGIC
 # MAGIC ## 概要
 # MAGIC このノートブックでは、BronzeテーブルのデータをクレンジングしてSilverテーブルを作成し、Delta Lakeの機能を体験します。
 
@@ -13,8 +13,8 @@
 # COMMAND ----------
 
 # DBTITLE 1,ウィジェットの作成
-dbutils.widgets.text("catalog_name", "dbacademy", "カタログ名")
-dbutils.widgets.text("schema_name", "", "スキーマ名")
+dbutils.widgets.text("catalog_name", "workspace", "カタログ名")
+dbutils.widgets.text("schema_name", "data_engineering", "スキーマ名")
 
 # COMMAND ----------
 
@@ -65,11 +65,11 @@ print(f"🎯 必須パラメーターのチェック完了: {catalog_name}.{sche
 
 # MAGIC %md
 # MAGIC ## 3. Silverテーブルの作成
-# MAGIC 
+# MAGIC
 # MAGIC ### 変換内容
 # MAGIC - **クレンジング**: 空文字列・空白・N/A → NULL
 # MAGIC - **型変換**: timestamp → TIMESTAMP型、temperature/humidity → DOUBLE型
-# MAGIC 
+# MAGIC
 # MAGIC > 💡 **注意**: このハンズオンでは事前にCREATE OR **REPLACE** TABLEを実行していますが、  
 # MAGIC > 実際の本番環境では既存テーブルの置き換えには注意が必要です。
 
@@ -184,20 +184,20 @@ dbutils.notebook.exit(silver_table)
 
 # MAGIC %md
 # MAGIC ## 7. まとめ
-# MAGIC 
+# MAGIC
 # MAGIC ✅ **Silverテーブルの作成が完了しました！**
-# MAGIC 
+# MAGIC
 # MAGIC ### 実行内容
 # MAGIC - BronzeテーブルからSilverテーブルへの変換
 # MAGIC - データクレンジング（空文字列・N/A → NULL）
 # MAGIC - 型変換（STRING → TIMESTAMP, DOUBLE）
 # MAGIC - UPDATE操作とバージョン管理
 # MAGIC - Time Travelによる過去データ参照
-# MAGIC 
+# MAGIC
 # MAGIC ### Delta Lake機能
 # MAGIC - **ACID特性**: 信頼性の高いデータ更新
 # MAGIC - **バージョン管理**: すべての変更が記録
 # MAGIC - **Time Travel**: 過去の任意の時点のデータ参照
-# MAGIC 
+# MAGIC
 # MAGIC ### 次のステップ
 # MAGIC メインノートブックに戻って、ワークフローの作成に進んでください。

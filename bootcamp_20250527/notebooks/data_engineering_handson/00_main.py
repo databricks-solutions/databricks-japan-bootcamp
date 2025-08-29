@@ -2,7 +2,7 @@
 # MAGIC %md
 # MAGIC # Databricks データエンジニアリング ハンズオン
 # MAGIC このハンズオンでは、Databricksを使用したデータエンジニアリングの基本的な流れを学習します。実行するステップは以下の通りです。
-# MAGIC 
+# MAGIC
 # MAGIC 1. ウィジェットを使用したパラメーター設定
 # MAGIC 2. データファイルをUnity Catalogボリュームにアップロード
 # MAGIC 3. Bronzeテーブルの作成
@@ -12,7 +12,7 @@
 # MAGIC 本ノートブックを実行することで、上記の1〜4までの処理が自動的に実行されます。受講者は実行結果を確認し、各ステップで何が行われたかを理解できます。
 # MAGIC
 # MAGIC 5のワークフローの作成は、**受講者が手動で行う**必要があります。作成手順自体を本ノートブックに記載していますので、受講者はその手順に従ってワークフローを作成します。
-# MAGIC 
+# MAGIC
 # MAGIC ## 所要時間
 # MAGIC 約35分
 
@@ -23,8 +23,8 @@
 # MAGIC ## Step 1: ウィジェットを使用したパラメーター設定
 # MAGIC 1. 以下の**「ウィジェットの作成」セルを実行**してウィジェットを作成します
 # MAGIC 2. **ウィジェットに値を入力**します
-# MAGIC    - **カタログ名**: `dbacademy`（固定）
-# MAGIC    - **スキーマ名**: `labuser`から始まるスキーマ名を指定
+# MAGIC    - **カタログ名**: `workspace` (default値を変更して構いません)
+# MAGIC    - **スキーマ名**: `data_engineering` (default値を変更して構いません)
 # MAGIC 3. ノートブック右上にある**「すべてを実行」**をクリックします
 # MAGIC 4. 各セルの実行結果を順次確認しながら、すべてのセルが**成功することを確認**します
 # MAGIC    - すべてのセルの処理に**約3-4分**かかります
@@ -32,8 +32,8 @@
 # COMMAND ----------
 
 # DBTITLE 1,ウィジェットの作成
-dbutils.widgets.text("catalog_name", "dbacademy", "カタログ名")
-dbutils.widgets.text("schema_name", "", "スキーマ名")
+dbutils.widgets.text("catalog_name", "workspace", "カタログ名")
+dbutils.widgets.text("schema_name", "data_engineering", "スキーマ名")
 
 # COMMAND ----------
 
@@ -45,11 +45,11 @@ print(f"📊 カタログ名: {catalog_name}")
 print(f"📊 スキーマ名: {schema_name}")
 
 # COMMAND ----------
+
 # MAGIC %md
 # MAGIC ### Note: ウィジェットの値チェックについて
 # MAGIC - 以下の「必須パラメータのチェック」セルで、ウィジェットの値が正しく設定されているかが自動的にチェックされます
 # MAGIC - もし指定した値に不備がある場合、エラーメッセージが表示されますので、指示に従って修正してください
-# MAGIC     - 特に、スキーマのところに `dbacademy.` というカタログ名までコピーしてしまわないよう注意してください
 # MAGIC - 必須パラメータのチェック以外のセルでは基本的にエラーは起きない想定です。もしエラーが起きた場合、講師にお声がけください
 
 # COMMAND ----------
@@ -69,14 +69,16 @@ try:
     spark.sql(f"USE CATALOG {catalog_name}")
     print(f"✅ カタログ '{catalog_name}' の確認が完了しました")
 except Exception as e:
-    raise ValueError(f"❌ カタログ '{catalog_name}' が存在しません。正しいカタログ名を指定してください。")
+    spark.sql(f"CREATE CATALOG IF NOT EXISTS {catalog_name}")
+    print(f"✅ カタログ '{catalog_name}' を作成しました")
 
 # スキーマの存在確認
 try:
     spark.sql(f"USE SCHEMA {schema_name}")
     print(f"✅ スキーマ '{schema_name}' の確認が完了しました")
 except Exception as e:
-    raise ValueError(f"❌ スキーマ '{schema_name}' が存在しません。正しいスキーマ名を指定してください。")
+    spark.sql(f"CREATE SCHEMA IF NOT EXISTS {schema_name}")
+    print(f"✅ スキーマ '{schema_name}' を作成しました")
 
 print(f"🎯 必須パラメーターのチェック完了: {catalog_name}.{schema_name}")
 
@@ -150,7 +152,7 @@ except Exception as e:
 # MAGIC %md
 # MAGIC ## Step 3: Bronzeテーブル作成
 # MAGIC ノートブックで「すべてを実行」をクリックすることで、本ステップは自動的に実行されます。本ステップで実行される処理は以下の通りです。
-
+# MAGIC
 # MAGIC 1. `01_bronze_layer`ノートブックを実行し、Bronzeテーブルを作成
 
 # COMMAND ----------
@@ -171,7 +173,7 @@ print("👀 ノートブックのワークフローの開始時刻のリンク�
 # MAGIC %md
 # MAGIC ## Step 4: Silverテーブル作成
 # MAGIC ノートブックで「すべてを実行」をクリックすることで、本ステップは自動的に実行されます。本ステップで実行される処理は以下の通りです。
-
+# MAGIC
 # MAGIC 1. `02_silver_layer`ノートブックを実行し、Silverテーブルを作成
 
 # COMMAND ----------
@@ -192,7 +194,7 @@ print("👀 ノートブックのワークフローの開始時刻のリンク�
 # MAGIC %md
 # MAGIC ## Step 5: ジョブの作成
 # MAGIC ここから、受講者が手動でジョブを作成します。以下の手順で作業を進めてください。
-# MAGIC 
+# MAGIC
 # MAGIC > 💡 **Note**: ジョブの作成はAPI/CLI/SDKを使った自動化が可能ですが、学習のために手動で作成します。
 # MAGIC
 # MAGIC ### 1. ジョブの作成
@@ -208,12 +210,12 @@ print("👀 ノートブックのワークフローの開始時刻のリンク�
 # MAGIC     - **タイプ**: `ノートブック`
 # MAGIC     - **ソース**: `ワークスペース`
 # MAGIC     - **パス**: ノートブックを選択をクリックし、以下のパスを選択
-# MAGIC         - `{home_dir}/komae_dbdemos/bootcamp_20250527/notebooks/data_engineering_handson/01_bronze`
+# MAGIC         - `databricks-japan-bootcamp/bootcamp_20250527/notebooks/data_engineering_handson/01_bronze`
 # MAGIC     - **クラスター**: `サーバーレス` (デフォルトから変更しない)
 # MAGIC 2. **「タスクを作成」**をクリック
 # MAGIC
 # MAGIC    ![create-task-bronze](../../images/data_engineering_handson/create-task-bronze.png)
-# MAGIC 
+# MAGIC
 # MAGIC ### 3. タスク2の作成（Silverテーブル作成用ノートブック）
 # MAGIC 1. **「タスクを追加」** をクリック > **「ノートブック」**を選択
 # MAGIC 2. 名前のないタスクが表示されるので、以下の項目を設定
@@ -221,7 +223,7 @@ print("👀 ノートブックのワークフローの開始時刻のリンク�
 # MAGIC     - **タイプ**: `ノートブック`
 # MAGIC     - **ソース**: `ワークスペース`
 # MAGIC     - **パス**: ノートブックを選択をクリックし、以下のパスを選択
-# MAGIC         - `{home_dir}/komae_dbdemos/bootcamp_20250527/notebooks/data_engineering_handson/02_silver`
+# MAGIC         - `databricks-japan-bootcamp/bootcamp_20250527/notebooks/data_engineering_handson/02_silver`
 # MAGIC     - **依存先**: `01_bronze` (デフォルトで選択されているはず)
 # MAGIC     - **依存関係がある場合に実行**: `すべて成功しました` (デフォルトで選択されているはず)
 # MAGIC 3. **「タスクを作成」**をクリック
@@ -231,8 +233,8 @@ print("👀 ノートブックのワークフローの開始時刻のリンク�
 # MAGIC ### 4. ジョブパラメーターの定義
 # MAGIC 1. ジョブの画面右側の **「パラメーターを編集」**をクリック
 # MAGIC 2. **「パラメーター」**セクションで以下の項目を設定
-# MAGIC     - **キー**: `catalog_name`, **値**: `dbacademy`
-# MAGIC     - **キー**: `schema_name`, **値**: `labuser` から始まるスキーマ名
+# MAGIC     - **キー**: `catalog_name`, **値**: `workspace`
+# MAGIC     - **キー**: `schema_name`, **値**: `data_engineering`
 # MAGIC 3. **「保存」**をクリック
 # MAGIC
 # MAGIC     ![define-job-parameters](../../images/data_engineering_handson/define-job-parameters.png)

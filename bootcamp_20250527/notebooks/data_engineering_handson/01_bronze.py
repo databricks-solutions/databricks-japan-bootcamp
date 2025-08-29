@@ -1,7 +1,7 @@
 # Databricks notebook source
 # MAGIC %md
 # MAGIC # Bronzeテーブルの作成
-# MAGIC 
+# MAGIC
 # MAGIC ## 概要
 # MAGIC このノートブックでは、生データ（CSV）をDelta Lake形式のBronzeテーブルとして取り込みます。
 
@@ -13,8 +13,8 @@
 # COMMAND ----------
 
 # DBTITLE 1,ウィジェットの作成
-dbutils.widgets.text("catalog_name", "dbacademy", "カタログ名")
-dbutils.widgets.text("schema_name", "", "スキーマ名")
+dbutils.widgets.text("catalog_name", "workspace", "カタログ名")
+dbutils.widgets.text("schema_name", "data_engineering", "スキーマ名")
 
 # COMMAND ----------
 
@@ -138,13 +138,13 @@ dbutils.notebook.exit(table_name)
 
 # MAGIC %md
 # MAGIC ## 6. まとめ
-# MAGIC 
+# MAGIC
 # MAGIC ✅ **Bronzeテーブルの作成が完了しました！**
-# MAGIC 
+# MAGIC
 # MAGIC ### 実行内容
 # MAGIC - CSVファイルからDelta Lakeテーブルを作成
 # MAGIC - COPY INTOによる冪等な取り込み処理
 # MAGIC - 全カラムをSTRING型で生データを忠実に保存
-# MAGIC 
+# MAGIC
 # MAGIC ### 次のステップ
 # MAGIC メインノートブックに戻って、Silverテーブルの作成に進んでください。
