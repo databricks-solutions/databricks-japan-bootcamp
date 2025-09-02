@@ -198,13 +198,14 @@ print("👀 ノートブックのワークフローの開始時刻のリンク�
 # MAGIC > 💡 **Note**: ジョブの作成はAPI/CLI/SDKを使った自動化が可能ですが、学習のために手動で作成します。
 # MAGIC
 # MAGIC ### 1. ジョブの作成
-# MAGIC 1. 左サイドバーの**「ワークフロー」**をクリック
-# MAGIC 2. 「ジョブとパイプライン」の画面で右上の**「作成」**ボタンをクリック > **「ジョブ」**を選択
+# MAGIC 1. 左サイドバーの**「ジョブとパイプライン」**をクリック
+# MAGIC 2. 「ジョブ」のタイル、または「作成」> 「ジョブ」を選択
 # MAGIC
-# MAGIC     ![create-job](../../images/data_engineering_handson/create-job.png)
-# MAGIC 3. ジョブ名に `de_iot_job` と入力
+# MAGIC     ![create-job](/Workspace/Users/shuji.ooya@gmail.com/databricks-japan-bootcamp/bootcamp_20250904/images/data_engineering_handson/create-job.png)
 # MAGIC
 # MAGIC ### 2. タスク1の作成（Bronzeテーブル作成用ノートブック）
+# MAGIC 1. ジョブ名を入力 (下図では、Demo job)
+# MAGIC
 # MAGIC 1. 名前のないタスクが表示されるので、以下の項目を設定
 # MAGIC     - **タスク名**: `01_bronze`
 # MAGIC     - **タイプ**: `ノートブック`
@@ -212,9 +213,12 @@ print("👀 ノートブックのワークフローの開始時刻のリンク�
 # MAGIC     - **パス**: ノートブックを選択をクリックし、以下のパスを選択
 # MAGIC         - `databricks-japan-bootcamp/bootcamp_20250904/notebooks/data_engineering_handson/01_bronze`
 # MAGIC     - **クラスター**: `サーバーレス` (デフォルトから変更しない)
-# MAGIC 2. **「タスクを作成」**をクリック
+# MAGIC     - **「パラメーター」**セクションで以下の項目を設定
+# MAGIC         - **キー**: `catalog_name`, **値**: `workspace`
+# MAGIC         - **キー**: `schema_name`, **値**: `data_engineering`
+# MAGIC 2. **「タスクを保存」**をクリック
 # MAGIC
-# MAGIC    ![create-task-bronze](../../images/data_engineering_handson/create-task-bronze.png)
+# MAGIC     ![create-job](/Workspace/Users/shuji.ooya@gmail.com/databricks-japan-bootcamp/bootcamp_20250904/images/data_engineering_handson/bronze-task.png)
 # MAGIC
 # MAGIC ### 3. タスク2の作成（Silverテーブル作成用ノートブック）
 # MAGIC 1. **「タスクを追加」** をクリック > **「ノートブック」**を選択
@@ -226,20 +230,15 @@ print("👀 ノートブックのワークフローの開始時刻のリンク�
 # MAGIC         - `databricks-japan-bootcamp/bootcamp_20250904/notebooks/data_engineering_handson/02_silver`
 # MAGIC     - **依存先**: `01_bronze` (デフォルトで選択されているはず)
 # MAGIC     - **依存関係がある場合に実行**: `すべて成功しました` (デフォルトで選択されているはず)
-# MAGIC 3. **「タスクを作成」**をクリック
+# MAGIC     - **「パラメーター」**セクションで以下の項目を設定
+# MAGIC         - **キー**: `catalog_name`, **値**: `workspace`
+# MAGIC         - **キー**: `schema_name`, **値**: `data_engineering`
 # MAGIC
-# MAGIC    ![create-task-silver](../../images/data_engineering_handson/create-task-silver.png)
+# MAGIC 3. **「タスクを保存」**をクリック
 # MAGIC
-# MAGIC ### 4. ジョブパラメーターの定義
-# MAGIC 1. ジョブの画面右側の **「パラメーターを編集」**をクリック
-# MAGIC 2. **「パラメーター」**セクションで以下の項目を設定
-# MAGIC     - **キー**: `catalog_name`, **値**: `workspace`
-# MAGIC     - **キー**: `schema_name`, **値**: `data_engineering`
-# MAGIC 3. **「保存」**をクリック
+# MAGIC     ![create-job](/Workspace/Users/shuji.ooya@gmail.com/databricks-japan-bootcamp/bootcamp_20250904/images/data_engineering_handson/silver-task.png)
 # MAGIC
-# MAGIC     ![define-job-parameters](../../images/data_engineering_handson/define-job-parameters.png)
-# MAGIC
-# MAGIC ### 5. スケジュールの設定
+# MAGIC ### 4. スケジュールの設定
 # MAGIC > 💡 **Note**: この後すぐにマニュアルで実行するのでスケジュール設定に意味は無いのですが、学習のために実施します。
 # MAGIC
 # MAGIC 1. ジョブの画面右側の **「トリガーを追加」**をクリック
@@ -248,14 +247,15 @@ print("👀 ノートブックのワークフローの開始時刻のリンク�
 # MAGIC     - **定期的**: Every `1` `時間`
 # MAGIC 3. **「保存」**をクリック
 # MAGIC
-# MAGIC     ![define-trigger](../../images/data_engineering_handson/define-job-trigger.png)
+# MAGIC     ![create-job](/Workspace/Users/shuji.ooya@gmail.com/databricks-japan-bootcamp/bootcamp_20250904/images/data_engineering_handson/schedule-job.png)
 # MAGIC
-# MAGIC ### 6. ジョブの実行
+# MAGIC ### 5. ジョブの実行
 # MAGIC 1. ジョブの画面右上の **「今すぐ実行」** ボタンをクリック
 # MAGIC 2. **「ジョブの実行」**タブに切り替えて実行状況を確認、ステータスが `成功` になることを確認
 # MAGIC 3. ジョブの開始時刻のリンクをクリックして、実行された内容を確認
 # MAGIC
-# MAGIC     ![run-job](../../images/data_engineering_handson/run-job.png)
+# MAGIC     ![create-job](/Workspace/Users/shuji.ooya@gmail.com/databricks-japan-bootcamp/bootcamp_20250904/images/data_engineering_handson/run-job.png)
+# MAGIC
 
 # COMMAND ----------
 
