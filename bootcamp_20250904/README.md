@@ -9,4 +9,5 @@
 
 ## データエンジニアリング ハンズオン
 Databricksワークスペースで以下のノートブックを開きます。
-- notebooks/data_engineering_hands_on/00_main.py
+- [notebooks/data_engineering_handson/00_main.py](notebooks/data_engineering_handson/00_main.py)
+
