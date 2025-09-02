@@ -1,5 +1,28 @@
+# Databricks
+.databricks
+
+# Configuration files
 *conf*.json
-.DS_Store
-__pycache__
-.idea/
 .env
+
+# macOS system files
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# macOS Finder metadata
+._*
+
+# Python virtual environment
+.venv/
+__pycache__/
+*.py[cod]
+*$py.class
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# IDE settings
+.idea/
+*.iml
