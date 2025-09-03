@@ -202,8 +202,8 @@ print("👀 ノートブックのワークフローの開始時刻のリンク�
 # MAGIC 1. 左サイドバーの**「ジョブとパイプライン」**をクリック
 # MAGIC 2. 「ジョブ」のタイル、または「作成」> 「ジョブ」を選択
 # MAGIC
-# MAGIC     ![create-job](/Workspace/Users/shuji.ooya@gmail.com/databricks-japan-bootcamp/bootcamp_20250904/images/data_engineering_handson/create-job.png)
-# MAGIC
+# MAGIC     ![create-job](../../images/data_engineering_handson/create-job.png)
+# MAGIC     
 # MAGIC ### 2. タスク1の作成（Bronzeテーブル作成用ノートブック）
 # MAGIC 1. ジョブ名を入力 (下図では、Demo job)
 # MAGIC
@@ -219,7 +219,7 @@ print("👀 ノートブックのワークフローの開始時刻のリンク�
 # MAGIC         - **キー**: `schema_name`, **値**: `data_engineering`
 # MAGIC 2. **「タスクを作成」**をクリック (次回以降の編集時は「タスクを保存」と文言変更される)
 # MAGIC
-# MAGIC     ![create-job](/Workspace/Users/shuji.ooya@gmail.com/databricks-japan-bootcamp/bootcamp_20250904/images/data_engineering_handson/bronze-task.png)
+# MAGIC     ![bronze-task](../../images/data_engineering_handson/bronze-task.png)
 # MAGIC
 # MAGIC ### 3. タスク2の作成（Silverテーブル作成用ノートブック）
 # MAGIC 1. **「タスクを追加」** をクリック > **「ノートブック」**を選択
@@ -237,7 +237,7 @@ print("👀 ノートブックのワークフローの開始時刻のリンク�
 # MAGIC
 # MAGIC 3. **「タスクを作成」**をクリック (次回以降の編集時は「タスクを保存」と文言変更される)
 # MAGIC
-# MAGIC     ![create-job](/Workspace/Users/shuji.ooya@gmail.com/databricks-japan-bootcamp/bootcamp_20250904/images/data_engineering_handson/silver-task.png)
+# MAGIC     ![silver-task](../../images/data_engineering_handson/silver-task.png)
 # MAGIC
 # MAGIC ### 4. スケジュールの設定
 # MAGIC > 💡 **Note**: この後すぐにマニュアルで実行するのでスケジュール設定に意味は無いのですが、学習のために実施します。
@@ -248,14 +248,14 @@ print("👀 ノートブックのワークフローの開始時刻のリンク�
 # MAGIC     - **定期的**: Every `1` `時間`
 # MAGIC 3. **「保存」**をクリック
 # MAGIC
-# MAGIC     ![create-job](/Workspace/Users/shuji.ooya@gmail.com/databricks-japan-bootcamp/bootcamp_20250904/images/data_engineering_handson/schedule-job.png)
+# MAGIC     ![schedule-job](../../images/data_engineering_handson/schedule-job.png)
 # MAGIC
 # MAGIC ### 5. ジョブの実行
 # MAGIC 1. ジョブの画面右上の **「今すぐ実行」** ボタンをクリック
 # MAGIC 2. **「ジョブの実行」**タブに切り替えて実行状況を確認、ステータスが `成功` になることを確認
 # MAGIC 3. ジョブの開始時刻のリンクをクリックして、実行された内容を確認
 # MAGIC
-# MAGIC     ![create-job](/Workspace/Users/shuji.ooya@gmail.com/databricks-japan-bootcamp/bootcamp_20250904/images/data_engineering_handson/run-job.png)
+# MAGIC     ![run-job](../../images/data_engineering_handson/run-job.png)
 # MAGIC
 
 # COMMAND ----------
