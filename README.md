@@ -1,19 +1,6 @@
-# REPO NAME 
+# databricks-japan-bootcamp
 
-```
-Placeholder
-
-Fill here a description at a functional level - what is this content doing
-```
-
-## Video Overview
-
-Include a GIF overview of what your project does. Use a service like Quicktime, Zoom or Loom to create the video, then convert to a GIF.
-
-
-## Installation
-
-Include details on how to use and install this content. 
+こちらは日本で提供しているDatabricksのワークショップ用コンテンツの格納場所となります。
 
 ## How to get help
 
