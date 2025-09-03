@@ -2,9 +2,7 @@
 
 こちらは日本で提供しているDatabricksのワークショップ用コンテンツの格納場所となります。
 
-## How to get help
-
-Databricks support doesn't cover this content. For questions or bugs, please open a GitHub issue and the team will help on a best effort basis.
+本コンテンツはDatabricks supportの対象とはなりません。バグなどについては GitHub issue を利用いただき、ベストエフォートで内容の確認をいたします。
 
 
 ## License
