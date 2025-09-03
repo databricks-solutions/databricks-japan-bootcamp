@@ -11,3 +11,11 @@
 Databricksワークスペースで以下のノートブックを開きます。
 - [notebooks/data_engineering_handson/00_main.py](notebooks/data_engineering_handson/00_main.py)
 
+## AI/BIワークショップ
+参考資料
+- https://github.com/databricks-solutions/databricks-japan-bootcamp/tree/main/databricks-aibi-quick-workshop
+利用ノードブック
+- [notebooks/aibi/01_create_aibi_demo_data_bricksmart.py](notebooks/aibi/01_create_aibi_demo_data_bricksmart.py)
+データのダウンロード
+- https://github.com/databricks-solutions/databricks-japan-bootcamp/blob/main/bootcamp_20250904/notebooks/aibi/aibi.zip
+
