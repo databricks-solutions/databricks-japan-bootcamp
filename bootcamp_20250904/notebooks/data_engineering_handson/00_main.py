@@ -22,6 +22,7 @@
 # MAGIC ---
 # MAGIC ## Step 1: ウィジェットを使用したパラメーター設定
 # MAGIC 1. 以下の**「ウィジェットの作成」セルを実行**してウィジェットを作成します
+# MAGIC    - ブラウザのポップアップで通知の許可を求められた場合、ブロック or 許可のいずれでも構いません 
 # MAGIC 2. **ウィジェットに値を入力**します
 # MAGIC    - **カタログ名**: `workspace` (default値を変更して構いません)
 # MAGIC    - **スキーマ名**: `data_engineering` (default値を変更して構いません)
@@ -216,7 +217,7 @@ print("👀 ノートブックのワークフローの開始時刻のリンク�
 # MAGIC     - **「パラメーター」**セクションで以下の項目を設定
 # MAGIC         - **キー**: `catalog_name`, **値**: `workspace`
 # MAGIC         - **キー**: `schema_name`, **値**: `data_engineering`
-# MAGIC 2. **「タスクを保存」**をクリック
+# MAGIC 2. **「タスクを作成」**をクリック (次回以降の編集時は「タスクを保存」と文言変更される)
 # MAGIC
 # MAGIC     ![create-job](/Workspace/Users/shuji.ooya@gmail.com/databricks-japan-bootcamp/bootcamp_20250904/images/data_engineering_handson/bronze-task.png)
 # MAGIC
@@ -234,7 +235,7 @@ print("👀 ノートブックのワークフローの開始時刻のリンク�
 # MAGIC         - **キー**: `catalog_name`, **値**: `workspace`
 # MAGIC         - **キー**: `schema_name`, **値**: `data_engineering`
 # MAGIC
-# MAGIC 3. **「タスクを保存」**をクリック
+# MAGIC 3. **「タスクを作成」**をクリック (次回以降の編集時は「タスクを保存」と文言変更される)
 # MAGIC
 # MAGIC     ![create-job](/Workspace/Users/shuji.ooya@gmail.com/databricks-japan-bootcamp/bootcamp_20250904/images/data_engineering_handson/silver-task.png)
 # MAGIC
