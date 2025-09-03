@@ -16,6 +16,6 @@ Databricksワークスペースで以下のノートブックを開きます。
     - https://github.com/databricks-solutions/databricks-japan-bootcamp/tree/main/databricks-aibi-quick-workshop
 - 利用ノードブック
     - [notebooks/aibi/01_create_aibi_demo_data_bricksmart.py](notebooks/aibi/01_create_aibi_demo_data_bricksmart.py)
-データのダウンロード
+- データのダウンロード
     - https://github.com/databricks-solutions/databricks-japan-bootcamp/blob/main/bootcamp_20250904/notebooks/aibi/aibi.zip
 
