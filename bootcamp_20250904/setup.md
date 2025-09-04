@@ -4,7 +4,7 @@
 
 ## Step 1: Free Edition環境への登録
 ハンズオンではDatabricks Free Edition環境を使用します。  
-[Databricks Free Editionの登録画面](https://www.databricks.com/learn/free-edition)をブラウザで開きます。
+[Databricks Free Editionの登録画面](https://www.databricks.com/jp/learn/free-edition)をブラウザで開きます。
 
 下記のショート動画に従って、登録してください。
 
