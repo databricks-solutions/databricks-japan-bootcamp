@@ -1,26 +1,29 @@
 # Databricks notebook source
 # DBTITLE 1,パラメーターの設定
-# Widgetsの作成
+# ウィジェットの作成
 dbutils.widgets.text("catalog", "aibi_demo_catalog", "カタログ")
 dbutils.widgets.text("schema", "bricksmart", "スキーマ")
 dbutils.widgets.dropdown("recreate_schema", "False", ["True", "False"], "スキーマを再作成")
 
-# Widgetからの値の取得
+# ウィジェットからの値の取得
 catalog = dbutils.widgets.get("catalog")
 schema = dbutils.widgets.get("schema")
 recreate_schema = dbutils.widgets.get("recreate_schema") == "True"
 
-# COMMAND ----------
-
-# DBTITLE 1,パラメーターのチェック
+# パラメーターの表示
 print(f"catalog: {catalog}")
 print(f"schema: {schema}")
 print(f"recreate_schema: {recreate_schema}")
 
+# COMMAND ----------
+
+# DBTITLE 1,パラメーターのチェック
 if not catalog:
     raise ValueError("存在するカタログ名を入力してください")
 if not schema:
     raise ValueError("スキーマ名を入力してください")
+
+print("パラメーターのチェックが完了しました")
 
 # COMMAND ----------
 
@@ -400,7 +403,7 @@ spark.sql("DROP TABLE feedbacks_temp")
 # MAGIC ALTER TABLE users ALTER COLUMN email COMMENT "メールアドレス";
 # MAGIC ALTER TABLE users ALTER COLUMN registration_date COMMENT "登録日";
 # MAGIC ALTER TABLE users ALTER COLUMN region COMMENT "地域: 例) 東京, 大阪, 北海道";
-# MAGIC COMMENT ON TABLE users IS '**users テーブル**\nオンラインスーパー「ブリックスマート」に登録されているユーザー情報を保持するテーブルです。\n- ユーザーの基本情報（氏名、年齢、性別、地域など）や連絡先（メールアドレス）を管理\n- ユーザーのセグメンテーションや嗜好分析、マーケティング効果測定などに活用できます';
+# MAGIC COMMENT ON TABLE users IS 'オンラインスーパー「ブリックスマート」に登録されているユーザー情報を保持するテーブルです。\n- ユーザーの基本情報（氏名、年齢、性別、地域など）や連絡先（メールアドレス）を管理\n- ユーザーのセグメンテーションや嗜好分析、マーケティング効果測定などに活用できます';
 # MAGIC
 # MAGIC ALTER TABLE transactions ALTER COLUMN transaction_id COMMENT "トランザクションID";
 # MAGIC ALTER TABLE transactions ALTER COLUMN user_id COMMENT "ユーザーID: usersテーブルのuser_idとリンクする外部キー";
@@ -409,7 +412,7 @@ spark.sql("DROP TABLE feedbacks_temp")
 # MAGIC ALTER TABLE transactions ALTER COLUMN quantity COMMENT "購入数量: 1以上";
 # MAGIC ALTER TABLE transactions ALTER COLUMN transaction_price COMMENT "購入時価格: 0以上, transactions.quantity * products.price で計算";
 # MAGIC ALTER TABLE transactions ALTER COLUMN store_id COMMENT "店舗ID";
-# MAGIC COMMENT ON TABLE transactions IS '**transactions テーブル**\nオンラインスーパー「ブリックスマート」で行われた販売取引（購入履歴）の情報を管理するテーブルです。\n- ユーザーIDや商品IDなど他テーブルと関連付けしつつ、購入日や価格、数量などを保持\n- 販売動向の分析、ユーザーの購買行動追跡、在庫・マーケティング戦略の最適化に役立ちます';
+# MAGIC COMMENT ON TABLE transactions IS 'オンラインスーパー「ブリックスマート」で行われた販売取引（購入履歴）の情報を管理するテーブルです。\n- ユーザーIDや商品IDなど他テーブルと関連付けしつつ、購入日や価格、数量などを保持\n- 販売動向の分析、ユーザーの購買行動追跡、在庫・マーケティング戦略の最適化に役立ちます';
 # MAGIC
 # MAGIC ALTER TABLE products ALTER COLUMN product_id COMMENT "商品ID";
 # MAGIC ALTER TABLE products ALTER COLUMN product_name COMMENT "商品名";
@@ -418,15 +421,17 @@ spark.sql("DROP TABLE feedbacks_temp")
 # MAGIC ALTER TABLE products ALTER COLUMN price COMMENT "販売価格: 0以上";
 # MAGIC ALTER TABLE products ALTER COLUMN stock_quantity COMMENT "在庫数量";
 # MAGIC ALTER TABLE products ALTER COLUMN cost_price COMMENT "仕入れ価格";
-# MAGIC COMMENT ON TABLE products IS '**products テーブル**\nオンラインスーパー「ブリックスマート」で取り扱う商品の情報を管理するテーブルです。\n- 商品名、カテゴリー・サブカテゴリー、価格、在庫数、原価などを保持\n- 在庫管理、価格分析、商品分類や商品のパフォーマンス分析に活用できます';
+# MAGIC COMMENT ON TABLE products IS 'オンラインスーパー「ブリックスマート」で取り扱う商品の情報を管理するテーブルです。\n- 商品名、カテゴリー・サブカテゴリー、価格、在庫数、原価などを保持\n- 在庫管理、価格分析、商品分類や商品のパフォーマンス分析に活用できます';
 # MAGIC
 # MAGIC ALTER TABLE feedbacks ALTER COLUMN feedback_id COMMENT "フィードバックID";
 # MAGIC ALTER TABLE feedbacks ALTER COLUMN user_id COMMENT "ユーザーID: usersテーブルのuser_idとリンクする外部キー";
+# MAGIC ALTER TABLE feedbacks ALTER COLUMN product_id COMMENT "商品ID: productsテーブルのproduct_idとリンクする外部キー";
 # MAGIC ALTER TABLE feedbacks ALTER COLUMN comment COMMENT "コメント";
 # MAGIC ALTER TABLE feedbacks ALTER COLUMN date COMMENT "フィードバック日";
 # MAGIC ALTER TABLE feedbacks ALTER COLUMN type COMMENT "フィードバック種別: 商品, サービス, その他";
 # MAGIC ALTER TABLE feedbacks ALTER COLUMN rating COMMENT "評価: 1～5";
-# MAGIC COMMENT ON TABLE feedbacks IS '**feedbacks テーブル**\nユーザーからのフィードバックを管理するテーブルです。\n- 商品やサービスに対するコメント、評価(1～5)、フィードバック日などを保持\n- ユーザー満足度の把握や改善点の分析、優先度付けに役立ちます';
+# MAGIC COMMENT ON TABLE feedbacks IS 'オンラインスーパー「ブリックスマート」のユーザーからのフィードバックを管理するテーブルです。\n- 商品やサービスに対するコメント、評価(1～5)、フィードバック日などを保持\n- ユーザー満足度の把握や改善点の分析、優先度付けに役立ちます';
+
 
 # COMMAND ----------
 
@@ -468,7 +473,7 @@ spark.sql("DROP TABLE feedbacks_temp")
 # MAGIC ALTER TABLE gold_user ALTER COLUMN food_rating COMMENT "食料品の平均レビュー評価";
 # MAGIC ALTER TABLE gold_user ALTER COLUMN daily_rating COMMENT "日用品の平均レビュー評価";
 # MAGIC ALTER TABLE gold_user ALTER COLUMN other_rating COMMENT "その他の平均レビュー評価";
-# MAGIC COMMENT ON TABLE gold_user IS '**gold_user テーブル**\nオンラインスーパー「ブリックスマート」のユーザー情報に、購買実績と評価データを集計して統合した分析用テーブルです。\n- ユーザーの基本情報（氏名、年齢、性別、地域など）に加えて、年齢層、カテゴリ別の購買数量・評価を保持\n- 顧客セグメント分析、購買傾向の把握、マーケティング施策の効果測定などに活用できます';
+# MAGIC COMMENT ON TABLE gold_user IS 'オンラインスーパー「ブリックスマート」のユーザー情報に、購買実績と評価データを集計して統合した分析用テーブルです。\n- ユーザーの基本情報（氏名、年齢、性別、地域など）に加えて、年齢層、カテゴリ別の購買数量・評価を保持\n- 顧客セグメント分析、購買傾向の把握、マーケティング施策の効果測定などに活用できます';
 
 # COMMAND ----------
 
@@ -478,11 +483,11 @@ spark.sql(f"COMMENT ON SCHEMA {schema} IS 'オンラインスーパー「ブリ�
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC Note: ここまででワークショップ実施に必要な基本的なセットアップは完了。ここから先のセルは、PK/FK制約、タグ機能、ABAC機能などの応用的な機能のデモのための設定であり、ワークスペースの設定やDBRバージョンによってはエラーが発生する可能性がある。エラーが発生したセルはスキップして次のセルに進んで問題ない。
+# MAGIC Note: ここまででワークショップ実施に必要な基本的なセットアップは完了。ここから先のセルは、PK & FK制約、タグ機能、ABAC機能などの応用的な機能のデモのための設定であり、ワークスペースの設定やDBRバージョンによってはエラーが発生する可能性がある。エラーが発生したセルはスキップして次のセルに進んで問題ない。
 
 # COMMAND ----------
 
-# DBTITLE 1,PK & FKの追加
+# DBTITLE 1,PK & FK制約の追加
 try:
     # NOT NULL制約の追加
     spark.sql("ALTER TABLE users ALTER COLUMN user_id SET NOT NULL")
@@ -508,7 +513,7 @@ try:
 
 except Exception as e:
     print(f"PK & FK制約の追加中にエラーが発生しました: {str(e)}")
-    print("このエラーは制約が既に存在する場合やUnity Catalogの機能に対応していないワークスペースで実行した場合に発生する可能性があります。")
+    print("このエラーは制約が既に追加済みの場合やUnity Catalogの機能に対応していないワークスペースで実行した場合に発生する可能性があります。")
 
 # COMMAND ----------
 
@@ -526,32 +531,30 @@ try:
 
 except Exception as e:
     print(f"認定済みタグ {certified_tag} の追加中にエラーが発生しました: {str(e)}")
-    print("このエラーはタグ機能に対応していないワークスペースで実行した場合に発生する可能性があります。")
+    print("このエラーは管理タグ (Governed Tags) 機能に対応していないワークスペースで実行した場合に発生する可能性があります。")
 
 # COMMAND ----------
 
 # DBTITLE 1,PIIタグの追加
 try:
-    # PIIタグの追加
     spark.sql("ALTER TABLE users ALTER COLUMN name SET TAGS ('class.name')")
     spark.sql("ALTER TABLE users ALTER COLUMN email SET TAGS ('class.email_address')")
     spark.sql("ALTER TABLE gold_user ALTER COLUMN name SET TAGS ('class.name')")
     spark.sql("ALTER TABLE gold_user ALTER COLUMN email SET TAGS ('class.email_address')")
-
     print("PIIタグの追加が完了しました。")
 
 except Exception as e:
     print(f"PIIタグの追加中にエラーが発生しました: {str(e)}")
-    print("このエラーはタグ機能に対応していないワークスペースで実行した場合に発生する可能性があります。")
+    print("このエラーは管理タグ (Governed Tags) 機能に対応していないワークスペースで実行した場合に発生する可能性があります。")
 
 # COMMAND ----------
 
-# DBTITLE 1,ABAC用マスキングUDFの作成
+# DBTITLE 1,マスキングUDFの作成
 try:
-    # メールアドレス向けのマスキング関数
+    # メールアドレス向けのマスキングUDF
     spark.sql("""
-    -- メールアドレスのローカル部は先頭3文字だけ表示し、以降を'*'でマスクする
-    CREATE FUNCTION IF NOT EXISTS mask_user_email(email STRING)
+    CREATE OR REPLACE FUNCTION mask_user_email(email STRING)
+    COMMENT 'メールアドレスの先頭3文字だけ表示し、以降を`*`でマスクする関数'
     RETURN CASE
         WHEN email IS NULL THEN NULL
         ELSE concat(
@@ -563,10 +566,10 @@ try:
     END
     """)
 
-    # 氏名向けのマスキング関数
+    # 氏名向けのマスキングUDF
     spark.sql("""
-    -- 氏名は先頭3文字だけ表示し、以降を'*'でマスクする
-    CREATE FUNCTION IF NOT EXISTS mask_user_name(name STRING)
+    CREATE OR REPLACE FUNCTION mask_user_name(name STRING)
+    COMMENT '氏名の先頭3文字だけ表示し、以降を`*`でマスクする関数'
     RETURN CASE
         WHEN name IS NULL THEN NULL
         ELSE concat(substr(name, 1, 3), repeat('*', greatest(length(name) - 3, 0)))
@@ -577,7 +580,6 @@ try:
 
 except Exception as e:
     print(f"マスキングUDFの作成中にエラーが発生しました: {str(e)}")
-    print("このエラーはDBR 15.4より前のバージョンで実行している場合に発生する可能性があります。")
 
 # COMMAND ----------
 
@@ -586,7 +588,7 @@ try:
     spark.sql(f"""
     CREATE OR REPLACE POLICY mask_user_email_policy
     ON SCHEMA {catalog}.{schema}
-    COMMENT 'メールアドレスの先頭3文字より後ろをマスキング'
+    COMMENT 'メールアドレスのマスキング用ABACポリシー'
     COLUMN MASK mask_user_email
     TO `account users`
     FOR TABLES
@@ -597,7 +599,7 @@ try:
     spark.sql(f"""
     CREATE OR REPLACE POLICY mask_user_name_policy
     ON SCHEMA {catalog}.{schema}
-    COMMENT '氏名の先頭3文字より後ろをマスキング'
+    COMMENT '氏名のマスキング用ABACポリシー'
     COLUMN MASK mask_user_name
     TO `account users`
     FOR TABLES
@@ -609,7 +611,7 @@ try:
 
 except Exception as e:
     print(f"ABACポリシーの作成中にエラーが発生しました: {str(e)}")
-    print("このエラーはポリシー機能に対応していないワークスペースで実行した場合に発生する可能性があります。")
+    print("このエラーはABACポリシーに対応していないワークスペースで実行した場合に発生する可能性があります。")
 
 # COMMAND ----------
 
