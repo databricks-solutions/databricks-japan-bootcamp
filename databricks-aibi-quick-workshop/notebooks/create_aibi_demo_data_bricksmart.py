@@ -391,7 +391,7 @@ spark.sql("DROP TABLE feedbacks_temp")
 
 # COMMAND ----------
 
-# DBTITLE 1,テーブルのメタデータ編集
+# DBTITLE 1,テーブルのコメント追加
 # MAGIC %sql
 # MAGIC ALTER TABLE users ALTER COLUMN user_id COMMENT "ユーザーID";
 # MAGIC ALTER TABLE users ALTER COLUMN name COMMENT "氏名";
@@ -459,7 +459,7 @@ spark.sql("DROP TABLE feedbacks_temp")
 
 # COMMAND ----------
 
-# DBTITLE 1,gold_usersテーブルのメタデータ編集
+# DBTITLE 1,gold_usersテーブルのコメント追加
 # MAGIC %sql
 # MAGIC ALTER TABLE gold_user ALTER COLUMN age_group COMMENT "年齢層: 若年層, 中年層, シニア層\n\n- 若年層: 35歳未満\n- 中年層: 35歳以上55歳未満\n- シニア層: 55歳以上";
 # MAGIC ALTER TABLE gold_user ALTER COLUMN food_quantity COMMENT "食料品の合計購買点数";
@@ -468,23 +468,17 @@ spark.sql("DROP TABLE feedbacks_temp")
 # MAGIC ALTER TABLE gold_user ALTER COLUMN food_rating COMMENT "食料品の平均レビュー評価";
 # MAGIC ALTER TABLE gold_user ALTER COLUMN daily_rating COMMENT "日用品の平均レビュー評価";
 # MAGIC ALTER TABLE gold_user ALTER COLUMN other_rating COMMENT "その他の平均レビュー評価";
-# MAGIC COMMENT ON TABLE gold_user IS '**gold_user テーブル**\nAIを搭載した食品推薦システムに登録したユーザーに関する情報が含まれています。\n- 人口統計学的詳細、食品消費習慣、および評価などを保持\n- ユーザーの嗜好を理解し、食品の消費傾向を追跡、AIシステムの有効性を評価するのに活用\n- 個々のユーザーに合わせた食品推薦やシステム改善の検討にも役立ちます';
+# MAGIC COMMENT ON TABLE gold_user IS '**gold_user テーブル**\nオンラインスーパー「ブリックスマート」のユーザー情報に、購買実績と評価データを集計して統合した分析用テーブルです。\n- ユーザーの基本情報（氏名、年齢、性別、地域など）に加えて、年齢層、カテゴリ別の購買数量・評価を保持\n- 顧客セグメント分析、購買傾向の把握、マーケティング施策の効果測定などに活用できます';
 
 # COMMAND ----------
 
-# DBTITLE 1,PIIタグの追加
-try:
-    # PIIタグの追加
-    spark.sql("ALTER TABLE users ALTER COLUMN name SET TAGS ('class.name')")
-    spark.sql("ALTER TABLE users ALTER COLUMN email SET TAGS ('class.email_address')")
-    spark.sql("ALTER TABLE gold_user ALTER COLUMN name SET TAGS ('class.name')")
-    spark.sql("ALTER TABLE gold_user ALTER COLUMN email SET TAGS ('class.email_address')")
+# DBTITLE 1,スキーマのコメント追加
+spark.sql(f"COMMENT ON SCHEMA {schema} IS 'オンラインスーパー「ブリックスマート」のデータを管理するスキーマです。ユーザー情報、商品情報、販売取引、フィードバックなど、ECサイト運営に必要な各種データテーブルを格納しています。'")
 
-    print("PIIタグの追加が完了しました。")
+# COMMAND ----------
 
-except Exception as e:
-    print(f"PIIタグの追加中にエラーが発生しました: {str(e)}")
-    print("このエラーはタグ機能に対応していないワークスペースで実行した場合に発生する可能性があります。")
+# MAGIC %md
+# MAGIC Note: ここまででワークショップ実施に必要な基本的なセットアップは完了。ここから先のセルは、PK/FK制約、タグ機能、ABAC機能などの応用的な機能のデモのための設定であり、ワークスペースの設定やDBRバージョンによってはエラーが発生する可能性がある。エラーが発生したセルはスキップして次のセルに進んで問題ない。
 
 # COMMAND ----------
 
@@ -515,6 +509,40 @@ try:
 except Exception as e:
     print(f"PK & FK制約の追加中にエラーが発生しました: {str(e)}")
     print("このエラーは制約が既に存在する場合やUnity Catalogの機能に対応していないワークスペースで実行した場合に発生する可能性があります。")
+
+# COMMAND ----------
+
+# DBTITLE 1,認定済みタグの追加
+certified_tag = "'system.certification_status' = 'certified'"
+
+try:
+    spark.sql(f"ALTER SCHEMA {schema} SET TAGS ({certified_tag})")
+    spark.sql(f"ALTER TABLE users SET TAGS ({certified_tag})")
+    spark.sql(f"ALTER TABLE transactions SET TAGS ({certified_tag})")
+    spark.sql(f"ALTER TABLE products SET TAGS ({certified_tag})")
+    spark.sql(f"ALTER TABLE feedbacks SET TAGS ({certified_tag})")
+    spark.sql(f"ALTER TABLE gold_user SET TAGS ({certified_tag})")
+    print(f"認定済みタグ {certified_tag} の追加が完了しました。")
+
+except Exception as e:
+    print(f"認定済みタグ {certified_tag} の追加中にエラーが発生しました: {str(e)}")
+    print("このエラーはタグ機能に対応していないワークスペースで実行した場合に発生する可能性があります。")
+
+# COMMAND ----------
+
+# DBTITLE 1,PIIタグの追加
+try:
+    # PIIタグの追加
+    spark.sql("ALTER TABLE users ALTER COLUMN name SET TAGS ('class.name')")
+    spark.sql("ALTER TABLE users ALTER COLUMN email SET TAGS ('class.email_address')")
+    spark.sql("ALTER TABLE gold_user ALTER COLUMN name SET TAGS ('class.name')")
+    spark.sql("ALTER TABLE gold_user ALTER COLUMN email SET TAGS ('class.email_address')")
+
+    print("PIIタグの追加が完了しました。")
+
+except Exception as e:
+    print(f"PIIタグの追加中にエラーが発生しました: {str(e)}")
+    print("このエラーはタグ機能に対応していないワークスペースで実行した場合に発生する可能性があります。")
 
 # COMMAND ----------
 
@@ -582,24 +610,6 @@ try:
 except Exception as e:
     print(f"ABACポリシーの作成中にエラーが発生しました: {str(e)}")
     print("このエラーはポリシー機能に対応していないワークスペースで実行した場合に発生する可能性があります。")
-
-# COMMAND ----------
-
-# DBTITLE 1,認定済みタグの追加
-certified_tag = "'system.certification_status' = 'certified'"
-
-try:
-    spark.sql(f"ALTER SCHEMA {schema} SET TAGS ({certified_tag})")
-    spark.sql(f"ALTER TABLE users SET TAGS ({certified_tag})")
-    spark.sql(f"ALTER TABLE transactions SET TAGS ({certified_tag})")
-    spark.sql(f"ALTER TABLE products SET TAGS ({certified_tag})")
-    spark.sql(f"ALTER TABLE feedbacks SET TAGS ({certified_tag})")
-    spark.sql(f"ALTER TABLE gold_user SET TAGS ({certified_tag})")
-    print(f"認定済みタグ {certified_tag} の追加が完了しました。")
-
-except Exception as e:
-    print(f"認定済みタグ {certified_tag} の追加中にエラーが発生しました: {str(e)}")
-    print("このエラーはタグ機能に対応していないワークスペースで実行した場合に発生する可能性があります。")
 
 # COMMAND ----------
 
