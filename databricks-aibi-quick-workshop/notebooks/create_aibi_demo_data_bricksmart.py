@@ -558,25 +558,23 @@ try:
     spark.sql(f"""
     CREATE OR REPLACE POLICY mask_user_email_policy
     ON SCHEMA {catalog}.{schema}
-    COMMENT '管理者以外のユーザーに対してメールアドレスをマスク'
-    COLUMN MASK mask_user_email ON COLUMN email
+    COMMENT 'メールアドレスの先頭3文字より後ろをマスキング'
+    COLUMN MASK mask_user_email
     TO `users`
-    EXCEPT `admins`
     FOR TABLES
     MATCH COLUMNS hasTagValue('pii_aibi_demo','email') AS email
-    USING COLUMNS email
+    ON COLUMN email
     """)
 
     spark.sql(f"""
     CREATE OR REPLACE POLICY mask_user_name_policy
     ON SCHEMA {catalog}.{schema}
-    COMMENT '管理者以外のユーザーに対して名前をマスク'
-    COLUMN MASK mask_user_name ON COLUMN name
+    COMMENT '氏名の先頭3文字より後ろをマスキング'
+    COLUMN MASK mask_user_name
     TO `users`
-    EXCEPT `admins`
     FOR TABLES
     MATCH COLUMNS hasTagValue('pii_aibi_demo','name') AS name
-    USING COLUMNS name
+    ON COLUMN name
     """)
 
     print("ABACポリシーの作成が完了しました。")
