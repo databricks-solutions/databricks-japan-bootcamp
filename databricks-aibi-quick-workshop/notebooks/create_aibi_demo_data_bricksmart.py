@@ -473,58 +473,117 @@ spark.sql("DROP TABLE feedbacks_temp")
 # COMMAND ----------
 
 # DBTITLE 1,PIIタグの追加
-# MAGIC %sql
-# MAGIC ALTER TABLE users ALTER COLUMN name SET TAGS ('pii_name');
-# MAGIC ALTER TABLE users ALTER COLUMN email SET TAGS ('pii_email');
-# MAGIC ALTER TABLE gold_user ALTER COLUMN name SET TAGS ('pii_name');
-# MAGIC ALTER TABLE gold_user ALTER COLUMN email SET TAGS ('pii_email');
+try:
+    # PIIタグの追加
+    spark.sql("ALTER TABLE users ALTER COLUMN name SET TAGS ('pii_aibi_demo' = 'name')")
+    spark.sql("ALTER TABLE users ALTER COLUMN email SET TAGS ('pii_aibi_demo' = 'email')")
+    spark.sql("ALTER TABLE gold_user ALTER COLUMN name SET TAGS ('pii_aibi_demo' = 'name')")
+    spark.sql("ALTER TABLE gold_user ALTER COLUMN email SET TAGS ('pii_aibi_demo' = 'email')")
+
+    print("PIIタグの追加が完了しました。")
+
+except Exception as e:
+    print(f"PIIタグの追加中にエラーが発生しました: {str(e)}")
+    print("このエラーはタグ機能に対応していないワークスペースで実行した場合に発生する可能性があります。")
 
 # COMMAND ----------
 
 # DBTITLE 1,PK & FKの追加
-# MAGIC %sql
-# MAGIC ALTER TABLE users ALTER COLUMN user_id SET NOT NULL;
-# MAGIC ALTER TABLE transactions ALTER COLUMN transaction_id SET NOT NULL;
-# MAGIC ALTER TABLE products ALTER COLUMN product_id SET NOT NULL;
-# MAGIC ALTER TABLE feedbacks ALTER COLUMN feedback_id SET NOT NULL;
-# MAGIC ALTER TABLE gold_user ALTER COLUMN user_id SET NOT NULL;
+try:
+    # NOT NULL制約の追加
+    spark.sql("ALTER TABLE users ALTER COLUMN user_id SET NOT NULL")
+    spark.sql("ALTER TABLE transactions ALTER COLUMN transaction_id SET NOT NULL")
+    spark.sql("ALTER TABLE products ALTER COLUMN product_id SET NOT NULL")
+    spark.sql("ALTER TABLE feedbacks ALTER COLUMN feedback_id SET NOT NULL")
+    spark.sql("ALTER TABLE gold_user ALTER COLUMN user_id SET NOT NULL")
 
-# MAGIC ALTER TABLE users ADD CONSTRAINT users_pk PRIMARY KEY (user_id);
-# MAGIC ALTER TABLE transactions ADD CONSTRAINT transactions_pk PRIMARY KEY (transaction_id);
-# MAGIC ALTER TABLE products ADD CONSTRAINT products_pk PRIMARY KEY (product_id);
-# MAGIC ALTER TABLE feedbacks ADD CONSTRAINT feedbacks_pk PRIMARY KEY (feedback_id);
-# MAGIC ALTER TABLE gold_user ADD CONSTRAINT gold_user_pk PRIMARY KEY (user_id);
+    # Primary Key制約の追加
+    spark.sql("ALTER TABLE users ADD CONSTRAINT users_pk PRIMARY KEY (user_id)")
+    spark.sql("ALTER TABLE transactions ADD CONSTRAINT transactions_pk PRIMARY KEY (transaction_id)")
+    spark.sql("ALTER TABLE products ADD CONSTRAINT products_pk PRIMARY KEY (product_id)")
+    spark.sql("ALTER TABLE feedbacks ADD CONSTRAINT feedbacks_pk PRIMARY KEY (feedback_id)")
+    spark.sql("ALTER TABLE gold_user ADD CONSTRAINT gold_user_pk PRIMARY KEY (user_id)")
 
-# MAGIC ALTER TABLE transactions ADD CONSTRAINT transactions_users_fk FOREIGN KEY (user_id) REFERENCES users (user_id) NOT ENFORCED;
-# MAGIC ALTER TABLE transactions ADD CONSTRAINT transactions_products_fk FOREIGN KEY (product_id) REFERENCES products (product_id) NOT ENFORCED;
-# MAGIC ALTER TABLE feedbacks ADD CONSTRAINT feedbacks_users_fk FOREIGN KEY (user_id) REFERENCES users (user_id) NOT ENFORCED;
-# MAGIC ALTER TABLE feedbacks ADD CONSTRAINT feedbacks_products_fk FOREIGN KEY (product_id) REFERENCES products (product_id) NOT ENFORCED;
+    # Foreign Key制約の追加
+    spark.sql("ALTER TABLE transactions ADD CONSTRAINT transactions_users_fk FOREIGN KEY (user_id) REFERENCES users (user_id) NOT ENFORCED")
+    spark.sql("ALTER TABLE transactions ADD CONSTRAINT transactions_products_fk FOREIGN KEY (product_id) REFERENCES products (product_id) NOT ENFORCED")
+    spark.sql("ALTER TABLE feedbacks ADD CONSTRAINT feedbacks_users_fk FOREIGN KEY (user_id) REFERENCES users (user_id) NOT ENFORCED")
+    spark.sql("ALTER TABLE feedbacks ADD CONSTRAINT feedbacks_products_fk FOREIGN KEY (product_id) REFERENCES products (product_id) NOT ENFORCED")
+
+    print("PK & FK制約の追加が完了しました。")
+
+except Exception as e:
+    print(f"PK & FK制約の追加中にエラーが発生しました: {str(e)}")
+    print("このエラーは制約が既に存在する場合やUnity Catalogの機能に対応していないワークスペースで実行した場合に発生する可能性があります。")
 
 # COMMAND ----------
 
-# DBTITLE 1,列レベルマスキングの追加
+# DBTITLE 1,ABAC用マスキングUDFの作成
 try:
-    # マスキング関数の作成
+    # メールアドレス向けのマスキング関数
     spark.sql("""
-    CREATE FUNCTION IF NOT EXISTS mask_email(email STRING) 
-    RETURN CASE WHEN is_member('admins') THEN email ELSE '***@example.com' END
+    -- メールアドレスのローカル部は先頭3文字だけ表示し、以降を'*'でマスクする
+    CREATE FUNCTION IF NOT EXISTS mask_user_email(email STRING)
+    RETURN CASE
+        WHEN email IS NULL THEN NULL
+        ELSE concat(
+            substr(split(email, '@')[0], 1, 3),
+            repeat('*', greatest(length(split(email, '@')[0]) - 3, 0)),
+            '@',
+            split(email, '@')[1]
+        )
+    END
     """)
-    
-    # usersテーブルにマスキングを適用
+
+    # 氏名向けのマスキング関数
     spark.sql("""
-    ALTER TABLE users ALTER COLUMN email SET MASK mask_email
+    -- 氏名は先頭3文字だけ表示し、以降を'*'でマスクする
+    CREATE FUNCTION IF NOT EXISTS mask_user_name(name STRING)
+    RETURN CASE
+        WHEN name IS NULL THEN NULL
+        ELSE concat(substr(name, 1, 3), repeat('*', greatest(length(name) - 3, 0)))
+    END
     """)
-    
-    # gold_userテーブルにマスキングを適用
-    spark.sql("""
-    ALTER TABLE gold_user ALTER COLUMN email SET MASK mask_email
-    """)
-    
-    print("列レベルマスキングの適用が完了しました。")
-    
+
+    print("マスキングUDFの作成が完了しました。")
+
 except Exception as e:
-    print(f"列レベルマスキングの適用中にエラーが発生しました: {str(e)}")
+    print(f"マスキングUDFの作成中にエラーが発生しました: {str(e)}")
     print("このエラーはDBR 15.4より前のバージョンで実行している場合に発生する可能性があります。")
+
+# COMMAND ----------
+
+# DBTITLE 1,ABACポリシーの作成
+try:
+    spark.sql(f"""
+    CREATE OR REPLACE POLICY mask_user_email_policy
+    ON SCHEMA {catalog}.{schema}
+    COMMENT '管理者以外のユーザーに対してメールアドレスをマスク'
+    COLUMN MASK mask_user_email ON COLUMN email
+    TO `users`
+    EXCEPT `admins`
+    FOR TABLES
+    MATCH COLUMNS hasTagValue('pii_aibi_demo','email') AS email
+    USING COLUMNS email
+    """)
+
+    spark.sql(f"""
+    CREATE OR REPLACE POLICY mask_user_name_policy
+    ON SCHEMA {catalog}.{schema}
+    COMMENT '管理者以外のユーザーに対して名前をマスク'
+    COLUMN MASK mask_user_name ON COLUMN name
+    TO `users`
+    EXCEPT `admins`
+    FOR TABLES
+    MATCH COLUMNS hasTagValue('pii_aibi_demo','name') AS name
+    USING COLUMNS name
+    """)
+
+    print("ABACポリシーの作成が完了しました。")
+
+except Exception as e:
+    print(f"ABACポリシーの作成中にエラーが発生しました: {str(e)}")
+    print("このエラーはポリシー機能に対応していないワークスペースで実行した場合に発生する可能性があります。")
 
 # COMMAND ----------
 
