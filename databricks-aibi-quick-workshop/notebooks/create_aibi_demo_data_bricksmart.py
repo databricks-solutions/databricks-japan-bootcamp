@@ -1,26 +1,29 @@
 # Databricks notebook source
 # DBTITLE 1,パラメーターの設定
-# Widgetsの作成
+# ウィジェットの作成
 dbutils.widgets.text("catalog", "aibi_demo_catalog", "カタログ")
 dbutils.widgets.text("schema", "bricksmart", "スキーマ")
 dbutils.widgets.dropdown("recreate_schema", "False", ["True", "False"], "スキーマを再作成")
 
-# Widgetからの値の取得
+# ウィジェットからの値の取得
 catalog = dbutils.widgets.get("catalog")
 schema = dbutils.widgets.get("schema")
 recreate_schema = dbutils.widgets.get("recreate_schema") == "True"
 
-# COMMAND ----------
-
-# DBTITLE 1,パラメーターのチェック
+# パラメーターの表示
 print(f"catalog: {catalog}")
 print(f"schema: {schema}")
 print(f"recreate_schema: {recreate_schema}")
 
+# COMMAND ----------
+
+# DBTITLE 1,パラメーターのチェック
 if not catalog:
     raise ValueError("存在するカタログ名を入力してください")
 if not schema:
     raise ValueError("スキーマ名を入力してください")
+
+print("パラメーターのチェックが完了しました")
 
 # COMMAND ----------
 
@@ -54,7 +57,7 @@ def generate_username():
     # 5文字のランダムな小文字アルファベットを生成
     part1 = ''.join(random.choices(string.ascii_lowercase, k=5))
     part2 = ''.join(random.choices(string.ascii_lowercase, k=5))
-    
+
     # 形式 xxxxx.xxxxx で結合
     username = f"{part1}.{part2}"
     return username
@@ -64,7 +67,7 @@ def generate_productname():
     part1 = ''.join(random.choices(string.ascii_lowercase, k=3))
     part2 = ''.join(random.choices(string.ascii_lowercase, k=3))
     part3 = ''.join(random.choices(string.ascii_lowercase, k=3))
-    
+
     # 形式 xxx_xxx_xxx で結合
     productname = f"{part1}_{part2}_{part3}"
     return productname
@@ -76,13 +79,13 @@ generate_productname_udf = udf(generate_productname, StringType())
 def generate_users(num_users=10000):
     """
     ユーザーデータを生成し、指定された数のデータを返します。
-    
+
     パラメータ:
     num_users (int): 生成するユーザーの数 (デフォルトは10000)
-    
+
     戻り値:
     DataFrame: 生成されたユーザー情報を含むSpark DataFrame
-    
+
     各ユーザーには以下のカラムが含まれます:
     - user_id: ユーザーID (1からnum_usersまでの範囲)
     - name: ランダムなユーザー名
@@ -123,13 +126,13 @@ def generate_users(num_users=10000):
 def generate_products(num_products=100):
     """
     商品データを生成し、指定された数のデータを返します。
-    
+
     パラメータ:
     num_products (int): 生成する商品の数 (デフォルトは100)
-    
+
     戻り値:
     DataFrame: 生成された商品情報を含むSpark DataFrame
-    
+
     各商品には以下のカラムが含まれます:
     - product_id: 商品ID (1からnum_productsまでの範囲)
     - product_name: ランダムな商品名
@@ -283,7 +286,7 @@ def generate_transactions(users, products, num_transactions=1000000):
         .withColumn("random_date", expr("date_add(date('2024-01-01'), -CAST(rand() * 365 AS INTEGER))"))
         .withColumn("month", date_format("random_date", "M").cast("int"))
         .withColumn("is_weekend", dayofweek("random_date").isin([1, 7]))
-        .withColumn("transaction_date", 
+        .withColumn("transaction_date",
             when((rand() < 0.1) & ((expr("month") == 8) | (expr("month") == 12)), expr("random_date"))
             .when((rand() < 0.1) & expr("is_weekend"), expr("random_date"))
             .otherwise(expr("date_add(date('2024-01-01'), -CAST(rand() * 365 AS INTEGER))"))
@@ -305,15 +308,15 @@ def generate_transactions(users, products, num_transactions=1000000):
 def generate_feedbacks(users, products, num_feedbacks=50000):
     """
     フィードバックデータを生成し、指定された数のデータを返します。
-    
+
     パラメータ:
     users (DataFrame): ユーザーデータを含むSpark DataFrame
     products (DataFrame): 商品データを含むSpark DataFrame
     num_feedbacks (int): 生成するフィードバックの数 (デフォルトは50000)
-    
+
     戻り値:
     DataFrame: 生成されたフィードバック情報を含むSpark DataFrame
-    
+
     各フィードバックには以下のカラムが含まれます:
     - feedback_id: フィードバックID (1からnum_feedbacksまでの範囲)
     - user_id: ユーザーID (1から登録ユーザー数までの範囲)
@@ -322,7 +325,7 @@ def generate_feedbacks(users, products, num_feedbacks=50000):
     - date: フィードバック日付 (2021年1月1日から2022年1月1日までの範囲)
     - type: フィードバック種別 (商品45%、サービス45%、その他10%)
     - comment: コメント (Feedback_[feedback_id]の形式)
-    
+
     傾向スコア:
     ユーザーの属性や商品カテゴリに基づいて評価を調整します。
     最終的な評価は0以上5以下の範囲に収まるように調整されます。
@@ -344,7 +347,7 @@ def generate_feedbacks(users, products, num_feedbacks=50000):
         .drop("rand_type")
         .withColumn("comment", expr("concat('Feedback_', feedback_id)"))
     )
-    
+
     # 傾向スコアに基づいて評価を調整
     adjusted_feedbacks = feedbacks.join(users, "user_id").join(products.select("product_id", "category", "subcategory"), "product_id")
     for condition, adjustment in conditions:
@@ -391,7 +394,7 @@ spark.sql("DROP TABLE feedbacks_temp")
 
 # COMMAND ----------
 
-# DBTITLE 1,テーブルのメタデータ編集
+# DBTITLE 1,テーブルのコメント追加
 # MAGIC %sql
 # MAGIC ALTER TABLE users ALTER COLUMN user_id COMMENT "ユーザーID";
 # MAGIC ALTER TABLE users ALTER COLUMN name COMMENT "氏名";
@@ -400,7 +403,7 @@ spark.sql("DROP TABLE feedbacks_temp")
 # MAGIC ALTER TABLE users ALTER COLUMN email COMMENT "メールアドレス";
 # MAGIC ALTER TABLE users ALTER COLUMN registration_date COMMENT "登録日";
 # MAGIC ALTER TABLE users ALTER COLUMN region COMMENT "地域: 例) 東京, 大阪, 北海道";
-# MAGIC COMMENT ON TABLE users IS '**users テーブル**\nオンラインスーパー「ブリックスマート」に登録されているユーザー情報を保持するテーブルです。\n- ユーザーの基本情報（氏名、年齢、性別、地域など）や連絡先（メールアドレス）を管理\n- ユーザーのセグメンテーションや嗜好分析、マーケティング効果測定などに活用できます';
+# MAGIC COMMENT ON TABLE users IS 'オンラインスーパー「ブリックスマート」に登録されているユーザー情報を保持するテーブルです。\n- ユーザーの基本情報（氏名、年齢、性別、地域など）や連絡先（メールアドレス）を管理\n- ユーザーのセグメンテーションや嗜好分析、マーケティング効果測定などに活用できます';
 # MAGIC
 # MAGIC ALTER TABLE transactions ALTER COLUMN transaction_id COMMENT "トランザクションID";
 # MAGIC ALTER TABLE transactions ALTER COLUMN user_id COMMENT "ユーザーID: usersテーブルのuser_idとリンクする外部キー";
@@ -409,7 +412,7 @@ spark.sql("DROP TABLE feedbacks_temp")
 # MAGIC ALTER TABLE transactions ALTER COLUMN quantity COMMENT "購入数量: 1以上";
 # MAGIC ALTER TABLE transactions ALTER COLUMN transaction_price COMMENT "購入時価格: 0以上, transactions.quantity * products.price で計算";
 # MAGIC ALTER TABLE transactions ALTER COLUMN store_id COMMENT "店舗ID";
-# MAGIC COMMENT ON TABLE transactions IS '**transactions テーブル**\nオンラインスーパー「ブリックスマート」で行われた販売取引（購入履歴）の情報を管理するテーブルです。\n- ユーザーIDや商品IDなど他テーブルと関連付けしつつ、購入日や価格、数量などを保持\n- 販売動向の分析、ユーザーの購買行動追跡、在庫・マーケティング戦略の最適化に役立ちます';
+# MAGIC COMMENT ON TABLE transactions IS 'オンラインスーパー「ブリックスマート」で行われた販売取引（購入履歴）の情報を管理するテーブルです。\n- ユーザーIDや商品IDなど他テーブルと関連付けしつつ、購入日や価格、数量などを保持\n- 販売動向の分析、ユーザーの購買行動追跡、在庫・マーケティング戦略の最適化に役立ちます';
 # MAGIC
 # MAGIC ALTER TABLE products ALTER COLUMN product_id COMMENT "商品ID";
 # MAGIC ALTER TABLE products ALTER COLUMN product_name COMMENT "商品名";
@@ -418,15 +421,17 @@ spark.sql("DROP TABLE feedbacks_temp")
 # MAGIC ALTER TABLE products ALTER COLUMN price COMMENT "販売価格: 0以上";
 # MAGIC ALTER TABLE products ALTER COLUMN stock_quantity COMMENT "在庫数量";
 # MAGIC ALTER TABLE products ALTER COLUMN cost_price COMMENT "仕入れ価格";
-# MAGIC COMMENT ON TABLE products IS '**products テーブル**\nオンラインスーパー「ブリックスマート」で取り扱う商品の情報を管理するテーブルです。\n- 商品名、カテゴリー・サブカテゴリー、価格、在庫数、原価などを保持\n- 在庫管理、価格分析、商品分類や商品のパフォーマンス分析に活用できます';
+# MAGIC COMMENT ON TABLE products IS 'オンラインスーパー「ブリックスマート」で取り扱う商品の情報を管理するテーブルです。\n- 商品名、カテゴリー・サブカテゴリー、価格、在庫数、原価などを保持\n- 在庫管理、価格分析、商品分類や商品のパフォーマンス分析に活用できます';
 # MAGIC
 # MAGIC ALTER TABLE feedbacks ALTER COLUMN feedback_id COMMENT "フィードバックID";
 # MAGIC ALTER TABLE feedbacks ALTER COLUMN user_id COMMENT "ユーザーID: usersテーブルのuser_idとリンクする外部キー";
+# MAGIC ALTER TABLE feedbacks ALTER COLUMN product_id COMMENT "商品ID: productsテーブルのproduct_idとリンクする外部キー";
 # MAGIC ALTER TABLE feedbacks ALTER COLUMN comment COMMENT "コメント";
 # MAGIC ALTER TABLE feedbacks ALTER COLUMN date COMMENT "フィードバック日";
 # MAGIC ALTER TABLE feedbacks ALTER COLUMN type COMMENT "フィードバック種別: 商品, サービス, その他";
 # MAGIC ALTER TABLE feedbacks ALTER COLUMN rating COMMENT "評価: 1～5";
-# MAGIC COMMENT ON TABLE feedbacks IS '**feedbacks テーブル**\nユーザーからのフィードバックを管理するテーブルです。\n- 商品やサービスに対するコメント、評価(1～5)、フィードバック日などを保持\n- ユーザー満足度の把握や改善点の分析、優先度付けに役立ちます';
+# MAGIC COMMENT ON TABLE feedbacks IS 'オンラインスーパー「ブリックスマート」のユーザーからのフィードバックを管理するテーブルです。\n- 商品やサービスに対するコメント、評価(1～5)、フィードバック日などを保持\n- ユーザー満足度の把握や改善点の分析、優先度付けに役立ちます';
+
 
 # COMMAND ----------
 
@@ -435,9 +440,9 @@ spark.sql("DROP TABLE feedbacks_temp")
 # MAGIC CREATE OR REPLACE TABLE gold_user AS (
 # MAGIC   -- ユーザーごとの購買・評価データを集計
 # MAGIC   with user_metrics as (
-# MAGIC   SELECT 
+# MAGIC   SELECT
 # MAGIC     u.user_id,
-# MAGIC     CASE 
+# MAGIC     CASE
 # MAGIC       WHEN u.age < 35 THEN '若年層'
 # MAGIC       WHEN u.age < 55 THEN '中年層'
 # MAGIC       ELSE 'シニア層'
@@ -459,7 +464,7 @@ spark.sql("DROP TABLE feedbacks_temp")
 
 # COMMAND ----------
 
-# DBTITLE 1,gold_usersテーブルのメタデータ編集
+# DBTITLE 1,gold_usersテーブルのコメント追加
 # MAGIC %sql
 # MAGIC ALTER TABLE gold_user ALTER COLUMN age_group COMMENT "年齢層: 若年層, 中年層, シニア層\n\n- 若年層: 35歳未満\n- 中年層: 35歳以上55歳未満\n- シニア層: 55歳以上";
 # MAGIC ALTER TABLE gold_user ALTER COLUMN food_quantity COMMENT "食料品の合計購買点数";
@@ -468,80 +473,145 @@ spark.sql("DROP TABLE feedbacks_temp")
 # MAGIC ALTER TABLE gold_user ALTER COLUMN food_rating COMMENT "食料品の平均レビュー評価";
 # MAGIC ALTER TABLE gold_user ALTER COLUMN daily_rating COMMENT "日用品の平均レビュー評価";
 # MAGIC ALTER TABLE gold_user ALTER COLUMN other_rating COMMENT "その他の平均レビュー評価";
-# MAGIC COMMENT ON TABLE gold_user IS '**gold_user テーブル**\nAIを搭載した食品推薦システムに登録したユーザーに関する情報が含まれています。\n- 人口統計学的詳細、食品消費習慣、および評価などを保持\n- ユーザーの嗜好を理解し、食品の消費傾向を追跡、AIシステムの有効性を評価するのに活用\n- 個々のユーザーに合わせた食品推薦やシステム改善の検討にも役立ちます';
+# MAGIC COMMENT ON TABLE gold_user IS 'オンラインスーパー「ブリックスマート」のユーザー情報に、購買実績と評価データを集計して統合した分析用テーブルです。\n- ユーザーの基本情報（氏名、年齢、性別、地域など）に加えて、年齢層、カテゴリ別の購買数量・評価を保持\n- 顧客セグメント分析、購買傾向の把握、マーケティング施策の効果測定などに活用できます';
 
 # COMMAND ----------
 
-# DBTITLE 1,PIIタグの追加
-# MAGIC %sql
-# MAGIC ALTER TABLE users ALTER COLUMN name SET TAGS ('pii_name');
-# MAGIC ALTER TABLE users ALTER COLUMN email SET TAGS ('pii_email');
-# MAGIC ALTER TABLE gold_user ALTER COLUMN name SET TAGS ('pii_name');
-# MAGIC ALTER TABLE gold_user ALTER COLUMN email SET TAGS ('pii_email');
+# DBTITLE 1,スキーマのコメント追加
+spark.sql(f"COMMENT ON SCHEMA {schema} IS 'オンラインスーパー「ブリックスマート」のデータを管理するスキーマです。ユーザー情報、商品情報、販売取引、フィードバックなど、ECサイト運営に必要な各種データテーブルを格納しています。'")
 
 # COMMAND ----------
 
-# DBTITLE 1,PK & FKの追加
-# MAGIC %sql
-# MAGIC ALTER TABLE users ALTER COLUMN user_id SET NOT NULL;
-# MAGIC ALTER TABLE transactions ALTER COLUMN transaction_id SET NOT NULL;
-# MAGIC ALTER TABLE products ALTER COLUMN product_id SET NOT NULL;
-# MAGIC ALTER TABLE feedbacks ALTER COLUMN feedback_id SET NOT NULL;
-# MAGIC ALTER TABLE gold_user ALTER COLUMN user_id SET NOT NULL;
-
-# MAGIC ALTER TABLE users ADD CONSTRAINT users_pk PRIMARY KEY (user_id);
-# MAGIC ALTER TABLE transactions ADD CONSTRAINT transactions_pk PRIMARY KEY (transaction_id);
-# MAGIC ALTER TABLE products ADD CONSTRAINT products_pk PRIMARY KEY (product_id);
-# MAGIC ALTER TABLE feedbacks ADD CONSTRAINT feedbacks_pk PRIMARY KEY (feedback_id);
-# MAGIC ALTER TABLE gold_user ADD CONSTRAINT gold_user_pk PRIMARY KEY (user_id);
-
-# MAGIC ALTER TABLE transactions ADD CONSTRAINT transactions_users_fk FOREIGN KEY (user_id) REFERENCES users (user_id) NOT ENFORCED;
-# MAGIC ALTER TABLE transactions ADD CONSTRAINT transactions_products_fk FOREIGN KEY (product_id) REFERENCES products (product_id) NOT ENFORCED;
-# MAGIC ALTER TABLE feedbacks ADD CONSTRAINT feedbacks_users_fk FOREIGN KEY (user_id) REFERENCES users (user_id) NOT ENFORCED;
-# MAGIC ALTER TABLE feedbacks ADD CONSTRAINT feedbacks_products_fk FOREIGN KEY (product_id) REFERENCES products (product_id) NOT ENFORCED;
+# MAGIC %md
+# MAGIC Note: ここまででワークショップ実施に必要な基本的なセットアップは完了。ここから先のセルは、PK & FK制約、タグ機能、ABAC機能などの応用的な機能のデモのための設定であり、ワークスペースの設定やDBRバージョンによってはエラーが発生する可能性がある。エラーが発生したセルはスキップして次のセルに進んで問題ない。
 
 # COMMAND ----------
 
-# DBTITLE 1,列レベルマスキングの追加
+# DBTITLE 1,PK & FK制約の追加
 try:
-    # マスキング関数の作成
-    spark.sql("""
-    CREATE FUNCTION IF NOT EXISTS mask_email(email STRING) 
-    RETURN CASE WHEN is_member('admins') THEN email ELSE '***@example.com' END
-    """)
-    
-    # usersテーブルにマスキングを適用
-    spark.sql("""
-    ALTER TABLE users ALTER COLUMN email SET MASK mask_email
-    """)
-    
-    # gold_userテーブルにマスキングを適用
-    spark.sql("""
-    ALTER TABLE gold_user ALTER COLUMN email SET MASK mask_email
-    """)
-    
-    print("列レベルマスキングの適用が完了しました。")
-    
+    # NOT NULL制約の追加
+    spark.sql("ALTER TABLE users ALTER COLUMN user_id SET NOT NULL")
+    spark.sql("ALTER TABLE transactions ALTER COLUMN transaction_id SET NOT NULL")
+    spark.sql("ALTER TABLE products ALTER COLUMN product_id SET NOT NULL")
+    spark.sql("ALTER TABLE feedbacks ALTER COLUMN feedback_id SET NOT NULL")
+    spark.sql("ALTER TABLE gold_user ALTER COLUMN user_id SET NOT NULL")
+
+    # Primary Key制約の追加
+    spark.sql("ALTER TABLE users ADD CONSTRAINT users_pk PRIMARY KEY (user_id)")
+    spark.sql("ALTER TABLE transactions ADD CONSTRAINT transactions_pk PRIMARY KEY (transaction_id)")
+    spark.sql("ALTER TABLE products ADD CONSTRAINT products_pk PRIMARY KEY (product_id)")
+    spark.sql("ALTER TABLE feedbacks ADD CONSTRAINT feedbacks_pk PRIMARY KEY (feedback_id)")
+    spark.sql("ALTER TABLE gold_user ADD CONSTRAINT gold_user_pk PRIMARY KEY (user_id)")
+
+    # Foreign Key制約の追加
+    spark.sql("ALTER TABLE transactions ADD CONSTRAINT transactions_users_fk FOREIGN KEY (user_id) REFERENCES users (user_id) NOT ENFORCED")
+    spark.sql("ALTER TABLE transactions ADD CONSTRAINT transactions_products_fk FOREIGN KEY (product_id) REFERENCES products (product_id) NOT ENFORCED")
+    spark.sql("ALTER TABLE feedbacks ADD CONSTRAINT feedbacks_users_fk FOREIGN KEY (user_id) REFERENCES users (user_id) NOT ENFORCED")
+    spark.sql("ALTER TABLE feedbacks ADD CONSTRAINT feedbacks_products_fk FOREIGN KEY (product_id) REFERENCES products (product_id) NOT ENFORCED")
+
+    print("PK & FK制約の追加が完了しました。")
+
 except Exception as e:
-    print(f"列レベルマスキングの適用中にエラーが発生しました: {str(e)}")
-    print("このエラーはDBR 15.4より前のバージョンで実行している場合に発生する可能性があります。")
+    print(f"PK & FK制約の追加中にエラーが発生しました: {str(e)}")
+    print("このエラーは制約が既に追加済みの場合やUnity Catalogの機能に対応していないワークスペースで実行した場合に発生する可能性があります。")
 
 # COMMAND ----------
 
 # DBTITLE 1,認定済みタグの追加
-certified_tag = 'system.Certified'
+certified_tag = "'system.certification_status' = 'certified'"
 
 try:
-    spark.sql(f"ALTER TABLE users SET TAGS ('{certified_tag}')")
-    spark.sql(f"ALTER TABLE transactions SET TAGS ('{certified_tag}')")
-    spark.sql(f"ALTER TABLE products SET TAGS ('{certified_tag}')")
-    spark.sql(f"ALTER TABLE feedbacks SET TAGS ('{certified_tag}')")
-    spark.sql(f"ALTER TABLE gold_user SET TAGS ('{certified_tag}')")
-    print(f"認定済みタグ '{certified_tag}' の追加が完了しました。")
+    spark.sql(f"ALTER SCHEMA {schema} SET TAGS ({certified_tag})")
+    spark.sql(f"ALTER TABLE users SET TAGS ({certified_tag})")
+    spark.sql(f"ALTER TABLE transactions SET TAGS ({certified_tag})")
+    spark.sql(f"ALTER TABLE products SET TAGS ({certified_tag})")
+    spark.sql(f"ALTER TABLE feedbacks SET TAGS ({certified_tag})")
+    spark.sql(f"ALTER TABLE gold_user SET TAGS ({certified_tag})")
+    print(f"認定済みタグ {certified_tag} の追加が完了しました。")
 
 except Exception as e:
-    print(f"認定済みタグ '{certified_tag}' の追加中にエラーが発生しました: {str(e)}")
-    print("このエラーはタグ機能に対応していないワークスペースで実行した場合に発生する可能性があります。")
+    print(f"認定済みタグ {certified_tag} の追加中にエラーが発生しました: {str(e)}")
+    print("このエラーは管理タグ (Governed Tags) 機能に対応していないワークスペースで実行した場合に発生する可能性があります。")
+
+# COMMAND ----------
+
+# DBTITLE 1,PIIタグの追加
+try:
+    spark.sql("ALTER TABLE users ALTER COLUMN name SET TAGS ('class.name')")
+    spark.sql("ALTER TABLE users ALTER COLUMN email SET TAGS ('class.email_address')")
+    spark.sql("ALTER TABLE gold_user ALTER COLUMN name SET TAGS ('class.name')")
+    spark.sql("ALTER TABLE gold_user ALTER COLUMN email SET TAGS ('class.email_address')")
+    print("PIIタグの追加が完了しました。")
+
+except Exception as e:
+    print(f"PIIタグの追加中にエラーが発生しました: {str(e)}")
+    print("このエラーは管理タグ (Governed Tags) 機能に対応していないワークスペースで実行した場合に発生する可能性があります。")
+
+# COMMAND ----------
+
+# DBTITLE 1,マスキングUDFの作成
+try:
+    # メールアドレス向けのマスキングUDF
+    spark.sql("""
+    CREATE OR REPLACE FUNCTION mask_user_email(email STRING)
+    COMMENT 'メールアドレスの先頭3文字だけ表示し、以降を`*`でマスクする関数'
+    RETURN CASE
+        WHEN email IS NULL THEN NULL
+        ELSE concat(
+            substr(split(email, '@')[0], 1, 3),
+            repeat('*', greatest(length(split(email, '@')[0]) - 3, 0)),
+            '@',
+            split(email, '@')[1]
+        )
+    END
+    """)
+
+    # 氏名向けのマスキングUDF
+    spark.sql("""
+    CREATE OR REPLACE FUNCTION mask_user_name(name STRING)
+    COMMENT '氏名の先頭3文字だけ表示し、以降を`*`でマスクする関数'
+    RETURN CASE
+        WHEN name IS NULL THEN NULL
+        ELSE concat(substr(name, 1, 3), repeat('*', greatest(length(name) - 3, 0)))
+    END
+    """)
+
+    print("マスキングUDFの作成が完了しました。")
+
+except Exception as e:
+    print(f"マスキングUDFの作成中にエラーが発生しました: {str(e)}")
+
+# COMMAND ----------
+
+# DBTITLE 1,ABACポリシーの作成
+try:
+    spark.sql(f"""
+    CREATE OR REPLACE POLICY mask_user_email_policy
+    ON SCHEMA {catalog}.{schema}
+    COMMENT 'メールアドレスのマスキング用ABACポリシー'
+    COLUMN MASK mask_user_email
+    TO `account users`
+    FOR TABLES
+    MATCH COLUMNS hasTag('class.email_address') AS email
+    ON COLUMN email
+    """)
+
+    spark.sql(f"""
+    CREATE OR REPLACE POLICY mask_user_name_policy
+    ON SCHEMA {catalog}.{schema}
+    COMMENT '氏名のマスキング用ABACポリシー'
+    COLUMN MASK mask_user_name
+    TO `account users`
+    FOR TABLES
+    MATCH COLUMNS hasTag('class.name') AS name
+    ON COLUMN name
+    """)
+
+    print("ABACポリシーの作成が完了しました。")
+
+except Exception as e:
+    print(f"ABACポリシーの作成中にエラーが発生しました: {str(e)}")
+    print("このエラーはABACポリシーに対応していないワークスペースで実行した場合に発生する可能性があります。")
 
 # COMMAND ----------
 
