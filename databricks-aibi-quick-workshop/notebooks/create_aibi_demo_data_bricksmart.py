@@ -54,7 +54,7 @@ def generate_username():
     # 5文字のランダムな小文字アルファベットを生成
     part1 = ''.join(random.choices(string.ascii_lowercase, k=5))
     part2 = ''.join(random.choices(string.ascii_lowercase, k=5))
-    
+
     # 形式 xxxxx.xxxxx で結合
     username = f"{part1}.{part2}"
     return username
@@ -64,7 +64,7 @@ def generate_productname():
     part1 = ''.join(random.choices(string.ascii_lowercase, k=3))
     part2 = ''.join(random.choices(string.ascii_lowercase, k=3))
     part3 = ''.join(random.choices(string.ascii_lowercase, k=3))
-    
+
     # 形式 xxx_xxx_xxx で結合
     productname = f"{part1}_{part2}_{part3}"
     return productname
@@ -76,13 +76,13 @@ generate_productname_udf = udf(generate_productname, StringType())
 def generate_users(num_users=10000):
     """
     ユーザーデータを生成し、指定された数のデータを返します。
-    
+
     パラメータ:
     num_users (int): 生成するユーザーの数 (デフォルトは10000)
-    
+
     戻り値:
     DataFrame: 生成されたユーザー情報を含むSpark DataFrame
-    
+
     各ユーザーには以下のカラムが含まれます:
     - user_id: ユーザーID (1からnum_usersまでの範囲)
     - name: ランダムなユーザー名
@@ -123,13 +123,13 @@ def generate_users(num_users=10000):
 def generate_products(num_products=100):
     """
     商品データを生成し、指定された数のデータを返します。
-    
+
     パラメータ:
     num_products (int): 生成する商品の数 (デフォルトは100)
-    
+
     戻り値:
     DataFrame: 生成された商品情報を含むSpark DataFrame
-    
+
     各商品には以下のカラムが含まれます:
     - product_id: 商品ID (1からnum_productsまでの範囲)
     - product_name: ランダムな商品名
@@ -283,7 +283,7 @@ def generate_transactions(users, products, num_transactions=1000000):
         .withColumn("random_date", expr("date_add(date('2024-01-01'), -CAST(rand() * 365 AS INTEGER))"))
         .withColumn("month", date_format("random_date", "M").cast("int"))
         .withColumn("is_weekend", dayofweek("random_date").isin([1, 7]))
-        .withColumn("transaction_date", 
+        .withColumn("transaction_date",
             when((rand() < 0.1) & ((expr("month") == 8) | (expr("month") == 12)), expr("random_date"))
             .when((rand() < 0.1) & expr("is_weekend"), expr("random_date"))
             .otherwise(expr("date_add(date('2024-01-01'), -CAST(rand() * 365 AS INTEGER))"))
@@ -305,15 +305,15 @@ def generate_transactions(users, products, num_transactions=1000000):
 def generate_feedbacks(users, products, num_feedbacks=50000):
     """
     フィードバックデータを生成し、指定された数のデータを返します。
-    
+
     パラメータ:
     users (DataFrame): ユーザーデータを含むSpark DataFrame
     products (DataFrame): 商品データを含むSpark DataFrame
     num_feedbacks (int): 生成するフィードバックの数 (デフォルトは50000)
-    
+
     戻り値:
     DataFrame: 生成されたフィードバック情報を含むSpark DataFrame
-    
+
     各フィードバックには以下のカラムが含まれます:
     - feedback_id: フィードバックID (1からnum_feedbacksまでの範囲)
     - user_id: ユーザーID (1から登録ユーザー数までの範囲)
@@ -322,7 +322,7 @@ def generate_feedbacks(users, products, num_feedbacks=50000):
     - date: フィードバック日付 (2021年1月1日から2022年1月1日までの範囲)
     - type: フィードバック種別 (商品45%、サービス45%、その他10%)
     - comment: コメント (Feedback_[feedback_id]の形式)
-    
+
     傾向スコア:
     ユーザーの属性や商品カテゴリに基づいて評価を調整します。
     最終的な評価は0以上5以下の範囲に収まるように調整されます。
@@ -344,7 +344,7 @@ def generate_feedbacks(users, products, num_feedbacks=50000):
         .drop("rand_type")
         .withColumn("comment", expr("concat('Feedback_', feedback_id)"))
     )
-    
+
     # 傾向スコアに基づいて評価を調整
     adjusted_feedbacks = feedbacks.join(users, "user_id").join(products.select("product_id", "category", "subcategory"), "product_id")
     for condition, adjustment in conditions:
@@ -435,9 +435,9 @@ spark.sql("DROP TABLE feedbacks_temp")
 # MAGIC CREATE OR REPLACE TABLE gold_user AS (
 # MAGIC   -- ユーザーごとの購買・評価データを集計
 # MAGIC   with user_metrics as (
-# MAGIC   SELECT 
+# MAGIC   SELECT
 # MAGIC     u.user_id,
-# MAGIC     CASE 
+# MAGIC     CASE
 # MAGIC       WHEN u.age < 35 THEN '若年層'
 # MAGIC       WHEN u.age < 55 THEN '中年層'
 # MAGIC       ELSE 'シニア層'
@@ -475,10 +475,10 @@ spark.sql("DROP TABLE feedbacks_temp")
 # DBTITLE 1,PIIタグの追加
 try:
     # PIIタグの追加
-    spark.sql("ALTER TABLE users ALTER COLUMN name SET TAGS ('pii_aibi_demo' = 'name')")
-    spark.sql("ALTER TABLE users ALTER COLUMN email SET TAGS ('pii_aibi_demo' = 'email')")
-    spark.sql("ALTER TABLE gold_user ALTER COLUMN name SET TAGS ('pii_aibi_demo' = 'name')")
-    spark.sql("ALTER TABLE gold_user ALTER COLUMN email SET TAGS ('pii_aibi_demo' = 'email')")
+    spark.sql("ALTER TABLE users ALTER COLUMN name SET TAGS ('class.name')")
+    spark.sql("ALTER TABLE users ALTER COLUMN email SET TAGS ('class.email_address')")
+    spark.sql("ALTER TABLE gold_user ALTER COLUMN name SET TAGS ('class.name')")
+    spark.sql("ALTER TABLE gold_user ALTER COLUMN email SET TAGS ('class.email_address')")
 
     print("PIIタグの追加が完了しました。")
 
@@ -562,7 +562,7 @@ try:
     COLUMN MASK mask_user_email
     TO `account users`
     FOR TABLES
-    MATCH COLUMNS hasTagValue('pii_aibi_demo','email') AS email
+    MATCH COLUMNS hasTag('class.email_address') AS email
     ON COLUMN email
     """)
 
@@ -573,7 +573,7 @@ try:
     COLUMN MASK mask_user_name
     TO `account users`
     FOR TABLES
-    MATCH COLUMNS hasTagValue('pii_aibi_demo','name') AS name
+    MATCH COLUMNS hasTag('class.name') AS name
     ON COLUMN name
     """)
 
@@ -586,18 +586,19 @@ except Exception as e:
 # COMMAND ----------
 
 # DBTITLE 1,認定済みタグの追加
-certified_tag = 'system.Certified'
+certified_tag = "'system.certification_status' = 'certified'"
 
 try:
-    spark.sql(f"ALTER TABLE users SET TAGS ('{certified_tag}')")
-    spark.sql(f"ALTER TABLE transactions SET TAGS ('{certified_tag}')")
-    spark.sql(f"ALTER TABLE products SET TAGS ('{certified_tag}')")
-    spark.sql(f"ALTER TABLE feedbacks SET TAGS ('{certified_tag}')")
-    spark.sql(f"ALTER TABLE gold_user SET TAGS ('{certified_tag}')")
-    print(f"認定済みタグ '{certified_tag}' の追加が完了しました。")
+    spark.sql(f"ALTER SCHEMA {schema} SET TAGS ({certified_tag})")
+    spark.sql(f"ALTER TABLE users SET TAGS ({certified_tag})")
+    spark.sql(f"ALTER TABLE transactions SET TAGS ({certified_tag})")
+    spark.sql(f"ALTER TABLE products SET TAGS ({certified_tag})")
+    spark.sql(f"ALTER TABLE feedbacks SET TAGS ({certified_tag})")
+    spark.sql(f"ALTER TABLE gold_user SET TAGS ({certified_tag})")
+    print(f"認定済みタグ {certified_tag} の追加が完了しました。")
 
 except Exception as e:
-    print(f"認定済みタグ '{certified_tag}' の追加中にエラーが発生しました: {str(e)}")
+    print(f"認定済みタグ {certified_tag} の追加中にエラーが発生しました: {str(e)}")
     print("このエラーはタグ機能に対応していないワークスペースで実行した場合に発生する可能性があります。")
 
 # COMMAND ----------
