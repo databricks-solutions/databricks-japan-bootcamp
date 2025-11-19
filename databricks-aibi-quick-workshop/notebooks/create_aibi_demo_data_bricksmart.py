@@ -560,7 +560,7 @@ try:
     ON SCHEMA {catalog}.{schema}
     COMMENT 'メールアドレスの先頭3文字より後ろをマスキング'
     COLUMN MASK mask_user_email
-    TO `users`
+    TO `account users`
     FOR TABLES
     MATCH COLUMNS hasTagValue('pii_aibi_demo','email') AS email
     ON COLUMN email
@@ -571,7 +571,7 @@ try:
     ON SCHEMA {catalog}.{schema}
     COMMENT '氏名の先頭3文字より後ろをマスキング'
     COLUMN MASK mask_user_name
-    TO `users`
+    TO `account users`
     FOR TABLES
     MATCH COLUMNS hasTagValue('pii_aibi_demo','name') AS name
     ON COLUMN name
