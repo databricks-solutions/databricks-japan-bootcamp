@@ -25,10 +25,13 @@
 
 
 4.**拠点がJapanであることを確認しつつ、続行をクリック**
+- お好みでアカウントの名前などを変更ください。（変更しなくても大丈夫です）
 <img src="images/setup/freeedition04.png" alt="databricks-academy-course" width="500"><br>
 
 
-5.**Databricksのトップページが表示されれば、完了です！　念の為、画面左上にあるDatabricksのロゴの下に「Free edition」と小さく表示があるのを確認ください**
+5.**Databricksのトップページが表示されれば、完了です！**
+- 念の為、画面左上にあるDatabricksのロゴの下に「Free edition」と小さく表示があるのを確認ください
+
 <img src="images/setup/freeedition05.png" alt="databricks-academy-course" width="500"><br>
 
 
