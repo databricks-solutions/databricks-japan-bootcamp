@@ -212,7 +212,7 @@ print("👀 ノートブックのワークフローの開始時刻のリンク�
 # MAGIC     - **タイプ**: `ノートブック`
 # MAGIC     - **ソース**: `ワークスペース`
 # MAGIC     - **パス**: ノートブックを選択をクリックし、以下のパスを選択
-# MAGIC         - `databricks-japan-bootcamp/bootcamp_20250904/notebooks/data_engineering_handson/01_bronze`
+# MAGIC         - `databricks-japan-bootcamp/bootcamp_2026MMYY/notebooks/data_engineering_handson/01_bronze`
 # MAGIC     - **クラスター**: `サーバーレス` (デフォルトから変更しない)
 # MAGIC     - **「パラメーター」**セクションで以下の項目を設定
 # MAGIC         - **キー**: `catalog_name`, **値**: `workspace`
@@ -228,7 +228,7 @@ print("👀 ノートブックのワークフローの開始時刻のリンク�
 # MAGIC     - **タイプ**: `ノートブック`
 # MAGIC     - **ソース**: `ワークスペース`
 # MAGIC     - **パス**: ノートブックを選択をクリックし、以下のパスを選択
-# MAGIC         - `databricks-japan-bootcamp/bootcamp_20250904/notebooks/data_engineering_handson/02_silver`
+# MAGIC         - `databricks-japan-bootcamp/bootcamp_2026MMYY/notebooks/data_engineering_handson/02_silver`
 # MAGIC     - **依存先**: `01_bronze` (デフォルトで選択されているはず)
 # MAGIC     - **依存関係がある場合に実行**: `すべて成功しました` (デフォルトで選択されているはず)
 # MAGIC     - **「パラメーター」**セクションで以下の項目を設定
