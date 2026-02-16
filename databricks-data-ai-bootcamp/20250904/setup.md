@@ -6,34 +6,16 @@
 ハンズオンではDatabricks Free Edition環境を使用します。  
 [Databricks Free Editionの登録画面](https://www.databricks.com/jp/learn/free-edition)をブラウザで開きます。
 
+下記のショート動画に従って、登録してください。
 
-1.**Free edition登録の画面にアクセス。**
+[![ショート動画](http://img.youtube.com/vi/64ixeVxV1ow/0.jpg)](https://www.youtube.com/shorts/64ixeVxV1ow)
 
-<img src="images/setup/freeedition01.png" alt="databricks-academy-course" width="500"><br>
+**注意点**
+- "Databricks 無料トライアル"と"無料版"(Free Edition)、は異なります。
+- Workspace左上のロゴに、Free Editionと表示されていれば、成功です。
 
-
-2.**ご自身のメールアドレスを登録して、メールアドレスで続行を押します。**
-- この画面のDatabricksのロゴの下に「Free edition」と小さく表示があるのを確認ください
-
-<img src="images/setup/freeedition02.png" alt="databricks-academy-course" width="500"><br>
-
-
-3.**さきほど登録したメールアドレスに届いた認証コードを入力する。**
-- 認証コードが来るまで1分ほどお待ちください
-
-<img src="images/setup/freeedition03.png" alt="databricks-academy-course" width="500"><br>
-
-
-4.**拠点がJapanであることを確認しつつ、続行をクリック**
-- お好みでアカウントの名前などを変更ください。（変更しなくても大丈夫です）
-<img src="images/setup/freeedition04.png" alt="databricks-academy-course" width="500"><br>
-
-
-5.**Databricksのトップページが表示されれば、完了です！**
-- 念の為、画面左上にあるDatabricksのロゴの下に「Free edition」と小さく表示があるのを確認ください
-
-<img src="images/setup/freeedition05.png" alt="databricks-academy-course" width="500"><br>
-
+<img src="images/setup/step1-free-edition-registration-screenshot.png" alt="databricks-academy-course" width="500">
+<img src="images/setup/step1-free-edition-workspace-screenshot.png" alt="databricks-academy-course" width="500">
 
 
 ## Step 2: workspace環境の日本語化
@@ -62,7 +44,7 @@ Free Edition環境のDatabricksワークスペースに本リポジトリをク�
     | Gitプロバイダー | `GitHub` |
     | Gitフォルダ名 | `databricks-japan-bootcamp` |
     | スパースチェックアウトモード | ✓（チェック） |
-    | コーンパターン | `bootcamp_20260114` |
+    | コーンパターン | `databricks-data-ai-bootcamp/20250904` |
 
 <img src="images/setup/step3-git-folder-creation-config.png" alt="databricks-academy-course" width="500">
 

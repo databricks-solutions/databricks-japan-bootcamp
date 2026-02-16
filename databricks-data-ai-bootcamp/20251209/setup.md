@@ -62,7 +62,7 @@ Free Edition環境のDatabricksワークスペースに本リポジトリをク�
     | Gitプロバイダー | `GitHub` |
     | Gitフォルダ名 | `databricks-japan-bootcamp` |
     | スパースチェックアウトモード | ✓（チェック） |
-    | コーンパターン | `bootcamp_20251209` |
+    | コーンパターン | `databricks-data-ai-bootcamp/20251209` |
 
 <img src="images/setup/step3-git-folder-creation-config.png" alt="databricks-academy-course" width="500">
 
