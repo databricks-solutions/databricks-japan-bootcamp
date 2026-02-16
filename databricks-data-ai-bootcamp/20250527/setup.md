@@ -85,7 +85,7 @@
     | Gitプロバイダー | `GitHub` |
     | Gitフォルダ名 | `komae_dbdemos` |
     | スパースチェックアウトモード | ✓（チェック） |
-    | コーンパターン | `bootcamp_20250527` |
+    | コーンパターン | `databricks-data-ai-bootcamp/20250527` |
 
     ![git-folder-2](images/setup/step4-git-folder-2.png)
 
@@ -99,7 +99,7 @@
 Step 4でクローンしたGitリポジトリ内のノートブックを使用して、ハンズオンで使用するサンプルテーブルを作成します。
 
 1. **サンプルテーブル作成用ノートブックを開く**
-    - `bootcamp_20250527` フォルダを開く
+    - `databricks-data-ai-bootcamp/20250527` フォルダを開く
     - `notebooks` フォルダを開く
     - `01_create_aibi_demo_data_bricksmart` ノートブックを開く
 

@@ -15,4 +15,4 @@ Databricksワークスペースで以下のノートブックを開きます。
 - Databricksワークスペースで以下のノートブックを開きます。
     - [notebooks/aibi/01_create_aibi_demo_data_bricksmart.ipynb](notebooks/aibi/01_create_aibi_demo_data_bricksmart.ipynb)
 - csvファイルをダウンロード
-    - https://github.com/databricks-solutions/databricks-japan-bootcamp/blob/main/bootcamp_20260114/notebooks/aibi/00_call.csv
+    - https://github.com/databricks-solutions/databricks-japan-bootcamp/blob/main/databricks-data-ai-bootcamp/20260114/notebooks/aibi/00_call.csv

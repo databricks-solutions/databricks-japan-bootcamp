@@ -8,7 +8,7 @@
 
 下記のショート動画に従って、登録してください。
 
-[![ショート動画](http://img.youtube.com/vi/64ixeVxV1ow/0.jpg)](https://www.youtube.com/shorts/64ixeVxV1ow)
+[![ショート動画](http://img.youtube.com/vi/0b7dHHFMpYM/0.jpg)](https://www.youtube.com/shorts/0b7dHHFMpYM)
 
 **注意点**
 - "Databricks 無料トライアル"と"無料版"(Free Edition)、は異なります。
@@ -44,7 +44,7 @@ Free Edition環境のDatabricksワークスペースに本リポジトリをク�
     | Gitプロバイダー | `GitHub` |
     | Gitフォルダ名 | `databricks-japan-bootcamp` |
     | スパースチェックアウトモード | ✓（チェック） |
-    | コーンパターン | `bootcamp_20250904` |
+    | コーンパターン | `databricks-data-ai-bootcamp/20251022` |
 
 <img src="images/setup/step3-git-folder-creation-config.png" alt="databricks-academy-course" width="500">
 
