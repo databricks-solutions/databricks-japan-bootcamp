@@ -1,8 +1,8 @@
-# 00. 前提セットアップ
+# 前提セットアップ
 
-本ハンズオンに入る前に、ローカル環境と Databricks ワークスペースの準備を済ませる。所要時間は 10〜15 分。
+各シナリオを動かす前に、ローカル環境と Databricks ワークスペースの準備を済ませる。所要時間は 10〜15 分。
 
-## 参加者ワークスペース要件
+## Databricks ワークスペース要件
 
 - Unity Catalog 有効化
 - Serverless SQL Warehouse が使える
@@ -25,7 +25,7 @@ brew upgrade databricks
 databricks --version
 ```
 
-Windows は公式 Docs 参照: https://docs.databricks.com/aws/en/dev-tools/cli/install
+Windows は公式ドキュメント参照: https://docs.databricks.com/aws/en/dev-tools/cli/install
 
 ### 1.2 Databricks プロファイル設定
 
@@ -33,7 +33,7 @@ Windows は公式 Docs 参照: https://docs.databricks.com/aws/en/dev-tools/cli/
 databricks auth login --host https://<your-workspace>.cloud.databricks.com --profile DEFAULT
 ```
 
-ブラウザが開くので OAuth でログイン。プロファイル名は何でも良いが、以降のコマンドで `--profile` 省略した場合 `DEFAULT` が使われる。
+ブラウザが開くので OAuth でログイン。プロファイル名は任意。以降のコマンドで `--profile` を省略した場合 `DEFAULT` が使われる。
 
 ```bash
 # 疎通確認
@@ -51,29 +51,32 @@ databricks labs lakebridge --version
 
 ## 3. Transpiler プラグインのインストール
 
-Synapse シナリオで BladeBridge と Morpheus の両方を使うため、両方インストールする。
+Synapse シナリオで BladeBridge / Morpheus / Switch の 3 種すべてを使うため、まとめてインストールする。
 
 ```bash
 databricks labs lakebridge install-transpile --profile DEFAULT
 ```
 
 途中で選択肢が出る:
-- **Select the source technology**: `tsql` などは後で `transpile` 時に選ぶので、ここではどちらか選択 (何でも OK)
-- **Select the transpiler**: `All` を選んで BladeBridge / Morpheus をまとめて入れる
 
-インストール完了後、次のコマンドで 2 つとも揃っていることを確認する。
+- **Select the source technology**: `tsql` などは後で `transpile` 時に指定するので、ここはどれを選んでも OK
+- **Select the transpiler**: **`All`** を選んで BladeBridge / Morpheus / Switch をまとめて入れる
+
+インストール完了後、揃っていることを確認する。
 
 ```bash
 databricks labs lakebridge describe-transpile
 ```
 
 出力に以下が含まれていれば OK:
+
 - `name: Bladebridge` (対応 dialect に `synapse`, `datastage` などが並ぶ)
 - `name: Morpheus` (対応 dialect に `mssql`, `snowflake`, `synapse`)
+- `name: Switch` (LLM ベース、任意 dialect に対応)
 
-## 4. Reconciler 設定
+## 4. Reconcile 設定
 
-Lab 2 で使う。
+[reconcile/](reconcile/) シナリオで使う。
 
 ```bash
 databricks labs lakebridge configure-reconcile
@@ -83,7 +86,7 @@ databricks labs lakebridge configure-reconcile
 - **Report Type**: `all`
 - その他はデフォルトで進める
 
-初回実行時に Lakebridge 用の catalog/schema (`remorph` 既定) とメタデータテーブルが自動作成される。
+初回実行時に Lakebridge 用の catalog/schema (`remorph_reconcile` 既定) とメタデータテーブルが自動作成される。
 
 ## 5. リポジトリを clone
 
@@ -92,4 +95,4 @@ git clone https://github.com/databricks-solutions/databricks-japan-bootcamp.git
 cd databricks-japan-bootcamp/lakebridge-workshop
 ```
 
-準備完了。ここから各シナリオの手順書に進む。
+準備完了。[README](README.md) に戻って好きなシナリオから進める。
