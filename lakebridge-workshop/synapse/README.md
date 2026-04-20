@@ -174,54 +174,65 @@ diff ./out/bladebridge/stored_procs/mssql_example2_stored_procedure.sql \
 
 ## 4. Transpile: Switch
 
-Switch は LLM ベース (Foundation Model API / Claude Sonnet) のトランスパイラで、**Lakebridge の pluggable transpiler の 1 つ**として提供される。ルールベースで詰まる複雑ストアドに強く、任意の source dialect に対応できる柔軟性が売り。Databricks Job として動作するため、ローカル CLI ではなくワークスペース上で実行する。
+Switch は LLM ベース (Foundation Model API / Claude Sonnet) のトランスパイラで、**Lakebridge の pluggable transpiler の 1 つ**として提供される。ルールベースで詰まる複雑ストアドに強く、任意の source dialect に対応できる柔軟性が売り。通常の `transpile` ではなく、専用の **`llm-transpile` コマンド** で実行する (Switch は Databricks Job としてワークスペース上で走る)。
 
 ### 1. Switch がインストールされているか確認
 
-トップ README の [前提セットアップ](../README.md#前提セットアップ) の手順で `install-transpile` の **`All`** を選んでいれば Switch も入っている。
+トップ README の [前提セットアップ](../README.md#前提セットアップ) で `install-transpile` を **`--include-llm-transpiler true`** 付きで実行していれば Switch も入っている。
 
 ```bash
 databricks labs lakebridge describe-transpile
 ```
 
-出力に `name: Switch` が含まれることを確認。無ければ `install-transpile --profile DEFAULT` を再実行して `All` を選ぶ。
+出力に `name: Switch` が含まれることを確認。無ければ前提セットアップに戻って `install-transpile --include-llm-transpiler true` で再実行。
 
-### 2. インプットをワークスペースの Volume にアップロード
-
-Unity Catalog Volume を SQL Editor で作成 (未作成の場合):
-
-```sql
-CREATE VOLUME IF NOT EXISTS main.default.lakebridge_input;
-```
-
-手元の `input` をアップロード:
+### 2. `llm-transpile` で変換実行
 
 ```bash
-databricks fs cp --recursive ./input \
-  dbfs:/Volumes/main/default/lakebridge_input/synapse
+databricks labs lakebridge llm-transpile \
+  --input-source ./input \
+  --output-ws-folder /Workspace/Users/<your-email>/lakebridge-demo/switch-output \
+  --source-dialect synapse \
+  --accept-terms true \
+  --profile DEFAULT
 ```
 
-> Volume 名 / catalog / schema は自分の環境に合わせる。
+パラメータの意味:
 
-### 3. Switch Job を起動
-
-Databricks Workspace UI を開き、**Workflows → Jobs** で `Switch_...` を探す。`Run now with different parameters` から以下を指定:
-
-| パラメータ | 値の例 |
+| パラメータ | 意味 |
 |---|---|
-| `input_dir` | `/Volumes/main/default/lakebridge_input/synapse` |
-| `output_dir` | `/Volumes/main/default/lakebridge_output/synapse` |
-| `source_tech` | `tsql` (または `synapse`) |
-| `foundation_model` | `databricks-claude-sonnet-4` (ワークスペース既定のもの) |
-| `concurrency` | `4` 程度 |
+| `--input-source` | 手元の入力ディレクトリ (自動で Unity Catalog Volume にアップロードされる) |
+| `--output-ws-folder` | Databricks Workspace 上の出力パス (`/Workspace/` 始まり) |
+| `--source-dialect` | `synapse` (Switch が対応する dialect 一覧は公式 Docs 参照) |
+| `--accept-terms` | LLM ベース変換の利用規約に同意 (`true` を指定) |
 
-実行し、完了まで 3〜5 分待つ (ファイル数 × LLM 呼び出しのため、DDL + ストアド 7 本で数分)。
+初回実行時、以下を対話的に聞かれる (既定値あり):
+
+- **catalog**: 既定 `lakebridge`
+- **schema**: 既定 `switch`
+- **volume**: 既定 `switch_volume`
+- **foundation_model**: 利用可能な Foundation Model エンドポイントから選択 (例: `databricks-claude-sonnet-4-5`)
+
+既定のまま進めるか、自分の環境のリソース名を指定する。指定したリソースが存在しない場合、Switch は作成権限があれば自動作成する。
+
+実行すると Switch Job が起動し、Job URL が返る (非同期):
+
+```
+INFO [d.l.l.transpiler.switch_runner] Uploading ./input to switch_volume
+INFO [d.l.l.transpiler.switch_runner] Upload complete: switch_volume/input-xyz
+INFO [d.l.l.transpiler.switch_runner] Triggering Switch job with job_id: <switch_job_id>
+INFO [d.l.l.transpiler.switch_runner] Switch LLM transpilation job started: https://workspace.databricks.com/jobs/switch_job_id/runs/run_id
+```
+
+### 3. Job の進捗を Workspace UI で追う
+
+返された Job URL を開いて Switch Job の run を監視。ファイル数 × LLM 呼び出しのため、DDL + ストアド 7 本で 3〜5 分程度かかる。
 
 ### 4. 生成物を確認
 
-Workspace UI の `output_dir` 配下に変換後 SQL + コメントが生成されている。
+`--output-ws-folder` 配下に変換後の Python Notebook が出力されている。Workspace UI で開いて確認:
 
-- 特に `mssql_example2_stored_procedure.sql`: 動的 SQL / TRY-CATCH / sp_executesql が**意味的に等価な Databricks SQL + Python** で再構築されているかを観察
+- 特に `mssql_example2_stored_procedure.sql` の変換結果: 動的 SQL / TRY-CATCH / sp_executesql が**意味的に等価な Spark SQL + Python** で再構築されているかを観察
 - 行単位コメントで「元の何行目の何を変換したか」が入っているのが Switch の特徴
 
 ### 学習ポイント
@@ -231,7 +242,7 @@ Workspace UI の `output_dir` 配下に変換後 SQL + コメントが生成さ�
 - **使い分けの勘所**:
   - Analyzer レポートの `llm_support_needed = true` のファイル
   - DDL や定型 SQL はルールベース、複雑ストアドだけ Switch に回す
-- Switch Job のパラメータで `custom_instructions` を渡すとスタイル統一もできる (応用)
+- **カスタマイズ**: `concurrency` / `token_count_threshold` / カスタムプロンプトなどは Workspace 上の `switch_config.yml` で調整可能。詳細は [Switch 公式 Docs](https://databrickslabs.github.io/lakebridge/docs/transpile/pluggable_transpilers/switch/)
 
 ---
 
