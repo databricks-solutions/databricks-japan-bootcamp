@@ -10,8 +10,8 @@ Lakebridge の主要機能 (Analyzer / Transpile / Reconcile) を手を動かし
 
 | ディレクトリ | 内容 |
 |---|---|
-| [synapse/](synapse/) | Azure Synapse Analytics (Dedicated SQL Pool) の T-SQL コードを Analyzer + 3 種 Transpiler (BladeBridge / Morpheus / Switch) で変換、特性を比較 |
-| [reconcile/](reconcile/) | 移行前後のテーブル差分検証 (ソース非依存の独立 Lab) |
+| [synapse/](synapse/) | Azure Synapse Analytics (Dedicated SQL Pool) の T-SQL コードを Analyzer + 3 種 Transpiler (BladeBridge / Morpheus / Switch) で変換、特徴を比較 |
+| [reconcile/](reconcile/) | 移行前後のテーブル差分検証 (Databricks 内のテーブル同士、ソースシステム不要) |
 | [datastage/](datastage/) | IBM DataStage ジョブの XML エクスポートを Analyzer + BladeBridge で PySpark Notebook に変換 |
 
 推奨順序は上表の通り (Synapse → Reconcile → DataStage)。ただし各シナリオは独立しているので、興味のあるものから試しても OK。
@@ -131,6 +131,14 @@ cd databricks-japan-bootcamp/lakebridge-workshop
 
 ## トラブルシュート
 
+### `databricks labs lakebridge describe-transpile` に Morpheus / Switch が出ない
+
+`install-transpile` 実行時に `All` を選んでいない、もしくは `--include-llm-transpiler true` を付けていない可能性。再度:
+
+```bash
+databricks labs lakebridge install-transpile --include-llm-transpiler true --profile DEFAULT
+```
+
 ### `transpile` コマンドが `EOFError` で落ちる
 
 非インタラクティブ環境 (CI など) で `Select the transpiler:` プロンプトが待てずに落ちる。明示的に config-path を指定する。
@@ -141,14 +149,6 @@ cd databricks-japan-bootcamp/lakebridge-workshop
 
 # Morpheus
 --transpiler-config-path ~/.databricks/labs/remorph-transpilers/databricks-morph-plugin/lib/config.yml
-```
-
-### `databricks labs lakebridge describe-transpile` に Morpheus / Switch が出ない
-
-`install-transpile` 実行時に `All` を選んでいない、もしくは `--include-llm-transpiler true` を付けていない可能性。再度:
-
-```bash
-databricks labs lakebridge install-transpile --include-llm-transpiler true --profile DEFAULT
 ```
 
 ### Switch の `llm-transpile` が Foundation Model で失敗する
