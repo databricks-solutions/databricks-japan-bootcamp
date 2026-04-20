@@ -1,6 +1,6 @@
 # DataStage → Databricks ハンズオン (オプション)
 
-IBM InfoSphere DataStage ジョブ (XML エクスポート) を Databricks PySpark Notebook に変換する。**BladeBridge は Lakebridge で DataStage に対応する唯一の transpiler** なので、Synapse シナリオのような 3 種比較はせず、Analyzer → BladeBridge の 2 ステップで押さえる。
+IBM DataStage ジョブの XML エクスポートを Databricks PySpark Notebook に変換する。**BladeBridge は Lakebridge で DataStage に対応する唯一の transpiler** なので、Synapse シナリオのような 3 種比較はせず、Analyzer → BladeBridge の 2 ステップで押さえる。
 
 所要目安: 約 20 分
 
