@@ -66,6 +66,33 @@ databricks current-user me --profile <your-profile>
 
 自分のユーザー情報が JSON で返れば OK。
 
+#### `cluster_id` / `warehouse_id` の追記
+
+Lakebridge はプロファイルに `cluster_id` と `warehouse_id` が設定されていることを期待する:
+
+- `cluster_id`: Lakebridge の CLI コマンド実行で利用 (Lakebridge 公式 Docs 上の要件)
+- `warehouse_id`: `transpile` の出力検証や `reconcile` のジョブ実行で利用
+
+ID を取得する (Databricks コンソール UI から見るか、CLI で一覧):
+
+```bash
+# Cluster ID (All-purpose クラスタを想定)
+databricks clusters list --profile <your-profile>
+
+# Warehouse ID (Serverless SQL Warehouse を推奨)
+databricks warehouses list --profile <your-profile>
+```
+
+`~/.databrickscfg` を開き、`[<your-profile>]` セクションに 2 行追記する (auth 関連の行は `databricks auth login` が既に書いているので維持):
+
+```ini
+[<your-profile>]
+host         = https://<your-workspace-host>
+...
+cluster_id   = 0123-456789-abcdef01
+warehouse_id = abc123def456ghi7
+```
+
 ### 3. Lakebridge インストール
 
 ```bash
