@@ -178,7 +178,7 @@ Switch は LLM ベース (Foundation Model API / Claude Sonnet) のトランス�
 
 ### 1. Switch がインストールされているか確認
 
-[prerequisites.md](../prerequisites.md) の手順で `install-transpile` の **`All`** を選んでいれば Switch も入っている。
+トップ README の [前提セットアップ](../README.md#前提セットアップ) の手順で `install-transpile` の **`All`** を選んでいれば Switch も入っている。
 
 ```bash
 databricks labs lakebridge describe-transpile

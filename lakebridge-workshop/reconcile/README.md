@@ -16,7 +16,7 @@ Reconcile は**移行前後のデータが一致しているか**を機械的に
 
 ### 2. 設定確認
 
-[prerequisites.md](../prerequisites.md) で `databricks labs lakebridge configure-reconcile` 済みのはず。未実施なら:
+トップ README の [前提セットアップ](../README.md#前提セットアップ) で `databricks labs lakebridge configure-reconcile` 済みのはず。未実施なら:
 
 ```bash
 databricks labs lakebridge configure-reconcile
