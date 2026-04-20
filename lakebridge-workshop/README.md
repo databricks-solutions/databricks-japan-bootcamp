@@ -10,11 +10,11 @@ Lakebridge の主要機能 (Analyzer / Transpile / Reconcile) を手を動かし
 
 | ディレクトリ | 内容 |
 |---|---|
-| [synapse/](synapse/) | Azure Synapse Analytics (Dedicated SQL Pool) の T-SQL コードを Analyzer + 3 種 Transpiler (BladeBridge / Morpheus / Switch) で変換、特徴を比較 |
-| [reconcile/](reconcile/) | 移行前後のテーブル差分検証 (Databricks 内のテーブル同士、ソースシステム不要) |
 | [datastage/](datastage/) | IBM DataStage ジョブの XML エクスポートを Analyzer + BladeBridge で PySpark Notebook に変換 |
+| [reconcile/](reconcile/) | 移行前後のテーブル差分検証 (Databricks 内のテーブル同士、ソースシステム不要) |
+| [synapse/](synapse/) | Azure Synapse Analytics (Dedicated SQL Pool) の T-SQL コードを Analyzer + 3 種 Transpiler (BladeBridge / Morpheus / Switch) で変換、特徴を比較 |
 
-推奨順序は上表の通り (Synapse → Reconcile → DataStage)。ただし各シナリオは独立しているので、興味のあるものから試しても OK。
+推奨順序: **Synapse → Reconcile → DataStage**。ただし各シナリオは独立しているので、興味のあるものから試しても OK。
 
 ## 前提セットアップ
 
@@ -22,57 +22,54 @@ Lakebridge の主要機能 (Analyzer / Transpile / Reconcile) を手を動かし
 
 ### Databricks ワークスペース要件
 
-- Unity Catalog 有効化
-- Serverless SQL Warehouse が使える
-- Foundation Model API (Claude Sonnet 系) の `Can Query` 権限 (Switch で利用)
-- Unity Catalog の catalog / schema / volume (Switch で利用)
-  - **既存リソースを使う場合**: `USE CATALOG` / `USE SCHEMA` / `CREATE TABLE` / `READ VOLUME` / `WRITE VOLUME`
-  - **新規作成する場合**: catalog / schema / volume の作成権限
+- **Unity Catalog** 有効化 (全シナリオ)
+- **Serverless SQL Warehouse** が使える (Reconcile で利用)
+- **Foundation Model API** (Claude Sonnet 系) の `Can Query` 権限 (Switch で利用)
+- **Unity Catalog の catalog / schema / volume** (Switch で利用)
+  - 既存リソースを使う場合: `USE CATALOG` / `USE SCHEMA` / `CREATE TABLE` / `READ VOLUME` / `WRITE VOLUME`
+  - 新規作成する場合: catalog / schema / volume の作成権限
   - 既定値: catalog = `lakebridge`, schema = `switch`, volume = `switch_volume`
 
 ### 1. ローカル CLI インストール
 
-#### 1.1 Databricks CLI (v0.250+)
+Databricks CLI をインストールする。OS 別の手順は [公式ドキュメント (日本語)](https://docs.databricks.com/aws/ja/dev-tools/cli/install) を参照。
 
-```bash
-# macOS / Linux
-brew tap databricks/tap
-brew install databricks
-
-# 既にインストール済ならアップデート
-brew upgrade databricks
-```
-
-Windows は公式ドキュメント参照: https://docs.databricks.com/aws/en/dev-tools/cli/install
-
-バージョン確認:
+インストール完了後、バージョン確認:
 
 ```bash
 databricks --version
 ```
 
-`0.250.0` 以上の数字が返れば OK。
+`v0.250.0` 以上の数字が返れば OK。
 
-#### 1.2 Databricks プロファイル設定
+### 2. Databricks プロファイル設定
+
+ワークスペースのホスト URL は Cloud によって形式が違う:
+
+- AWS: `https://<workspace-id>.cloud.databricks.com`
+- Azure: `https://adb-<workspace-id>.<suffix>.azuredatabricks.net`
+- GCP: `https://<workspace-id>.gcp.databricks.com`
+
+実際の値は Databricks コンソールで確認。以下、自分のプロファイル名を `<your-profile>` と置く (任意の名前)。
 
 ```bash
-databricks auth login --host https://<your-workspace>.cloud.databricks.com --profile DEFAULT
+databricks auth login --host <your-workspace-host> --profile <your-profile>
 ```
 
-ブラウザが開くので OAuth でログイン。プロファイル名は任意。以降のコマンドで `--profile` を省略した場合 `DEFAULT` が使われる。
+ブラウザが開くので OAuth でログイン。以降のコマンドはこの `<your-profile>` を指定して実行する。
 
 疎通確認:
 
 ```bash
-databricks current-user me --profile DEFAULT
+databricks current-user me --profile <your-profile>
 ```
 
 自分のユーザー情報が JSON で返れば OK。
 
-### 2. Lakebridge インストール
+### 3. Lakebridge インストール
 
 ```bash
-databricks labs install lakebridge
+databricks labs install lakebridge --profile <your-profile>
 ```
 
 完了後、バージョン確認:
@@ -83,18 +80,15 @@ databricks labs lakebridge --version
 
 バージョン文字列 (例: `0.10.x`) が返れば OK。
 
-### 3. Transpiler プラグインのインストール
+### 4. Transpiler プラグインのインストール
 
 Lakebridge の Transpiler 3 種 (BladeBridge / Morpheus / Switch) をまとめてインストールする。Switch は LLM ベースの pluggable transpiler で、**`--include-llm-transpiler true` フラグを付けないとインストールされない**。
 
 ```bash
-databricks labs lakebridge install-transpile --include-llm-transpiler true --profile DEFAULT
+databricks labs lakebridge install-transpile --include-llm-transpiler true --profile <your-profile>
 ```
 
-途中で選択肢が出る:
-
-- **Select the source technology**: `tsql` などは後で `transpile` 時に指定するので、ここはどれを選んでも OK
-- **Select the transpiler**: **`All`** を選んで BladeBridge / Morpheus をまとめて入れる (Switch は `--include-llm-transpiler true` 側で入る)
+インタラクティブにいくつか設定を聞かれる (既定の source technology など)。ここで答えた値は以降の `transpile` コマンドの既定値になる。迷ったら既定のまま進めても、後で CLI オプションで上書きできる。
 
 インストール完了後、揃っていることを確認する。
 
@@ -108,10 +102,10 @@ databricks labs lakebridge describe-transpile
 - `name: Morpheus` (対応 dialect に `mssql`, `snowflake`, `synapse`)
 - `name: Switch` (LLM ベース、任意 dialect に対応)
 
-### 4. Reconcile 設定
+### 5. Reconcile 設定
 
 ```bash
-databricks labs lakebridge configure-reconcile
+databricks labs lakebridge configure-reconcile --profile <your-profile>
 ```
 
 - **Data Source**: `Databricks`
@@ -120,7 +114,7 @@ databricks labs lakebridge configure-reconcile
 
 初回実行時に Lakebridge 用の catalog/schema (`remorph_reconcile` 既定) とメタデータテーブルが自動作成される。
 
-### 5. リポジトリを clone
+### 6. リポジトリを clone
 
 ```bash
 git clone https://github.com/databricks-solutions/databricks-japan-bootcamp.git
@@ -131,12 +125,12 @@ cd databricks-japan-bootcamp/lakebridge-workshop
 
 ## トラブルシュート
 
-### `databricks labs lakebridge describe-transpile` に Morpheus / Switch が出ない
+### `databricks labs lakebridge describe-transpile` に Switch が出ない
 
-`install-transpile` 実行時に `All` を選んでいない、もしくは `--include-llm-transpiler true` を付けていない可能性。再度:
+`install-transpile` 実行時に `--include-llm-transpiler true` を付けていないと Switch は入らない。以下を実行して再インストール:
 
 ```bash
-databricks labs lakebridge install-transpile --include-llm-transpiler true --profile DEFAULT
+databricks labs lakebridge install-transpile --include-llm-transpiler true --profile <your-profile>
 ```
 
 ### `transpile` コマンドが `EOFError` で落ちる
@@ -157,7 +151,11 @@ databricks labs lakebridge install-transpile --include-llm-transpiler true --pro
 
 ### Reconcile のレポートテーブルが見つからない
 
-`configure-reconcile` で指定した metadata catalog/schema を `databricks labs lakebridge configure-reconcile --profile DEFAULT` で再確認。既定は `remorph_reconcile`。
+`configure-reconcile` で指定した metadata catalog/schema を以下で再確認。既定は `remorph_reconcile`。
+
+```bash
+databricks labs lakebridge configure-reconcile --profile <your-profile>
+```
 
 ## 参考
 
