@@ -1,6 +1,6 @@
 # Reconcile (データ差分検証) ハンズオン
 
-Reconcile は**移行前後のデータが一致しているか**を機械的に検証する Lakebridge のツール。行数、スキーマ、値の 3 観点で差分レポートを Databricks テーブルに吐き出す。
+Reconcile は**移行前後のデータが一致しているか**を機械的に検証する Lakebridge のツール。行数、スキーマ、値の 3 観点で差分レポートを Databricks テーブルに出力する。
 
 本 Lab では、外部のソースシステムを用意せず、Databricks 内に source / target の 2 テーブルを作って**差分検出の挙動だけ**を押さえる。
 

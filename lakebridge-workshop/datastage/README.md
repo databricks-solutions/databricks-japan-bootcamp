@@ -12,14 +12,15 @@ IBM DataStage ジョブの XML エクスポートを、Databricks の PySpark No
 
 ---
 
-## 1. Analyzer
+## Analyzer
 
 ### 実行
 
-まず作業ディレクトリに移動する:
+まず作業ディレクトリに移動し、出力先ディレクトリを用意する:
 
 ```bash
 cd lakebridge-workshop/datastage/
+mkdir -p out
 ```
 
 次に `analyze` のオプションを確認する:
@@ -58,13 +59,14 @@ databricks labs lakebridge analyze \
 
 ---
 
-## 2. Transpile: BladeBridge (PySpark Notebook)
+## Transpile: BladeBridge (PySpark Notebook)
 
 DataStage に対応する transpiler は BladeBridge のみなので、**`Select the transpiler:` プロンプトは出ない** (自動で BladeBridge が選ばれる)。
 
 ### 実行
 
 ```bash
+mkdir -p out/bladebridge
 databricks labs lakebridge transpile \
   --source-dialect datastage \
   --input-source ./input/xml \
@@ -75,7 +77,7 @@ databricks labs lakebridge transpile \
 
 `--target-technology` に `PYSPARK` を指定することで、**Databricks Notebook 形式の `.py` ファイル** (`# Databricks notebook source` ヘッダ付き) が出力される。
 
-### 生成物の確認
+### 出力の確認
 
 ```
 out/bladebridge/
