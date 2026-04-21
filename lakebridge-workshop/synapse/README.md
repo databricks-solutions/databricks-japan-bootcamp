@@ -239,6 +239,15 @@ Switch は **LLM ベース**のトランスパイラで、**Lakebridge の plugg
 
 利用モデルは Databricks の **基盤モデル API** の任意モデル、および Model Serving 上の外部モデルも選択可能。出力形式も設定で `.sql` / `.py` などに切り替えられる。
 
+### 事前準備: 出力サブディレクトリを作成
+
+本ワークショップのように入力が `ddl/` / `stored_procs/` のようにサブディレクトリを含む場合、Switch は出力側のサブディレクトリを作れず、ファイル単位の export が `The parent folder ... does not exist` で失敗することがある (Switch の既知の問題、[Issue #82](https://github.com/databrickslabs/switch/issues/82))。事前に出力先のサブディレクトリを作っておくことで回避できる:
+
+```bash
+databricks workspace mkdirs /Workspace/Users/<your-email>/lakebridge-demo/switch-output/ddl --profile <your-profile>
+databricks workspace mkdirs /Workspace/Users/<your-email>/lakebridge-demo/switch-output/stored_procs --profile <your-profile>
+```
+
 ### 実行: `llm-transpile`
 
 ```bash
