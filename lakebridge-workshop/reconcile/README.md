@@ -4,67 +4,123 @@ Reconcile は**移行前後のデータが一致しているか**を機械的に
 
 本 Lab ではソース技術に依存せず、Databricks 内に source / target の 2 テーブルを用意して**差分検出の動きだけ**を押さえる (独立 Lab)。
 
-所要目安: 約 15 分
+所要目安: 約 20 分 (Job cluster 起動 3〜5 分 + 実行 + 確認)
+
+> Reconcile Job は現在 serverless 非対応で、**classic new_cluster (2-10 worker)** を毎回起動する。**初回は 3〜5 分**の cluster 起動待ちが発生する点に注意。
 
 ## 手順
 
 ### 1. セットアップ SQL を実行
 
-`setup.sql` を Databricks ワークスペースで開き、SQL Editor で実行。`main.recon_src.orders` と `main.recon_tgt.orders` が作られ、5 行分の差分が意図的に入る。
+`setup.sql` を開き、冒頭の注意書きに従って `<catalog>` / `<schema>` 相当箇所を自分の環境に書き換えてから SQL Editor で実行する。
 
-`<catalog>` / `<schema>` を自分の環境に合わせて置換してから実行すること。
+source/target は**前提セットアップ** ([トップ README 参照](../README.md#5-reconcile-設定)) の `configure-reconcile` 時に指定した catalog/schema と一致させる。例えば:
 
-### 2. 設定確認
+- source: `<your_catalog>.reconcile_source.orders` (10 行)
+- target: `<your_catalog>.reconcile_target.orders` (9 行、意図的に 5 行分の差分)
 
-トップ README の [前提セットアップ](../README.md#前提セットアップ) で `databricks labs lakebridge configure-reconcile` 済みのはず。未実施なら:
+### 2. Reconcile 設定の確認
 
-```bash
-databricks labs lakebridge configure-reconcile
-```
-
-- Data Source: `Databricks`
-- Report Type: `all`
-
-### 3. Reconcile 実行
-
-`config/recon_config.yaml` をあらかじめ自分の環境に合わせて編集 (catalog/schema)。
+トップ README の [前提セットアップ](../README.md#5-reconcile-設定) で `configure-reconcile` 済みのはず。未実施なら:
 
 ```bash
-databricks labs lakebridge reconcile \
-  --config-file ./config/recon_config.yaml \
-  --report-type all
+databricks labs lakebridge configure-reconcile --profile <your-profile>
 ```
 
-> `reconcile` コマンドが Databricks Job として走り、終了すると結果テーブルが `remorph_reconcile` (または configure 時に指定した metadata schema) に書き込まれる。
+実行すると対話プロンプトが 9 段階続く。主なポイントのみ抜粋:
 
-### 4. レポートの読み方
+| 項目 | 選択 / 入力 |
+|---|---|
+| Data Source | `databricks` |
+| Report Type | `all` |
+| Secret scope | 既定 (`remorph_databricks`) |
+| Source catalog / schema | 1 の setup.sql で作った source 側 (例: `<your_catalog>` / `reconcile_source`) |
+| Target catalog / schema | 1 の setup.sql で作った target 側 (例: `<your_catalog>` / `reconcile_target`) |
+| Metadata catalog / schema / volume | **既定は `remorph` / `reconcile` / `reconcile_volume`** (存在しなければ作成確認あり) |
 
-SQL Editor で以下のテーブルを順に見る (スキーマ名は configure 時の既定を想定):
+ここで確定した値は workspace の `/Users/<you>/.lakebridge/reconcile.yml` に保存され、以降の `reconcile` コマンドがそれを参照する。
+
+### 3. テーブル設定 JSON を workspace にアップロード
+
+`reconcile` コマンドは `reconcile.yml` (グローバル設定) に加え、**対象テーブルを指定した JSON** を workspace 上の決まったパスから読む。
+
+- ファイル名: **`recon_config_<data_source>_<source_catalog_or_schema>_<report_type>.json`**
+  - 例: `recon_config_databricks_<your_catalog>_all.json`
+- 配置場所: `/Users/<your-email>/.lakebridge/`
+- フォーマット: JSON、`{"tables": [...]}` のみでよい (database_config 系は `reconcile.yml` 側)
+
+このリポに `config/recon_tables.json` をテンプレとして置いてある (ファイル名は `*conf*.json` gitignore パターン回避のため `recon_tables.json`)。そのまま使う場合:
+
+```bash
+# <your_catalog> を自分の catalog 名に置換
+databricks workspace import \
+  /Users/<your-email>/.lakebridge/recon_config_databricks_<your_catalog>_all.json \
+  --file ./config/recon_tables.json \
+  --format AUTO --overwrite \
+  --profile <your-profile>
+```
+
+> テーブル構造を変えたい場合は `config/recon_tables.json` を編集してから import する。
+
+### 4. Reconcile 実行
+
+```bash
+databricks labs lakebridge reconcile --profile <your-profile>
+```
+
+`reconcile` コマンドには `--config-file` / `--report-type` などのフラグは**無い** (`reconcile.yml` と upload 済み JSON を見る)。最後に Job URL をブラウザで開くか聞かれるので `no` で OK。
+
+Job が Databricks Job として走り、classic new_cluster の起動込みで 3〜5 分で完了する。終了後、`<metadata_catalog>.<metadata_schema>` (既定 `remorph.reconcile`) 配下の 6 テーブルに結果が書き込まれる。
+
+### 5. レポートの読み方
+
+以下の 3 テーブルが実用的 (`aggregate_*` テーブルは `aggregates-reconcile` コマンド用、本 Lab では空)。
+
+> `<catalog>.<schema>` は configure-reconcile で入力した metadata の値に置換。既定なら `remorph.reconcile`。
 
 ```sql
--- サマリ: ジョブ単位の行数 / schema / data 差分有無
-SELECT * FROM remorph_reconcile.main_details ORDER BY start_ts DESC LIMIT 5;
+-- (a) main: ジョブ 1 回分の meta (recon_id / source_table / target_table / report_type / start_ts)
+SELECT recon_id, source_type, report_type, start_ts
+FROM <catalog>.<schema>.main
+ORDER BY start_ts DESC LIMIT 5;
 
--- 行カウント比較
-SELECT * FROM remorph_reconcile.row_count_details ORDER BY start_ts DESC LIMIT 5;
+-- (b) metrics: 行数・差分・スキーマ比較のサマリ (struct 多階層)
+SELECT
+  recon_metrics.source_record_count AS src_cnt,
+  recon_metrics.target_record_count AS tgt_cnt,
+  recon_metrics.row_comparison.missing_in_source  AS missing_in_src,
+  recon_metrics.row_comparison.missing_in_target  AS missing_in_tgt,
+  recon_metrics.column_comparison.absolute_mismatch AS mismatch,
+  recon_metrics.column_comparison.mismatch_columns  AS mismatch_cols,
+  recon_metrics.schema_comparison AS schema_ok,
+  run_metrics.status AS overall_ok
+FROM <catalog>.<schema>.metrics
+ORDER BY inserted_ts DESC LIMIT 1;
 
--- スキーマ比較 (今回は同一スキーマなので差分なし想定)
-SELECT * FROM remorph_reconcile.schema_details ORDER BY start_ts DESC LIMIT 5;
-
--- データ詳細差分: missing_in_target / missing_in_source / mismatch
-SELECT * FROM remorph_reconcile.details ORDER BY start_ts DESC LIMIT 50;
+-- (c) details: 個別差分レコード。`data` 列は ARRAY<MAP<STRING, STRING>> なので CAST して覗く
+SELECT recon_type, CAST(data AS STRING) AS data_str
+FROM <catalog>.<schema>.details
+WHERE inserted_ts = (SELECT MAX(inserted_ts) FROM <catalog>.<schema>.details)
+ORDER BY recon_type;
 ```
 
-期待される結果:
+`recon_type` は 4 種: `schema` / `mismatch` / `missing_in_source` / `missing_in_target`。
 
-- **row count**: source 10, target 9 → 差分あり
-- **missing_in_target**: `order_id = 1009, 1010`
-- **missing_in_source**: `order_id = 9001`
-- **mismatch**: `order_id = 1003` (total_amount 差異), `order_id = 1004` (order_status 差異)
+### 期待される結果
+
+| 観点 | 期待値 |
+|---|---|
+| `src_cnt` / `tgt_cnt` | 10 / 9 |
+| `missing_in_src` | 1 (order_id=9001) |
+| `missing_in_tgt` | 2 (order_id=1009, 1010) |
+| `mismatch` | 2 (order_id=1003 total_amount, 1004 order_status) |
+| `mismatch_cols` | `order_status, total_amount` |
+| `schema_ok` | true |
+| `overall_ok` | **false** (差分ありのため) |
 
 ## レポートタイプの使い分け
 
-`--report-type` は `row`, `schema`, `data`, `all` から選べる。
+`configure-reconcile` の `Report Type` で選ぶ (本 Lab では `all`)。
 
 | タイプ | 用途 | 特徴 |
 |---|---|---|
@@ -79,6 +135,23 @@ SELECT * FROM remorph_reconcile.details ORDER BY start_ts DESC LIMIT 50;
 - source/target とも Databricks 内に置けるので、「移行後のテーブル同士」の整合性チェックにも使える
 - クロスシステム比較の場合、Foreign Catalog (Federation) でソースシステムを Unity Catalog に取り込めば、Reconcile 側は Databricks のまま動かせるケースが多い
 - 関連 PR: [lakebridge#2367](https://github.com/databrickslabs/lakebridge/pull/2367) (Lakebase Postgres を source にするパターン、マージ後利用可)
+
+## トラブルシュート
+
+### Reconcile コマンドが `unknown flag: --config-file` で落ちる
+
+Lakebridge の `reconcile` コマンドには `--config-file` / `--report-type` などの引数は無い。テーブル設定は 3 節のとおり workspace に JSON として置き、report_type は `reconcile.yml` 側で指定する。
+
+### 結果テーブルが見つからない / 教材と名前が違う
+
+教材の一部ドキュメントで `remorph_reconcile` / `main_details` 等の名前が出る場合があるが、実際は:
+
+- カタログ・スキーマ: `configure-reconcile` で指定した値 (既定は catalog=`remorph` schema=`reconcile`)
+- テーブル: `main` / `metrics` / `details` / `aggregate_metrics` / `aggregate_details` / `aggregate_rules`
+
+### Job が 10 分以上 RUNNING のまま
+
+Reconcile Job は classic new_cluster を自動起動する (serverless 非対応)。初回起動 + ライブラリインストールで 3〜5 分、ピーク時はクラスタ空き待ちでさらに数分かかることがある。Job URL を UI で開いて cluster 状態を確認。
 
 ## 次
 
