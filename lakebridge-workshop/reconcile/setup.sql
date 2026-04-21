@@ -1,24 +1,43 @@
--- =====================================================
--- Lab 2: Reconciler セットアップ SQL
--- Source / Target を Databricks 内に用意し、意図的に 5 行の差分を仕込む
--- =====================================================
+-- Databricks notebook source
+-- MAGIC %md
+-- MAGIC # Reconcile Lab - Setup
+-- MAGIC
+-- MAGIC Source / Target テーブルを Databricks 内に用意し、意図的に 5 行分の差分を仕込みます。
+-- MAGIC
+-- MAGIC **実行手順:**
+-- MAGIC 1. 下のセルでウィジェットを定義し、画面上部に出てくる `catalog` / `source_schema` / `target_schema` を自分の環境に合わせて設定
+-- MAGIC 2. 全セルを順に実行 (`Run All`)
 
--- ユーザーごとにぶつからないよう、自分のユーザー名等を入れた catalog/schema を事前に使う想定。
--- 参加者は <catalog>, <schema> を自分の環境に合わせて置換してから実行。
--- 例: main.<your_name>_recon_src / main.<your_name>_recon_tgt
+-- COMMAND ----------
 
--- ---------------------------------------------------
--- 1. Source 側カタログ/スキーマ作成
--- ---------------------------------------------------
-CREATE CATALOG IF NOT EXISTS main;
-CREATE SCHEMA IF NOT EXISTS main.recon_src;
-CREATE SCHEMA IF NOT EXISTS main.recon_tgt;
+-- DBTITLE 1,ウィジェット定義
+CREATE WIDGET TEXT catalog DEFAULT "main";
+CREATE WIDGET TEXT source_schema DEFAULT "reconcile_source";
+CREATE WIDGET TEXT target_schema DEFAULT "reconcile_target";
 
--- ---------------------------------------------------
--- 2. Source テーブル: 完全版
--- ---------------------------------------------------
-DROP TABLE IF EXISTS main.recon_src.orders;
-CREATE TABLE main.recon_src.orders (
+-- COMMAND ----------
+
+-- MAGIC %md
+-- MAGIC ## 1. Catalog / Schema 作成
+
+-- COMMAND ----------
+
+CREATE CATALOG IF NOT EXISTS IDENTIFIER(:catalog);
+CREATE SCHEMA IF NOT EXISTS IDENTIFIER(:catalog || '.' || :source_schema);
+CREATE SCHEMA IF NOT EXISTS IDENTIFIER(:catalog || '.' || :target_schema);
+
+-- COMMAND ----------
+
+-- MAGIC %md
+-- MAGIC ## 2. Source テーブル: 完全版 (10 行)
+
+-- COMMAND ----------
+
+USE CATALOG IDENTIFIER(:catalog);
+USE SCHEMA IDENTIFIER(:source_schema);
+
+DROP TABLE IF EXISTS orders;
+CREATE TABLE orders (
     order_id      BIGINT,
     customer_id   BIGINT,
     order_date    DATE,
@@ -26,7 +45,7 @@ CREATE TABLE main.recon_src.orders (
     total_amount  DECIMAL(18, 2)
 );
 
-INSERT INTO main.recon_src.orders VALUES
+INSERT INTO orders VALUES
     (1001, 501, DATE '2026-03-01', 'PLACED',    1200.00),
     (1002, 502, DATE '2026-03-02', 'PLACED',     750.50),
     (1003, 503, DATE '2026-03-03', 'SHIPPED',   3200.00),
@@ -38,14 +57,21 @@ INSERT INTO main.recon_src.orders VALUES
     (1009, 507, DATE '2026-03-09', 'PLACED',    1350.00),
     (1010, 508, DATE '2026-03-10', 'DELIVERED',  650.00);
 
--- ---------------------------------------------------
--- 3. Target テーブル: 5 行分の差分を仕込む
---    (a) 行欠落: 1009, 1010
---    (b) 値差異: 1003 の amount, 1004 の status
---    (c) 余計な行: 9001
--- ---------------------------------------------------
-DROP TABLE IF EXISTS main.recon_tgt.orders;
-CREATE TABLE main.recon_tgt.orders (
+-- COMMAND ----------
+
+-- MAGIC %md
+-- MAGIC ## 3. Target テーブル: 5 行分の差分を仕込む
+-- MAGIC
+-- MAGIC - **行欠落**: `1009`, `1010`
+-- MAGIC - **値差異**: `1003` の `total_amount` / `1004` の `order_status`
+-- MAGIC - **余計な行**: `9001`
+
+-- COMMAND ----------
+
+USE SCHEMA IDENTIFIER(:target_schema);
+
+DROP TABLE IF EXISTS orders;
+CREATE TABLE orders (
     order_id      BIGINT,
     customer_id   BIGINT,
     order_date    DATE,
@@ -53,7 +79,7 @@ CREATE TABLE main.recon_tgt.orders (
     total_amount  DECIMAL(18, 2)
 );
 
-INSERT INTO main.recon_tgt.orders VALUES
+INSERT INTO orders VALUES
     (1001, 501, DATE '2026-03-01', 'PLACED',    1200.00),
     (1002, 502, DATE '2026-03-02', 'PLACED',     750.50),
     (1003, 503, DATE '2026-03-03', 'SHIPPED',   3250.00),    -- amount 差異
@@ -65,8 +91,13 @@ INSERT INTO main.recon_tgt.orders VALUES
     -- 1009, 1010 は意図的に欠落
     (9001, 999, DATE '2026-03-11', 'PLACED',     100.00);    -- 余計な行
 
--- ---------------------------------------------------
--- 4. 確認
--- ---------------------------------------------------
-SELECT COUNT(*) AS src_count FROM main.recon_src.orders;  -- 10
-SELECT COUNT(*) AS tgt_count FROM main.recon_tgt.orders;  --  9
+-- COMMAND ----------
+
+-- MAGIC %md
+-- MAGIC ## 4. 確認 (source = 10 行、target = 9 行になっていれば OK)
+
+-- COMMAND ----------
+
+SELECT 'source' AS side, COUNT(*) AS row_count FROM IDENTIFIER(:catalog || '.' || :source_schema || '.orders')
+UNION ALL
+SELECT 'target' AS side, COUNT(*) AS row_count FROM IDENTIFIER(:catalog || '.' || :target_schema || '.orders');
