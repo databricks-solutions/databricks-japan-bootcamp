@@ -1,0 +1,4 @@
+# Learner runtime artifacts (each scenario)
+**/out/
+**/*.local.yaml
+**/*.local.json

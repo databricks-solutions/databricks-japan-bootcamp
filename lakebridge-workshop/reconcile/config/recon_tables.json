@@ -1,0 +1,10 @@
+{
+  "tables": [
+    {
+      "source_name": "orders",
+      "target_name": "orders",
+      "join_columns": ["order_id"],
+      "select_columns": ["order_id", "customer_id", "order_date", "order_status", "total_amount"]
+    }
+  ]
+}
