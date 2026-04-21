@@ -14,7 +14,7 @@ Lakebridge の主要機能 (Analyzer / Transpile / Reconcile) を手を動かし
 | [reconcile/](reconcile/) | 移行前後のテーブル差分検証 (Databricks 内のテーブル同士、ソースシステム不要) |
 | [synapse/](synapse/) | Azure Synapse Analytics (Dedicated SQL Pool) の T-SQL コードを Analyzer + 3 種 Transpiler (BladeBridge / Morpheus / Switch) で変換、特徴を比較 |
 
-推奨順序: **Synapse → Reconcile → DataStage**。ただし各シナリオは独立しているので、興味のあるものから試しても OK。
+推奨順序は **Synapse → Reconcile → DataStage**。各シナリオは独立しているため、必要に応じて順序を変えて進めても OK。
 
 ## 前提セットアップ
 
