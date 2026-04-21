@@ -163,7 +163,7 @@ BladeBridge は 2 通りのカスタマイズ手段を提供する:
 - `--overrides-file`: 既存ルール集に `line_subst` / `block_subst` の regex を**追加**する (軽い補正向け)
 - `--transpiler-config-path`: 変換ルール集を**まるごと別のものに差し替える** (重い改造向け)
 
-ソースによって config の構造が違う点に注意する。例えば Teradata は `base_teradata2databricks_sql.json` 1 ファイルに全ルールが詰まったモノリシックな構成のため `--overrides-file` でルールを追加しやすい。一方、Synapse はベースが薄めで、実ルールが `table_ddl_synapse2sparksql.json` 等に分散して Perl dispatch でロードされる構成になっている。このため Synapse に対して `--overrides-file` でルールを追加するとロード経路と衝突して空出力になるケースがある。Synapse で大きく補正を当てたい場合は `--transpiler-config-path` でカスタム config を指定する方が確実。
+カスタマイズのやりやすさはソースによって差がある。**Teradata / Oracle / Netezza / Redshift** などは `--overrides-file` でルールを足す方法が有効に機能する。**Synapse / mssql / snowflake** はルール集の構造上 `--overrides-file` が期待どおり動かないことがあるため、変換精度を上げたい場合は Morpheus を主軸にして出力の `FIXME` を手動またはカスタムの後処理スクリプトを作成して機械的に直す、意味を汲んだ書き換えが必要な部分は Switch (LLM) に送る、という流れのほうが実践的。
 
 ---
 
