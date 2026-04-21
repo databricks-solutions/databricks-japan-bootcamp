@@ -26,9 +26,3 @@ __pycache__/
 # IDE settings
 .idea/
 *.iml
-
-# Workshop ephemeral files
-lakebridge-workshop/synapse/out/
-lakebridge-workshop/**/*.local.yaml
-lakebridge-workshop/**/*.local.json
-lakebridge-workshop/**/bladebridge-overrides.json
