@@ -67,6 +67,8 @@ version: 1
 
 `reconcile` コマンドは `reconcile.yml` とは別に、**比較対象のテーブルを指定した JSON** をワークスペース上の決まったパスから読む。`configure-reconcile` はこの JSON を自動生成しないため、ここで手動で配置する。
 
+命名規則・構造・全オプションは公式 Docs ([Reconcile Guide](https://databrickslabs.github.io/lakebridge/docs/reconcile/) / [Reconcile Configuration](https://databrickslabs.github.io/lakebridge/docs/reconcile/reconcile_configuration/)) を参照。以下は本 Lab で使う最小構成の要点のみ。
+
 **配置先と命名規則:**
 
 - 配置先: `/Users/<your-email>/.lakebridge/`
@@ -154,7 +156,7 @@ ORDER BY recon_type;
 
 ### レポートタイプの切り替え (補足)
 
-本 Lab では `all` で進めているが、`configure-reconcile` の `Report Type` で以下の 4 種類から選べる:
+本 Lab では `all` で進めているが、`configure-reconcile` の `Report Type` で以下の 4 種類から選べる (各タイプの定義は公式 Docs [Reconcile Guide](https://databrickslabs.github.io/lakebridge/docs/reconcile/) 参照):
 
 | タイプ | 用途 | 特徴 |
 |---|---|---|
@@ -162,6 +164,16 @@ ORDER BY recon_type;
 | `schema` | 列定義・型の一致確認 | 移行初期のスキーマ整合検査 |
 | `data` | 値単位の詳細差分 | 重いが最終検証に必須 |
 | `all` | 上記全部 | 実案件では PoC 段階で多用 |
+
+### Notebook API での実行 (参考)
+
+本 Lab では CLI (`databricks labs lakebridge reconcile`) + JSON ファイルの組み合わせで実行しているが、もう 1 つ**公式サポートされた方法**として、Notebook 内で Python API を直接呼ぶルートがある。
+
+- JSON ファイル不要 (config は Python オブジェクト `ReconcileConfig` / `TableRecon` で組み立てる)
+- Notebook のアタッチ先コンピュートで走る (Job を別途起動しない)
+- 詳細: 公式 Docs [Running Reconcile on Notebook](https://databrickslabs.github.io/lakebridge/docs/reconcile/recon_notebook/)
+
+CLI 方式と Notebook 方式は用途で使い分けると良い: 定型的な再実行やスケジュール実行には CLI 方式、config を柔軟に組み立てて試行錯誤したい場面には Notebook 方式。
 
 ## トラブルシュート
 
