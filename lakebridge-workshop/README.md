@@ -174,4 +174,4 @@ cd databricks-japan-bootcamp/lakebridge-workshop
 
 - Lakebridge 公式ドキュメント: https://databrickslabs.github.io/lakebridge/
 - Switch (Lakebridge の pluggable transpiler): https://databrickslabs.github.io/lakebridge/docs/transpile/pluggable_transpilers/switch/
-- `databricks labs lakebridge describe-transpile` で利用可能な transpiler と dialect を常に確認できる (Switch は除く)
+- `databricks labs lakebridge describe-transpile` で利用可能な transpiler と対応ソースを常に確認できる (Switch は除く)

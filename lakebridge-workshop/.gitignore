@@ -2,4 +2,3 @@
 **/out/
 **/*.local.yaml
 **/*.local.json
-**/bladebridge-overrides.json
