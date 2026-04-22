@@ -4,13 +4,13 @@ Reconcile は**移行前後のデータが一致しているか**を機械的に
 
 本 Lab では、外部のソースシステムを用意せず、Databricks 内に source / target の 2 テーブルを作って**差分検出の挙動だけ**を押さえる。
 
-> 既定では、Reconcile Job は serverless 非対応で、実行のたびにジョブクラスタ (classic、2-10 worker) が自動起動する。**クラスタ起動込みで初回は 5〜15 分**程度を見ておく (起動済みクラスタを使い回す手順は後述)。
+> 既定では、Reconcile Job はサーバーレス非対応で、実行のたびにジョブクラスタ (クラシック、2-10 worker) が自動起動する。**クラスタ起動込みで初回は 5〜15 分**程度を見ておく (起動済みクラスタを使い回す手順は後述)。
 
 ## 手順
 
 ### 1. ワークスペース上の Lakebridge 構成を確認
 
-`configure-reconcile` を既に済ませている前提で、このタイミングのワークスペースには以下の構成でファイルが置かれている:
+`configure-reconcile` を既に済ませている前提で、この時点でのワークスペースには以下の構成でファイルが置かれている:
 
 ```
 /Users/<your-email>/.lakebridge/
@@ -78,7 +78,7 @@ version: 1
 
 **手順:**
 
-1. このリポの `config/recon_tables.json` をテンプレとして使う (テーブル構成を変えたい場合は編集)
+1. 本リポジトリの `config/recon_tables.json` をテンプレートとして使う (テーブル構成を変えたい場合は編集)
 2. Databricks ワークスペース UI で `/Users/<your-email>/.lakebridge/` を開く
 3. `config/recon_tables.json` を上記 UI にドラッグ & ドロップで import し、ファイル名を命名規則に沿って変更する (例: `recon_config_databricks_<your_catalog>_all.json`)
 
@@ -90,9 +90,9 @@ databricks labs lakebridge reconcile --profile <your-profile>
 
 `reconcile` コマンドに `--config-file` / `--report-type` などのフラグは**無い** (`reconcile.yml` と配置済み JSON を参照する)。最後に Job URL をブラウザで開くか聞かれる。`yes` で Job 画面が開く、`no` で CLI 側に戻る (どちらを選んでも結果には影響しない)。
 
-Job が Databricks Job として走り、ジョブクラスタの起動込みで**初回は 5〜15 分**ほどで完了する。終了後、`configure-reconcile` で指定した metadata catalog/schema (既定 `remorph.reconcile`) 配下の 6 テーブルに結果が書き込まれる。
+Job が Databricks Job として実行され、ジョブクラスタの起動込みで**初回は 5〜15 分**ほどで完了する。終了後、`configure-reconcile` で指定した metadata catalog/schema (既定 `remorph.reconcile`) 配下の 6 テーブルに結果が書き込まれる。
 
-> **Tips**: 既定では Reconciliation Runner Job は実行のたびに classic new_cluster を起動するが、Databricks Jobs UI からジョブのタスクを「**既存の汎用クラスタ (All-purpose Cluster)**」に切り替えると、起動済みのクラスタを使い回せる。クラスタ起動待ちがなくなり、2 回目以降は 2 分程度で完了する。Reconcile を素早く繰り返したいときに便利。
+> **Tips**: 既定では Reconciliation Runner Job は実行のたびにクラシックの new_cluster を起動するが、Databricks Jobs UI からジョブのタスクを「**既存の汎用クラスタ (All-purpose Cluster)**」に切り替えると、起動済みのクラスタを使い回せる。クラスタ起動待ちがなくなり、2 回目以降は 2 分程度で完了する。Reconcile を素早く繰り返したいときに便利。
 
 ### 5. レポートの確認
 
@@ -152,7 +152,7 @@ ORDER BY recon_type;
 
 - Reconcile は**移行前後のテーブルが本当に一致しているか**を機械的に確認するための標準ツール
 - source/target を両方 Databricks 内に置けるほか (本 Lab の構成)、「移行後のテーブル同士」の整合性チェックにも使える
-- クロスシステム比較 (例: source = Synapse, target = Databricks) の場合、現状は Reconcile 側から外部システムに JDBC で直接接続する構成になっているため **classic クラスタ前提**。Foreign Catalog (Federation) 経由でソースを Unity Catalog から読めるようにする拡張は [lakebridge#2367](https://github.com/databrickslabs/lakebridge/pull/2367) で進行中 (現状は PR レビュー中、マージ後に利用可能)
+- クロスシステム比較 (例: source = Synapse, target = Databricks) の場合、現状は Reconcile 側から外部システムに JDBC で直接接続する構成になっているため**クラシッククラスタ前提**。Foreign Catalog (Federation) 経由でソースを Unity Catalog から読めるようにする拡張は [lakebridge#2367](https://github.com/databrickslabs/lakebridge/pull/2367) で進行中 (現状は PR レビュー中、マージ後に利用可能)
 
 ### レポートタイプの切り替え (補足)
 
@@ -170,7 +170,7 @@ ORDER BY recon_type;
 本 Lab では CLI (`databricks labs lakebridge reconcile`) + JSON ファイルの組み合わせで実行しているが、もう 1 つ**公式サポートされた方法**として、Notebook 内で Python API を直接呼ぶルートがある。
 
 - JSON ファイル不要 (config は Python オブジェクト `ReconcileConfig` / `TableRecon` で組み立てる)
-- Notebook のアタッチ先コンピュートで走る (Job を別途起動しない)
+- Notebook のアタッチ先コンピュートで実行される (Job を別途起動しない)
 - 詳細: 公式 Docs [Running Reconcile on Notebook](https://databrickslabs.github.io/lakebridge/docs/reconcile/recon_notebook/)
 
 CLI 方式と Notebook 方式は用途で使い分けると良い: 定型的な再実行やスケジュール実行には CLI 方式、config を柔軟に組み立てて試行錯誤したい場面には Notebook 方式。
@@ -192,5 +192,5 @@ CLI 方式と Notebook 方式は用途で使い分けると良い: 定型的な�
 ### Job が 10 分以上 RUNNING のまま
 
 - **問題**: Reconcile Job が長時間 `RUNNING` のまま終わらない。
-- **原因**: Reconcile Job は classic new_cluster を自動起動する (serverless 非対応)。クラスタ起動 + ライブラリインストールで数分、ピーク時はクラスタ空き待ちでさらに数分追加される。
-- **対処**: Job URL を UI で開き、cluster の起動状態を確認する。通常は 5〜15 分程度で完了する。
+- **原因**: Reconcile Job はクラシックの new_cluster を自動起動する (サーバーレス非対応)。クラスタ起動 + ライブラリインストールで数分、ピーク時はクラスタ空き待ちでさらに数分追加される。
+- **対処**: Job URL を UI で開き、クラスタの起動状態を確認する。通常は 5〜15 分程度で完了する。

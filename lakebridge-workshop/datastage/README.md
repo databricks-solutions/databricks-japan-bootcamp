@@ -59,9 +59,9 @@ databricks labs lakebridge analyze \
 
 ---
 
-## Transpile: BladeBridge (PySpark Notebook)
+## BladeBridge (PySpark Notebook)
 
-DataStage に対応する transpiler は BladeBridge のみなので、**`Select the transpiler:` プロンプトは出ない** (自動で BladeBridge が選ばれる)。
+DataStage に対応する Converter は BladeBridge のみなので、**`Select the transpiler:` プロンプトは出ない** (自動で BladeBridge が選ばれる)。
 
 ### 実行
 
@@ -85,7 +85,7 @@ out/bladebridge/
 └── databricks_conversion_supplements.py  # 共通ユーティリティ (column renaming 等)
 ```
 
-**変換サマリは stdout の 1 行テーブル** (`total_files_processed / parsing_error_count / validation_error_count / generation_error_count / ...`) のみで、別 report や error log ファイルは出力されない。
+**変換サマリは stdout の 1 行テーブル** (`total_files_processed / parsing_error_count / validation_error_count / generation_error_count / ...`) のみで、別のレポートやエラーログファイルは出力されない。
 
 ### ローカルで中身を眺める
 

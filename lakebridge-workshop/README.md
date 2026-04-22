@@ -1,6 +1,6 @@
 # Lakebridge Workshop
 
-Databricks Labs [Lakebridge](https://databrickslabs.github.io/lakebridge/) を実際に動かして、データウェアハウス / ETL システムから Databricks への移行を体験するハンズオンです。
+Databricks Labs [Lakebridge](https://databrickslabs.github.io/lakebridge/) を実際に動かして、データウェアハウス / ETL システムから Databricks への移行を体験するハンズオン。
 
 ## ゴール
 
@@ -12,7 +12,7 @@ Lakebridge の主要機能 (Analyzer / Transpile / Reconcile) を手を動かし
 |---|---|
 | [datastage/](datastage/) | IBM DataStage ジョブの XML エクスポートを Analyzer + BladeBridge で PySpark Notebook に変換 |
 | [reconcile/](reconcile/) | 移行前後のテーブル差分検証 (Databricks 内のテーブル同士、ソースシステム不要) |
-| [synapse/](synapse/) | Azure Synapse Analytics (Dedicated SQL Pool) の T-SQL コードを Analyzer + 3 種 Transpiler (BladeBridge / Morpheus / Switch) で変換、特徴を比較 |
+| [synapse/](synapse/) | Azure Synapse Analytics (Dedicated SQL Pool) の T-SQL コードを Analyzer + 3 種 Converter (BladeBridge / Morpheus / Switch) で変換、特徴を比較 |
 
 推奨順序は **Synapse → Reconcile → DataStage** だが、各シナリオは独立しているので、興味のあるものから着手しても構わない。
 
@@ -25,9 +25,9 @@ Lakebridge の主要機能 (Analyzer / Transpile / Reconcile) を手を動かし
 - **Unity Catalog** 有効化 (全シナリオ)
 - **Serverless SQL Warehouse** が使える (Transpile (BladeBridge) の出力 SQL 検証、Reconcile 側の source/target 参照で利用)
 - **Foundation Model API** (Claude Sonnet 系) の `Can Query` 権限 (Switch で利用)
-- **ジョブクラスタを起動できる** こと (Reconcile Job は serverless 非対応で、実行時に classic クラスタを自動起動する)
+- **ジョブクラスタを起動できる** こと (Reconcile Job は既定ではクラシックのジョブクラスタを利用する)
 
-### 1. ローカル CLI インストール
+### 1. Databricks CLI のインストール
 
 Databricks CLI をインストールする。OS 別の手順は [公式ドキュメント (日本語)](https://docs.databricks.com/aws/ja/dev-tools/cli/install) を参照。
 
@@ -41,19 +41,19 @@ databricks --version
 
 ### 2. Databricks プロファイル設定
 
-ワークスペースのホスト URL は Cloud によって形式が違う:
+ワークスペースのホスト URL はクラウドによって形式が異なる:
 
 - AWS: `https://<workspace-id>.cloud.databricks.com`
 - Azure: `https://adb-<workspace-id>.<suffix>.azuredatabricks.net`
 - GCP: `https://<workspace-id>.gcp.databricks.com`
 
-実際の値は Databricks コンソールで確認。以下、自分のプロファイル名を `<your-profile>` と置く (任意の名前)。
+実際の値は Databricks コンソールで確認する。以下、自分のプロファイル名を `<your-profile>` とする (任意の名前で OK)。
 
 ```bash
 databricks auth login --host <your-workspace-host> --profile <your-profile>
 ```
 
-ブラウザが開くので OAuth でログイン。以降のコマンドはこの `<your-profile>` を指定して実行する。
+ブラウザが開くので OAuth でログインする。以降のコマンドはこの `<your-profile>` を指定して実行する。
 
 疎通確認:
 
@@ -95,9 +95,9 @@ databricks labs lakebridge --help
 
 `analyze / transpile / llm-transpile / install-transpile / describe-transpile / configure-reconcile / reconcile / aggregates-reconcile` などが並んでいれば OK。
 
-### 4. Transpiler プラグインのインストール
+### 4. Converter プラグインのインストール
 
-Lakebridge の Transpiler 3 種 (BladeBridge / Morpheus / Switch) をまとめてインストールする。**`--include-llm-transpiler true` フラグを付けないと Switch (LLM ベース) は入らない**。
+Lakebridge の Converter 3 種 (BladeBridge / Morpheus / Switch) をまとめてインストールする。**`--include-llm-transpiler true` フラグを付けないと Switch (LLM ベース) はインストールされない**点に留意が必要。
 
 ```bash
 databricks labs lakebridge install-transpile --include-llm-transpiler true --profile <your-profile>
@@ -111,7 +111,7 @@ databricks labs lakebridge describe-transpile --profile <your-profile>
 
 出力に `Bladebridge` と `Morpheus` が並んでいれば OK。
 
-> **Switch は `describe-transpile` には出ない**。Switch は workspace 側に Job + Notebook としてデプロイされる pluggable transpiler で、BladeBridge / Morpheus とはアーキテクチャが違う。`llm-transpile` コマンドで利用する。
+> **Switch は `describe-transpile` には出ない**。Switch は BladeBridge / Morpheus とはアーキテクチャが異なり、Databricks ワークスペースに Job + Notebook としてデプロイされる。`llm-transpile` コマンドで利用する。
 
 ### 5. Reconcile 設定
 
@@ -119,7 +119,7 @@ databricks labs lakebridge describe-transpile --profile <your-profile>
 databricks labs lakebridge configure-reconcile --profile <your-profile>
 ```
 
-対話プロンプトが 9 段階続く。主な入力ポイント:
+対話プロンプトが 9 項目続く。主な入力ポイント:
 
 | 項目 | 入力 |
 |---|---|
@@ -168,10 +168,10 @@ cd databricks-japan-bootcamp/lakebridge-workshop
 
 - **原因**: `~/.databrickscfg` 内に**同じ host を指すプロファイルが複数**あり、Lakebridge 内部の host 解決が衝突する。`--profile` は外側の CLI にしか効かず、内部の SDK 呼び出しは host マッチで profile を引くため衝突を回避できない。
 
-- **対処**: ワークショップ用 host に match するプロファイルが 1 つだけになるように `~/.databrickscfg` を整理する (重複プロファイルを削除するか、`host` を微妙に変えて衝突を回避する)。
+- **対処**: ワークショップ用 host に一致するプロファイルが 1 つだけになるように `~/.databrickscfg` を整理する (重複プロファイルを削除するか、`host` を微妙に変えて衝突を回避する)。
 
 ## 参考
 
 - Lakebridge 公式ドキュメント: https://databrickslabs.github.io/lakebridge/
 - Switch (Lakebridge の pluggable transpiler): https://databrickslabs.github.io/lakebridge/docs/transpile/pluggable_transpilers/switch/
-- `databricks labs lakebridge describe-transpile` で利用可能な transpiler と対応ソースを常に確認できる (Switch は除く)
+- `databricks labs lakebridge describe-transpile` で利用可能な Converter と対応ソースを常に確認できる (Switch は除く)

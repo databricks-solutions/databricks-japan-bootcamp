@@ -74,17 +74,17 @@ databricks labs lakebridge analyze \
 - ストアド例 1 (`mssql_example1_multi_statement_transformation.sql`): **LOW**
 - ストアド例 2 (`mssql_example2_stored_procedure.sql`): **MEDIUM** → Switch (LLM) 候補
 
-まずは全ファイルをルールベース (BladeBridge / Morpheus) で回してみて、パース失敗や変換残差が目立つものを Switch (LLM) に切り替える、というのが基本的な進め方。
+まずは全ファイルをルールベース (BladeBridge / Morpheus) で回してみて、パース失敗や未変換箇所が目立つものを Switch (LLM) に切り替える、というのが基本的な進め方。
 
 ---
 
-## Transpile: BladeBridge
+## BladeBridge
 
-BladeBridge は **正規表現ベースのルールベース**トランスパイラ (Perl + JSON config)。**幅広いソース** (Synapse / Teradata / Oracle / MSSQL / Netezza / DataStage / SSIS など) に対応し、`--overrides-file` / `--transpiler-config-path` で書換えルールをカスタマイズできる点が特徴。対応ソースの全体は `databricks labs lakebridge describe-transpile` の出力で確認できる。
+BladeBridge は**正規表現ベース**の変換機能。**幅広いソース** (Synapse / Teradata / Oracle / MSSQL / Netezza / DataStage / SSIS など) に対応し、`--overrides-file` / `--transpiler-config-path` で書き換えルールをカスタマイズできる点が特徴。対応ソースの一覧は `databricks labs lakebridge describe-transpile` の出力で確認できる。
 
 ### 実行
 
-Synapse は BladeBridge と Morpheus の両方が対応しているため、`--transpiler-config-path` で BladeBridge を明示指定する:
+Synapse には BladeBridge と Morpheus の両方で対応しているため、`--transpiler-config-path` で BladeBridge を明示指定する:
 
 ```bash
 mkdir -p out/bladebridge
@@ -109,7 +109,7 @@ out/bladebridge/
     └── mssql_example2_stored_procedure.sql
 ```
 
-**別ファイルとしての変換レポートやエラーログは生成されない。** 変換結果のサマリは標準出力に 1 行テーブル (`total_files_processed / parsing_error_count / validation_error_count / generation_error_count / ...`) として表示されるのみ。
+**変換レポートやエラーログが別ファイルとして生成されることはない。** 変換結果のサマリは標準出力に 1 行テーブル (`total_files_processed / parsing_error_count / validation_error_count / generation_error_count / ...`) として表示されるのみ。
 
 ### Validator による Exception wrapping
 
@@ -153,7 +153,7 @@ LastUpdatedAt   timestamp    NOT NULL DEFAULT current_timestamp();,
 ### 学習ポイント
 
 - BladeBridge は**幅広いソースに対応**している
-- 変換結果がそのまま動くことも多いが、**細かいパッチ** (余計な `;` など) が残るケースが一定ある
+- 変換結果がそのまま動くことも多いが、**細かいパッチ** (余計な `;` など) が残るケースが一定数ある
 - Synapse の T-SQL 固有構文 (`PARTITION ... RANGE RIGHT FOR VALUES`、`LineAmount AS (...) PERSISTED` 計算列) は書換えを試みた上で、validator に弾かれるケースがある
 
 ### 変換ルールのカスタマイズ (補足)
@@ -163,13 +163,13 @@ BladeBridge は 2 通りのカスタマイズ手段を提供する:
 - `--overrides-file`: 既存ルール集に `line_subst` / `block_subst` の regex を**追加**する (軽い補正向け)
 - `--transpiler-config-path`: 変換ルール集を**まるごと別のものに差し替える** (重い改造向け)
 
-カスタマイズのやりやすさはソースによって差がある。**Teradata / Oracle / Netezza / Redshift** などは `--overrides-file` でルールを足す方法が有効に機能する。**Synapse / mssql / snowflake** はルール集の構造上 `--overrides-file` が期待どおり動かないことがあるため、変換精度を上げたい場合は Morpheus を主軸にして出力の `FIXME` を手動またはカスタムの後処理スクリプトを作成して機械的に直す、意味を汲んだ書き換えが必要な部分は Switch (LLM) に送る、という流れのほうが実践的。
+カスタマイズのしやすさはソースによって差がある。**Teradata / Oracle / Netezza / Redshift** などは `--overrides-file` でルールを足す方法が有効に機能する。**Synapse / mssql / snowflake** はルール集の構造上 `--overrides-file` が期待どおり動かないことがあるため、変換精度を上げたい場合は Morpheus を主軸にし、出力の `FIXME` を手動修正やカスタムスクリプトで対処する。意味を汲んだ書き換えが必要な箇所は Switch (LLM) に回す、という流れが実践的。
 
 ---
 
-## Transpile: Morpheus
+## Morpheus
 
-Morpheus は Databricks Labs が開発するルールベーストランスパイラ。ANTLR パーサーで SQL を構造的に解析し、**元の SQL 構文を保持しつつ `FIXME` コメントで未対応箇所を明示**するスタイル。現時点の対応方言は mssql / snowflake / synapse (今後拡張予定)。BladeBridge より対応方言は狭い。Databricks Labs が直接開発しているため改善の反映が速く、変換の実行速度も BladeBridge を上回る。
+Morpheus は Databricks Labs が開発するルールベースの変換機能。ANTLR パーサーで SQL を構造的に解析し、**元の SQL 構文を保持しつつ `FIXME` コメントで未対応箇所を明示**するスタイル。現時点の対応方言は mssql / snowflake / synapse (今後拡張予定)。BladeBridge より対応方言は狭い。Databricks Labs が直接開発しているため改善の反映が速く、変換の実行速度も BladeBridge を上回る。
 
 ### 実行
 
@@ -220,7 +220,7 @@ CREATE
 
 ### パース失敗の例 (`04_orders.sql`)
 
-Morpheus は ANTLR パーサーで SQL を構造解析するため、T-SQL 固有構文を読み切れないと**ファイル全体がパース失敗**となり、Exception ブロックで wrap された状態で出力される。たとえば `04_orders.sql` の `PARTITION ... RANGE RIGHT FOR VALUES` は Morpheus のパーサー規則にないため `PARSE_SYNTAX_ERROR` となり、ほぼ原文のまま Exception でくるまれる。
+Morpheus は ANTLR パーサーで SQL を構造解析するため、T-SQL 固有構文を解析しきれないと**ファイル全体がパース失敗**となり、Exception ブロックで囲まれた状態で出力される。たとえば `04_orders.sql` の `PARTITION ... RANGE RIGHT FOR VALUES` は Morpheus のパーサー規則にないため `PARSE_SYNTAX_ERROR` となり、ほぼ原文のまま Exception でくるまれる。
 
 一方、BladeBridge は正規表現ベースのため同じファイルをパターン置換で書き換えを試み、`PARTITION` 句を削除/改変して最終的に構文的に通る SQL を出力する (ただし意味が保たれるとは限らない)。両者の差は、Exception ブロックの有無と `FIXME` コメントの位置で一目で分かる。
 
@@ -229,15 +229,15 @@ Morpheus は ANTLR パーサーで SQL を構造解析するため、T-SQL 固�
 - **Morpheus の強み**: 速度、T-SQL 構文保持 (原文対比でレビューしやすい)、Databricks Labs が継続的に改善している
 - **Morpheus の弱み**: T-SQL 固有構文 (例: `PARTITION ... RANGE RIGHT FOR VALUES`) でパース失敗するとファイル単位で Exception wrap されるため、その部分は手動で書き換える必要がある
 - **使い分けは品質を見て決める**のが実務的。両方実行して diff を取るのが最速
-- **Morpheus は現状、カスタマイズ口が公開されていない** (ANTLR + JAR 内蔵)。BladeBridge の `--overrides-file` のような補正機構は無い
+- **Morpheus は現状、カスタマイズ手段が公開されていない** (ANTLR + JAR 内蔵)。BladeBridge の `--overrides-file` のような補正機構は無い
 
 ---
 
-## Transpile: Switch
+## Switch
 
-Switch は **LLM ベース**のトランスパイラで、**Lakebridge の pluggable transpiler の 1 つ**として提供される。Databricks Job として workspace 上で走り、**既定では Python Notebook** を出力する (BladeBridge / Morpheus は `.sql` ファイル)。複雑なストアドプロシージャの変換や、構文の意味を汲んだ書き換え (計算列の型推論など) を得意とする。
+Switch は **LLM ベース**の変換機能で、**Lakebridge の pluggable transpiler の 1 つ**として提供される。Databricks Job として Workspace 上で実行され、**既定では Python Notebook** を出力する (BladeBridge / Morpheus は `.sql` ファイル)。複雑なストアドプロシージャの変換や、構文の意味を汲んだ書き換え (計算列の型推論など) を得意とする。
 
-利用モデルは Databricks の **基盤モデル API** の任意モデル、および Model Serving 上の外部モデルも選択可能。出力形式も設定で `.sql` / `.py` などに切り替えられる。
+利用するモデルは Databricks の**基盤モデル API** の任意のモデルを選択できる。出力形式も設定で `.sql` / `.py` などに切り替えられる。
 
 ### 事前準備: 出力サブディレクトリを作成
 
@@ -259,7 +259,7 @@ databricks labs lakebridge llm-transpile \
   --profile <your-profile>
 ```
 
-対話プロンプトが 4 段階続く:
+対話プロンプトが 4 項目続く:
 
 | 項目 | 推奨 | 既定 |
 |---|---|---|
@@ -275,7 +275,7 @@ databricks labs lakebridge llm-transpile \
 | パラメータ | 意味 |
 |---|---|
 | `--input-source` | 手元の入力ディレクトリ (自動で Unity Catalog Volume にアップロード) |
-| `--output-ws-folder` | Databricks Workspace 上の出力パス (必ず　`/Workspace/` で始まる必要がある) |
+| `--output-ws-folder` | Databricks Workspace 上の出力パス (必ず `/Workspace/` で始まる必要がある) |
 | `--source-dialect` | `synapse` |
 | `--accept-terms` | LLM ベース変換の利用規約に同意 (`true`) |
 
@@ -290,7 +290,7 @@ INFO [d.l.l.transpiler.switch_runner] Switch LLM transpilation job started: http
 
 ### Job の進捗を監視
 
-返された Job URL を開いて Switch Job の run を監視。LLM が並列呼び出しするため所要時間はファイル本数に比例しない。本 Lab 程度なら数分のオーダーで完了することが多い。
+返された Job URL を開いて Switch Job の run を監視。LLM が並列に呼び出されるため、所要時間はファイル数に比例して増えない。本 Lab 程度なら数分のオーダーで完了することが多い。
 
 Switch は workspace 内 **結果テーブル** (`<catalog>.switch.lakebridge_switch_<timestamp>_<suffix>`) にも全ファイルの変換結果を記録しており、そちらを SELECT すれば進捗/エラーも確認できる。結果テーブルのスキーマは公式ドキュメント [Customizing Switch](https://databrickslabs.github.io/lakebridge/docs/transpile/pluggable_transpilers/switch/customizing_switch/) を参照。
 
@@ -316,7 +316,7 @@ CREATE TABLE IF NOT EXISTS dbo.order_items (
 """)
 ```
 
-**Switch の真価**: `05_order_items.sql` の `LineAmount AS (Quantity * UnitPrice - DiscountAmount) PERSISTED` (T-SQL 計算列、型指定なし) を **`DECIMAL(18,2) GENERATED ALWAYS AS (...)` に型推論込みで変換**。これは BladeBridge / Morpheus の regex では書けない、構文の意味を汲んだ書き換え。
+**Switch の真価**: `05_order_items.sql` の `LineAmount AS (Quantity * UnitPrice - DiscountAmount) PERSISTED` (T-SQL 計算列、型指定なし) を **`DECIMAL(18,2) GENERATED ALWAYS AS (...)` に型推論込みで変換**。これは BladeBridge / Morpheus のルールベースの変換では対応困難な、構文の意味を汲んだ書き換え。
 
 ### 学習ポイント
 
