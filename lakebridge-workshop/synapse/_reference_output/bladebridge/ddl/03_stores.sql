@@ -1,12 +1,12 @@
--------------- Exception Start-------------------
-/*
+-- Synapse Dedicated SQL Pool: stores table
 
-[PARSE_SYNTAX_ERROR] Syntax error at or near end of input. SQLSTATE: 42601 (line 2, pos 0)
-
-== SQL ==
-EXPLAIN 
-^^^
-
-*/
-
- ---------------Exception End --------------------
+CREATE OR REPLACE TABLE dbo.stores
+(
+    StoreID         INT             NOT NULL,
+    StoreName STRING   NOT NULL,
+    RegionCode STRING     NOT NULL,
+    PrefectureCode STRING      NOT NULL,
+    OpenedAt        DATE            NOT NULL,
+    ClosedAt        DATE            
+)
+;

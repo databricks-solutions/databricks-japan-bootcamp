@@ -1,12 +1,14 @@
--------------- Exception Start-------------------
-/*
+-- Synapse Dedicated SQL Pool: products table
+-- Small master table; replicate across all distributions
 
-[PARSE_SYNTAX_ERROR] Syntax error at or near end of input. SQLSTATE: 42601 (line 2, pos 0)
-
-== SQL ==
-EXPLAIN 
-^^^
-
-*/
-
- ---------------Exception End --------------------
+CREATE OR REPLACE TABLE dbo.products
+(
+    ProductID       INT             NOT NULL,
+    ProductName STRING   NOT NULL,
+    CategoryCode STRING     NOT NULL,
+    UnitPrice       DECIMAL(19,4)           NOT NULL,
+    Barcode STRING,
+    LaunchedAt      DATE            ,
+    DiscontinuedAt  DATE            
+)
+;
