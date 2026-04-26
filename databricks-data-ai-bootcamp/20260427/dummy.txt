@@ -1,1 +1,0 @@
-This is a dummy file for Databricks Japan Bootcamp 2026-04-27.
