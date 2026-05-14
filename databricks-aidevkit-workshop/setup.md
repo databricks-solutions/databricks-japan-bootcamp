@@ -16,7 +16,7 @@ Databricks AI Dev Kitは、Claude CodeやCursorなどのAIコーディングア�
 
 例: `https://xxx.cloud.databricks.com`
 
-![Databricks ワークスペース URL の例](images/2_a.png)
+![DatabricksワークスペースURLの例](images/2_a.png)
 
 ### 認証情報
 
@@ -24,12 +24,15 @@ Databricks AI Dev Kitは、Claude CodeやCursorなどのAIコーディングア�
 
 - **Databricks CLI プロファイル**（`databricks configure` 済み）
 - もしくは有効な **PAT（Personal Access Token）**（設定 → 開発者 → アクセストークン）
+![PATの例](images/2_b.png)
 
 CLIプロファイルの例:
 
 ```bash
 vi ~/.databrickscfg
 ```
+
+![databrickscfgの例](images/2_c.png)
 
 ### AIコーディングアシスタント
 
@@ -61,16 +64,36 @@ bash <(curl -sL https://raw.githubusercontent.com/databricks-solutions/ai-dev-ki
 - Claude Code / Cursor 用MCPサーバー設定とスキルを構成
 - デフォルトでは「実行したフォルダ（プロジェクトスコープ）」に設定を紐付け
 
+![Macインストールの例](images/3_a.png)
+
+![Macインストールの例](images/3_b.png)
+
 **操作の目安**
 
 - 使用したいツールを選択し、「Confirm」を選んで進めてください。（Space キー、矢印キー、Enter キーで操作可能）
+
+![Macインストールの例](images/3_c.png)
+
 - 使用するDatabricksプロファイルを選択します。
+
+![Macインストールの例](images/3_d.png)
+
 - インストールスコープを設定します。Projectレベルで進めます。
+
+![Macインストールの例](images/3_e.png)
+
 - スキルを選択できます。すべてのスキルで進めます。
+
+![Macインストールの例](images/3_f.png)
+
 - MCP Server locationを指定します。
+
+![Macインストールの例](images/3_g.png)
+
 - インストールを開始します。
 
-インストールが完了したら、ClaudeやCursorでMCP設定を行います（[4. インストール後のMCP設定の確認](#4-インストール後の-mcp-設定の確認)を参照）。
+![Macインストールの例](images/3_h.png)
+
 
 ### 3.2 Windows（PowerShell）
 
@@ -100,9 +123,13 @@ bash <(curl -sL https://raw.githubusercontent.com/databricks-solutions/ai-dev-ki
 
 ## 4. インストール後の MCP 設定の確認
 
+インストールが完了したら、ClaudeやCursorでMCP設定を行います（[4. インストール後のMCP設定の確認](#4-インストール後の-mcp-設定の確認)を参照）。
+
+![Macインストールの例](images/3_i.png)
+
 **Tools & MCPs** メニューから、Databricksのトグルが有効になっていることを確認します。
 
-## 5. MCP 設定のイメージ（.mcp.json 例）
+## 5. MCP設定のイメージ（.mcp.json 例）
 
 インストール完了後、Claude Code / CursorのMCP設定ファイル（例: `.mcp.json`）には、概ね以下のような設定が追加されます。
 
@@ -156,6 +183,12 @@ bash <(curl -sL https://raw.githubusercontent.com/databricks-solutions/ai-dev-ki
 
 （結果は環境により異なります。）
 
+結果例
+
+![結果例](images/6_a.png)
+
+![結果例](images/6_b.png)
+
 ## 7. トラブルシューティング
 
 ### 7.1 インストールスクリプト実行時のエラー
@@ -178,7 +211,7 @@ AI Dev Kit Onboardingドキュメントでは、以下のようなエラーと�
 
 ### 8.1 テンプレート化したAI Dev Kitを配布したい場合（管理者想定）
 
-AI Dev Kit を利用した開発環境を自社用にカスタマイズしたい、もう少し制御したい、社内標準の開発環境テンプレートを作りたい、といった場合は、リポジトリを明示的にクローンして編集などを行ったうえで `install.sh` を実行する形も取れます。
+AI Dev Kitを利用した開発環境を自社用にカスタマイズしたい、もう少し制御したい、社内標準の開発環境テンプレートを作りたい、といった場合は、リポジトリを明示的にクローンして編集などを行ったうえで `install.sh` を実行する形も取れます。
 
 ```bash
 git clone https://github.com/databricks-solutions/ai-dev-kit.git
@@ -188,7 +221,7 @@ cd ai-dev-kit
 bash install.sh
 ```
 
-Databricks ワークスペースとの接続には、環境変数で以下を指定します。
+Databricksワークスペースとの接続には、環境変数で以下を指定します。
 
 ```bash
 export DATABRICKS_HOST="https://xxx.cloud.databricks.com"
