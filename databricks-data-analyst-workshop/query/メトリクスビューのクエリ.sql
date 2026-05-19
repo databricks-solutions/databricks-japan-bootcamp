@@ -5,4 +5,4 @@ SELECT
   MEASURE(`total_unique_users`) AS `total_unique_users`, 
   MEASURE(`unit_price`) AS `unit_price`, 
   MEASURE(`frequency`) AS `frequency` 
-FROM orders_metric_view LIMIT 10;
+FROM data_analyst_workshop.bricksmart.orders_metric_view LIMIT 10;
