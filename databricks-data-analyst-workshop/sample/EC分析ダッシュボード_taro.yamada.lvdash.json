@@ -1,0 +1,343 @@
+{
+  "datasets": [
+    {
+      "name": "266dc444",
+      "displayName": "users",
+      "config": {
+        "version": "1.1",
+        "source": "data_analyst_workshop.bricksmart.users",
+        "dimensions": [
+          {
+            "name": "user_id",
+            "expr": "source.user_id",
+            "comment": "ユーザーID",
+            "displayName": "User Id"
+          },
+          {
+            "name": "name",
+            "expr": "source.name",
+            "comment": "氏名",
+            "displayName": "Name"
+          },
+          {
+            "name": "age",
+            "expr": "source.age",
+            "comment": "年齢: 0以上",
+            "displayName": "Age"
+          },
+          {
+            "name": "gender",
+            "expr": "source.gender",
+            "comment": "性別: 例) 男性, 女性, 未回答, その他",
+            "displayName": "Gender"
+          },
+          {
+            "name": "email",
+            "expr": "source.email",
+            "comment": "メールアドレス",
+            "displayName": "Email"
+          },
+          {
+            "name": "registration_date",
+            "expr": "source.registration_date",
+            "comment": "登録日",
+            "displayName": "Registration Date"
+          },
+          {
+            "name": "region",
+            "expr": "source.region",
+            "comment": "地域: 例) 東京, 大阪, 北海道",
+            "displayName": "Region"
+          }
+        ],
+        "measures": [
+          {
+            "name": "count",
+            "expr": "COUNT(*)",
+            "comment": "データセット内の行数の合計を表示します。この指標を使って、すべての行をカウントします。",
+            "displayName": "カウント"
+          }
+        ]
+      }
+    }
+  ],
+  "pages": [
+    {
+      "name": "d46fd0b0",
+      "displayName": "ユーザー分析",
+      "layout": [
+        {
+          "widget": {
+            "name": "d5199b31",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "266dc444",
+                  "fields": [
+                    {
+                      "name": "measure(count)",
+                      "expression": "MEASURE(`count`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "title": "合計ユーザー数",
+                "showTitle": true
+              },
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(count)",
+                  "displayName": "合計ユーザー数"
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 2,
+            "width": 6,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "00da4fc2",
+            "multilineTextboxSpec": {
+              "lines": [
+                "## ユーザー分析"
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 12,
+            "height": 1
+          }
+        },
+        {
+          "widget": {
+            "name": "6e057be0",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "266dc444",
+                  "fields": [
+                    {
+                      "name": "region",
+                      "expression": "`region`"
+                    },
+                    {
+                      "name": "measure(count)",
+                      "expression": "MEASURE(`count`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "地域別ユーザー数",
+                "showTitle": true
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "region",
+                  "axis": {
+                    "title": "地域"
+                  },
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(count)",
+                  "axis": {
+                    "title": "ユーザー数"
+                  },
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 2,
+            "width": 6,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "a395f2b6",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "266dc444",
+                  "fields": [
+                    {
+                      "name": "gender",
+                      "expression": "`gender`"
+                    },
+                    {
+                      "name": "measure(count)",
+                      "expression": "MEASURE(`count`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "性別ごとのユーザー数",
+                "showTitle": true
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "gender",
+                  "displayName": "性別",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(count)",
+                  "displayName": "ユーザー数",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "label": {
+                  "show": true
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 5,
+            "width": 6,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "xingbie",
+            "queries": [
+              {
+                "name": "dashboards/01f149d6fda41f74a1d1fb3ea129126f/datasets/01f149d7b3c51b71a143e468cc586ae0_gender",
+                "query": {
+                  "datasetName": "266dc444",
+                  "fields": [
+                    {
+                      "name": "gender",
+                      "expression": "`gender`"
+                    },
+                    {
+                      "name": "gender_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "showTitle": true,
+                "title": "性別"
+              },
+              "widgetType": "filter-single-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "gender",
+                    "queryName": "dashboards/01f149d6fda41f74a1d1fb3ea129126f/datasets/01f149d7b3c51b71a143e468cc586ae0_gender"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 1,
+            "width": 6,
+            "height": 1
+          }
+        },
+        {
+          "widget": {
+            "name": "diqu",
+            "queries": [
+              {
+                "name": "dashboards/01f149d6fda41f74a1d1fb3ea129126f/datasets/01f149d7b3c51b71a143e468cc586ae0_region",
+                "query": {
+                  "datasetName": "266dc444",
+                  "fields": [
+                    {
+                      "name": "region",
+                      "expression": "`region`"
+                    },
+                    {
+                      "name": "region_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "showTitle": true,
+                "title": "地域"
+              },
+              "widgetType": "filter-single-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "region",
+                    "queryName": "dashboards/01f149d6fda41f74a1d1fb3ea129126f/datasets/01f149d7b3c51b71a143e468cc586ae0_region"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 1,
+            "width": 6,
+            "height": 1
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1"
+    }
+  ],
+  "uiSettings": {
+    "theme": {
+      "widgetHeaderAlignment": "ALIGNMENT_UNSPECIFIED"
+    },
+    "applyModeEnabled": false
+  }
+}
