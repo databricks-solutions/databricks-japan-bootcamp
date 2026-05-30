@@ -17,8 +17,6 @@
 | 入力テーブル | `dirty_companies`（3,856 行）/ `master_companies`（25 行）|
 | 出力テーブル | `gold_company_sales` |
 
-> ⚠️ **スライド要修正**: 一部スライドのカタログ名が不統一です（後述の「スライド修正メモ」参照）。
-
 ---
 
 ## Step 1. Source 配置（プロンプト不要）
@@ -172,8 +170,6 @@ similar_candidates 列（配列）に出力する。
 - rank_in_month (int)
 ```
 
-> ✏️ **スライド 207 のカタログ名が `bootcamp_tokyo_v21_catalog`（タイポ）**になっています。Free Edition なら `workspace` に修正してください。
-
 ---
 
 ## Step 5. メトリクスビューの作成
@@ -263,21 +259,3 @@ A ランクの取引先一覧を教えて
 並び順: monthly_revenue 降順
 行数: Top 20
 ```
-
-> ✏️ **スライド 225 のカタログ名が `bootcamp_osaka_v21_catalog`** になっています。
-> Free Edition なら `workspace` に修正してください。
-
----
-
-# スライド修正履歴（2026-05 反映済み）
-
-本番は **Free Edition（`workspace` カタログ）**。以下のスライド修正を反映済み:
-
-| スライド | 修正前 | 修正後 | 状態 |
-|---|---|---|---|
-| 207 | `bootcamp_tokyo_v21_catalog`.bootcamp_tokyo.gold_company_sales | `workspace`.bootcamp_tokyo.gold_company_sales | ✅ 反映済 |
-| 225 | `bootcamp_osaka_v21_catalog`.bootcamp_tokyo.* | `workspace`.bootcamp_tokyo.* | ✅ 反映済 |
-| 224 | ボリューム名 `bootcamo_csv`（タイポ） | `bootcamp_csv` | ✅ 反映済 |
-| 221 / 228 | `@transactions` 参照（3 テーブル） | dirty_companies + master の 2 テーブル構成 | ✅ 反映済 |
-
-> Source 選択スライド（185-192）は元から `workspace.bootcamp_tokyo` を指しており正しい。
