@@ -28,7 +28,7 @@ import os
 NOTEBOOK_DIR = os.path.dirname(
     dbutils.notebook.entry_point.getDbutils().notebook().getContext().notebookPath().get()
 )
-DATA_DIR = f"/Workspace{NOTEBOOK_DIR}/Bootcamp_osaka_second half_data"
+DATA_DIR = f"/Workspace{NOTEBOOK_DIR}/data"
 
 print(f"カタログ : {CATALOG}")
 print(f"スキーマ : {SCHEMA}")
