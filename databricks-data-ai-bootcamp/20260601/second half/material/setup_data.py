@@ -22,13 +22,14 @@
 CATALOG = "workspace"
 SCHEMA = "bootcamp_tokyo"
 
-# このノートブックと同じ Git フォルダ内の data ディレクトリ
-# （リポジトリのスパースチェックアウト構成に合わせて相対パスで取得）
+# このノートブックは material/ フォルダにあり、CSV は同階層の data/ フォルダにある
+# （second half/material/setup_data.py から見て ../data を参照）
 import os
 NOTEBOOK_DIR = os.path.dirname(
     dbutils.notebook.entry_point.getDbutils().notebook().getContext().notebookPath().get()
 )
-DATA_DIR = f"/Workspace{NOTEBOOK_DIR}/data"
+SECOND_HALF_DIR = os.path.dirname(NOTEBOOK_DIR)  # material の親 = second half
+DATA_DIR = f"/Workspace{SECOND_HALF_DIR}/data"
 
 print(f"カタログ : {CATALOG}")
 print(f"スキーマ : {SCHEMA}")
