@@ -63,7 +63,6 @@ similar_candidates 列（配列）に出力する。
 やること: company_name と similar_candidates から AI に同一企業を判定させ、
 正式名称を matched_name 列に出力する。
 
-モデル: databricks-meta-llama-3-3-70b-instruct
 出力列名: matched_name
 
 プロンプト本文:
@@ -138,11 +137,15 @@ similar_candidates 列（配列）に出力する。
 > スライド 205。＋ボタン → 集計を選択 → 以下を入力。
 
 ```
-やること: 月別ランキング順位を付ける。
-- パーティション: year_month
-- 並び順: monthly_revenue 降順
-- 順位列名: rank_in_month
-- ランキング関数: ROW_NUMBER
+やること: 月次集計テーブルに、月別の売上ランキング順位の列 rank_in_month を追加する。
+
+これは GROUP BY 集計ではなく、ウィンドウ関数で実装すること。
+必ず OVER 句を付けて、次の式で生成する:
+ROW_NUMBER() OVER (PARTITION BY year_month ORDER BY monthly_revenue DESC) AS rank_in_month
+
+- パーティション (PARTITION BY): year_month
+- 並び順 (ORDER BY): monthly_revenue 降順
+- 既存の行は集約せず、そのまま全行を残して順位列だけ追加する
 
 出力列（この列構成で必ず出力すること）:
 - master_id (string)
