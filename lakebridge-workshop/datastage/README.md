@@ -2,6 +2,8 @@
 
 IBM DataStage ジョブの XML エクスポートを、Databricks の PySpark Notebook に変換する。Lakebridge で DataStage を対応ソースとして正式サポートしているのは BladeBridge。Switch (LLM ベース) でもカスタムプロンプトを書けば対応できる余地はあるが、DataStage XML は GUI 配置情報などの要素を多く含んで 1 本のサイズが大きく、ビジネスロジック部分の抽出などの前処理を挟まないと LLM では扱いにくい。BladeBridge はまさにこの前処理を組み込みで吸収してくれるため、DataStage には BladeBridge を使うのが推奨。本シナリオは Analyzer → BladeBridge の 2 ステップで進める。
 
+> **前提**: 共通セットアップ ([SETUP.md](../SETUP.md)) を完了していること (Databricks CLI、Lakebridge、Converter)。
+
 ## インプット
 
 `input/xml/` に以下の DataStage XML サンプルを配置済み (組織名・ホスト名・プロジェクト名などの固有情報は含まない)。

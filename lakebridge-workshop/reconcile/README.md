@@ -6,6 +6,42 @@ Reconcile は**移行前後のデータが一致しているか**を機械的に
 
 > 既定では、Reconcile Job はサーバーレス非対応で、実行のたびにジョブクラスタ (クラシック、2-10 worker) が自動起動する。**クラスタ起動込みで初回は 5〜15 分**程度を見ておく (起動済みクラスタを使い回す手順は後述)。
 
+## 前提
+
+共通セットアップ ([SETUP.md](../SETUP.md)) を先に完了させた上で、以下のシナリオ固有設定を実施する。
+
+### Reconcile 設定
+
+```bash
+databricks labs lakebridge configure-reconcile --profile <your-profile>
+```
+
+対話プロンプトが 9 項目続く。主な入力ポイント:
+
+| 項目 | 入力 |
+|---|---|
+| Data Source | `databricks` (0) |
+| Report Type | `all` (0) |
+| Secret scope | 既定 (`remorph_databricks`) |
+| Source catalog / schema | Reconcile Lab で使う source 側 (例: `<your_catalog>` / `reconcile_source`) |
+| Target catalog / schema | Reconcile Lab で使う target 側 (例: `<your_catalog>` / `reconcile_target`) |
+| Metadata catalog / schema / volume | **既定は `remorph` / `reconcile` / `reconcile_volume`** (存在しなければ作成確認あり) |
+
+初回実行時、Databricks 上に以下が自動で作成される:
+
+- **Metadata catalog/schema** 配下のテーブル 6 本 (Reconcile 結果の保存先、`aggregate_*` は `aggregates-reconcile` コマンド用):
+  - `main`
+  - `metrics`
+  - `details`
+  - `aggregate_metrics`
+  - `aggregate_details`
+  - `aggregate_rules`
+- **ワークスペース** 上の AI/BI ダッシュボード 2 つ (上記テーブルを可視化):
+  - `LAKEBRIDGE_Reconciliation_Metrics`
+  - `LAKEBRIDGE_Aggregate_Reconciliation_Metrics`
+- **ワークスペース** 上の Job 1 本 (`reconcile` コマンドが内部でキックする):
+  - `LAKEBRIDGE_Reconciliation_Runner`
+
 ## 手順
 
 ### 1. ワークスペース上の Lakebridge 構成を確認
