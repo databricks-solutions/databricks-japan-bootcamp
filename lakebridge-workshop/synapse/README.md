@@ -2,6 +2,8 @@
 
 Azure Synapse Analytics (Dedicated SQL Pool) から Databricks への移行を想定し、Lakebridge の Analyzer で規模感を掴んだ上で、**3 種類の Converter** (BladeBridge / Morpheus / Switch) で同じインプットを変換し、それぞれの強みと使い分けを体感する。
 
+> **前提**: 共通セットアップ ([SETUP.md](../SETUP.md)) を完了していること (Databricks CLI、Lakebridge、Converter)。
+
 ## インプット
 
 `input/` 配下に以下を配置済み。
