@@ -24,7 +24,10 @@ databricks configure --profile <profile-name>
 databricks auth describe --profile <profile-name>
 ```
 
-## 2. ai-dev-kit のアンインストール
+## 2. （オプション）ai-dev-kit のアンインストール
+
+ai-dev-kitを事前にインストールしていた方は、スキルやMCPが競合する可能性があるため、削除をしてください。
+事前に入れてない方はこの章をスキップいただき、３から実施ください。
 
 > **注意**: ai-dev-kit はプロジェクトフォルダ単位でインストールされています。  
 > 他の MCP サーバー設定には影響を与えないよう、ai-dev-kit 関連のエントリのみを削除します。
