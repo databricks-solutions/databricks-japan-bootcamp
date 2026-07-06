@@ -91,9 +91,30 @@ Claude Code セッション内で以下のコマンドを実行します。
 
 ```
 /plugin marketplace add databricks/databricks-agent-skills
+```
+
+![Plugin Marketplace インストール](images/image_1.png)
+
+
+```
 /plugin install databricks@databricks-agent-skills
+```
+
+![Plugin Marketplace インストール](images/image_2.png)
+
+![Plugin Marketplace インストール](images/image_3.png)
+
+![Plugin Marketplace インストール](images/image_4.png)
+
+
+
+```
 /reload-plugins
 ```
+
+![Plugin Marketplace インストール](images/image_5.png)
+
+
 
 #### Plugin で追加される機能
 
@@ -110,6 +131,16 @@ Skills に加えて、以下の機能が利用可能になります。
 | Prompt Router | プロンプト送信時 | Databricks関連プロンプトを自動検知、適切なスキルへ誘導 |
 | Context Primer | セッション開始時 | CLIバージョン・プロファイル情報を自動注入 |
 | Auth-failure Hint | ツール実行後 | 認証エラー時に自動ヒント提供 |
+
+
+
+#### 3.1.2 接続先ワークスペースのセットアップ
+/databricks:setup を実行して、接続先のワークスペースを指定します
+
+![databricks:setup 実行画面](images/image_6.png)
+
+![databricks:setup 実行画面](images/image_7.png)
+
 
 ### 3.2 方法 B: Databricks CLI（canonical — Experimental スキルも利用可能）
 
@@ -179,6 +210,13 @@ Claude Code セッション内で以下を実行します。
 ```
 /databricks:doctor
 ```
+![databricks:doctor 実行画面](images/image_8.png)
+
+![databricks:doctor 実行画面](images/image_9.png)
+
+#### スキルが動作している様子
+![スキルが動作している様子](images/image_10.png)
+
 
 または、スキルが認識されているか確認します。
 
@@ -194,29 +232,6 @@ Databricks Apps の作成手順を教えてください
 # Databricks CLI 経由の場合
 databricks aitools list
 ```
-
-### 4.3 スクリーンショット
-
-#### Plugin Marketplace からのインストール画面
-
-![Plugin Marketplace インストール](images/image_1.png)
-![Plugin Marketplace インストール](images/image_2.png)
-![Plugin Marketplace インストール](images/image_3.png)
-![Plugin Marketplace インストール](images/image_4.png)
-![Plugin Marketplace インストール](images/image_5.png)
-
-#### `/databricks:setup` 実行画面
-
-![databricks:setup 実行画面](images/image_6.png)
-![databricks:setup 実行画面](images/image_7.png)
-
-#### `/databricks:doctor` 実行画面
-
-![databricks:doctor 実行画面](images/image_8.png)
-![databricks:doctor 実行画面](images/image_9.png)
-
-#### スキルが動作している様子
-![スキルが動作している様子](images/image_10.png)
 
 ## 5. トラブルシューティング
 
