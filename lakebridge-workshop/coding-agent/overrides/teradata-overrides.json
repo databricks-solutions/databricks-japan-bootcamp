@@ -1,0 +1,5 @@
+{
+  "inherit_from": ["__BLADEBRIDGE_BASE_CONFIG__"],
+  "line_subst": [],
+  "block_subst": []
+}

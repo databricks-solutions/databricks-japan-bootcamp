@@ -2,9 +2,10 @@
 
 Databricks Labs Lakebridge のハンズオン教材。各シナリオの内容・手順は README を参照。
 
+- コーディングエージェント共通の保守ルール: `AGENTS.md`
 - 全体概要: `README.md`
 - 共通セットアップ (ローカル CLI 前提): `SETUP.md`。シナリオ固有のセットアップは各シナリオ README に置く (例: reconcile の `configure-reconcile`)
-- シナリオ別: `synapse/README.md` / `reconcile/README.md` / `datastage/README.md`
+- シナリオ別: `synapse/README.md` / `coding-agent/README.md` / `reconcile/README.md` / `datastage/README.md`
 - 英語版は [databricks-solutions/lakebridge-workshop](https://github.com/databricks-solutions/lakebridge-workshop) で独立管理 (対訳同期はしない)
 
 ## ディレクトリ規約
