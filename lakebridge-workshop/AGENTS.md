@@ -1,28 +1,27 @@
 # Lakebridge Workshop Agent Guide
 
-このディレクトリ配下は、Databricks Labs Lakebridge の日本語ハンズオン教材です。
+このディレクトリ配下は、Lakebridge の日本語ハンズオン教材です。
 
 ## 基本方針
 
-- 変更前に全体の `README.md`、`SETUP.md`、対象シナリオの `README.md` を読む。
+- 変更前に `README.md`、`SETUP.md`、対象ディレクトリの `README.md` を読む。
 - 教材と説明は日本語で記述する。
-- 既存シナリオは独立して実行できる状態を保つ。
+- 各ハンズオンは単独で実行できる状態を保つ。
 - 顧客名、Databricks プロファイル名、Workspace URL / ID、Warehouse ID、ユーザー名、ローカル絶対パス、認証情報をコミットしない。
 
 ## ディレクトリ規約
 
-- `<scenario>/input/`: 再現可能な入力例。Git 管理する。
-- `<scenario>/out/`: 学習者の生成物。Git 管理しない。
-- `<scenario>/_reference_output/`: バージョンを明記した参考出力。実生成物と比較してから Git 管理する。
+- `<handson>/input/`: 再現可能な入力例。Git 管理する。
+- `<handson>/out/`: 学習者の生成物。Git 管理しない。
+- `<handson>/_reference_output/`: 参考出力。実生成物と比較し、使用したバージョンを対象 README に記載してから Git 管理する。
 - Python の `__pycache__/` など、実行時に生成されるファイルを追加しない。
 
-## coding-agent シナリオ
+## ドキュメント
 
-- 中心メッセージは「変換後 SQL を直接直さず、変換ルールを直して元入力から再生成する」。
-- `out/before/` や `out/solution/` を手修正して解決しない。
-- `overrides/teradata-overrides.json` の `__BLADEBRIDGE_BASE_CONFIG__` を環境固有パスへ置換しない。
-- 実行用 override は `tools/prepare_overrides.py` で `out/` に生成する。
-- 完成例では、標準変換が `FAIL 2`、override 適用後が `FAIL 0` になることを確認する。
+- 共通の作業ルールはこのファイルに置く。
+- ハンズオン固有の手順や制約は、対象ディレクトリの `README.md` に置く。
+- ハンズオンの一覧をこのファイルや `CLAUDE.md` に複製しない。
+- トラブルシュートは **問題 / 原因 / 対処** の順で記述する。
 
 ## 検証
 
@@ -30,4 +29,4 @@
 - Python: `PYTHONPYCACHEPREFIX=/tmp/lakebridge-pycache python3 -m py_compile <file>`
 - Markdown のローカルリンクが存在することを確認する。
 - `git diff --check` を実行する。
-- Databricks 接続が利用できる場合は、対象 README の変換と SQL 構文チェックを最初から実行する。
+- Databricks 接続を利用できる場合は、対象 README の手順を最初から実行する。

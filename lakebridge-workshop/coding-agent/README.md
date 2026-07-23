@@ -1,14 +1,12 @@
 # コーディングエージェント併用ハンズオン (Teradata)
 
-Teradata SQL を BladeBridge で変換し、残った構文をコーディングエージェントに分析させ、BladeBridge override として変換ルールに追加する。
+BladeBridge の標準変換で残った Teradata 構文を override で補正し、同じ入力から変換し直す手順を扱う。変換済みの SQL を手で直すのではなく、再利用できる変換ルールに修正を残す。
 
-このハンズオンで覚えることは一つだけ。
+> **前提**
+> - 共通セットアップ ([SETUP.md](../SETUP.md)) が完了していること
+> - Claude Code / Codex などのコーディングエージェントを利用できること
 
-> **変換後 SQL を直接直すのではなく、変換ルールを直して最初から再生成する。**
-
-> **前提**: 共通セットアップ ([SETUP.md](../SETUP.md)) を完了し、Claude Code / Codex などのコーディングエージェントを利用できること。
-
-## 60分で行うこと
+## 60分の進め方
 
 ```text
 Teradata SQL
@@ -24,7 +22,7 @@ BladeBridge 標準変換
 チェッカーで改善を確認
 ```
 
-今回は、このループを一度最後まで回す。BTEQ、ストアドプロシージャの再設計、結果データの一致検証までは扱わない。
+この60分では、標準変換、override の追加、再変換、構文確認まで進める。BTEQ、ストアドプロシージャの再設計、結果データの一致検証は扱わない。
 
 ## 使用するファイル
 
@@ -32,7 +30,7 @@ BladeBridge 標準変換
 |---|---|
 | `input/01_identity.sql` | `NO CYCLE` を含む Teradata の IDENTITY 列 |
 | `input/02_update_from.sql` | Teradata の `UPDATE ... FROM` |
-| `overrides/teradata-overrides.json` | 参加者がエージェントと育てる override |
+| `overrides/teradata-overrides.json` | 演習で編集する BladeBridge override テンプレート |
 | `tools/prepare_overrides.py` | override 内のベース設定をローカル絶対パスへ展開 |
 | `tools/check_sql.py` | SQL Warehouse の `EXPLAIN` を使った構文チェック |
 | `_reference_output/before/` | BladeBridge 標準変換の出力例 |
@@ -75,7 +73,9 @@ Lakebridge v0.14.0 での出力例では、次の2か所が残る。
 
 ## 3. エージェントに変換ルールを作らせる
 
-エージェントには、変換後SQLの手修正ではなく、再利用できるoverrideの作成を依頼する。
+ここでは `out/before/` の SQL を手で直さず、再利用できる override の作成をエージェントに依頼する。
+
+override の設定項目と記述方法は BladeBridge 固有のため、作業時は公式の [BladeBridge Configuration](https://databrickslabs.github.io/lakebridge/docs/transpile/pluggable_transpilers/bladebridge/bladebridge_configuration/) を参照する。この演習では `line_subst` と `block_subst` を使用する。
 
 次のプロンプトを渡す前に、`<your-profile>` を自分の Databricks CLI プロファイル名へ置き換える。
 
@@ -133,18 +133,18 @@ python3 tools/check_sql.py out/solution --profile <your-profile>
 
 完成したSQLの例は [`_reference_output/solution/`](_reference_output/solution/) にある。
 
-## 5. 何が改善されたか説明する
+## 5. 作業後の確認
 
-最後に、次を自分の言葉で説明できれば、このハンズオンのゴールは達成。
+作業が終わったら、以下を確認する。
 
 1. BladeBridgeの標準変換だけでは、何が残ったか
 2. エージェントは最終SQLではなく、何を変更したか
 3. なぜ `out/` を直接編集しないのか
 4. 新しいTeradata SQLが追加されたとき、どの処理を再実行するか
 
-## 実案件ではどう広がるか
+## 演習範囲外の処理
 
-実案件でも基本は同じで、生成物を直接編集せず、中央の変換処理を修正して再生成する。
+実際の移行では、override だけで処理できないパターンに対応するため、後処理や専用変換、追加の検証を組み合わせる。
 
 ```text
 標準変換
@@ -154,8 +154,8 @@ python3 tools/check_sql.py out/solution --profile <your-profile>
 → 出力カバレッジ・構文・E2E結果の検証
 ```
 
-ただし、最初からすべてを一つのハンズオンに入れると、何を学ぶのか分かりにくくなる。今回は最初の改善ループだけを扱う。
+この演習で実施するのは、標準変換から override 適用後の構文確認まで。fixup、BTEQ の変換、出力カバレッジや結果データの検証は対象外とする。
 
-BTEQでは、SQLが構文エラーになるだけでなく、制御命令やファイル自体が変換対象から落ちる場合がある。そのため実案件では、SQL構文チェックだけでなく、入力と出力のカバレッジ確認や結果比較も必要になる。
+BTEQ では、制御命令が変換されずに残る場合や、BladeBridge がファイルを出力しない場合がある。そのため、SQL の構文チェックに加えて、入力と出力の件数確認や結果比較も必要になる。
 
 大量のSQLを検証する段階では、[`databricks-sql-validator`](https://github.com/nakazax/databricks-sql-validator) の利用も検討する。
