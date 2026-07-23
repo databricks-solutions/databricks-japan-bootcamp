@@ -137,10 +137,10 @@ python3 tools/check_sql.py out/solution --profile <your-profile>
 
 作業が終わったら、以下を確認する。
 
-1. BladeBridgeの標準変換だけでは、何が残ったか
-2. エージェントは最終SQLではなく、何を変更したか
-3. なぜ `out/` を直接編集しないのか
-4. 新しいTeradata SQLが追加されたとき、どの処理を再実行するか
+1. 標準変換後の `out/before/` には、`NO CYCLE` と Teradata 形式の `UPDATE ... FROM` が残っている
+2. 生成された SQL ではなく、`overrides/teradata-overrides.json` を修正している
+3. 同じ入力と override から `out/solution/` を再生成できる
+4. 入力 SQL を追加した場合も、変換、構文確認、override の修正、再変換の順に進められる
 
 ## 演習範囲外の処理
 
