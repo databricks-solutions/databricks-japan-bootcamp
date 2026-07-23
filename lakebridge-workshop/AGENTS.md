@@ -22,6 +22,8 @@
 - ハンズオン固有の手順や制約は、そのハンズオンの `README.md` に置く。
 - ハンズオンの一覧をこのファイルや `CLAUDE.md` に複製しない。
 - トラブルシュートは **問題 / 原因 / 対処** の順で記述する。
+- 英語版は [databricks-solutions/lakebridge-workshop](https://github.com/databricks-solutions/lakebridge-workshop) で独立管理する。対訳同期はしない。
+- Lakebridge 公式ドキュメント: https://databrickslabs.github.io/lakebridge/
 
 ## 検証
 

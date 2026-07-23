@@ -50,6 +50,10 @@ def split_statements(sql_text: str) -> list[str]:
     - `BEGIN` / `CASE` で +1。ただし `BEGIN TRAN(SACTION)` は対応する END を持たないため数えない
     - `END` で -1。ただし SQL スクリプティングの `END IF` / `END WHILE` / `END FOR` /
       `END REPEAT` / `END LOOP` は対応する開始語を数えていないため減算しない
+
+    既知の制限 (少数ファイルの構文チェック用途では許容):
+    - 文字列内のバックスラッシュエスケープ (例: 'it\\'s') は未対応。標準の '' を使うこと
+    - バッククォート識別子内のセミコロンや引用符は特別扱いしない
     """
     statements = []
     buffer = []
@@ -66,10 +70,11 @@ def split_statements(sql_text: str) -> list[str]:
         if state == "squote":
             buffer.append(character)
             if character == "'":
-                state = "code" if next_character != "'" else state
                 if next_character == "'":
                     buffer.append(next_character)
                     index += 1
+                else:
+                    state = "code"
             index += 1
             continue
         if state == "dquote":
@@ -162,7 +167,7 @@ def _is_comment_only(stmt: str) -> bool:
 
 def read_warehouse_id(profile: str) -> str:
     cfg_path = os.environ.get("DATABRICKS_CONFIG_FILE", str(Path.home() / ".databrickscfg"))
-    cfg = configparser.ConfigParser()
+    cfg = configparser.ConfigParser(interpolation=None)
     cfg.read(cfg_path)
     if profile not in cfg or "warehouse_id" not in cfg[profile]:
         sys.exit(

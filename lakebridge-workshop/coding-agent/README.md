@@ -68,7 +68,7 @@ Lakebridge v0.14.0 での出力例では、次の2か所が残る。
 | `01_identity.sql` | Databricks SQLで利用できない `NO CYCLE` |
 | `02_update_from.sql` | Teradata形式の `UPDATE ... FROM` |
 
-期待結果は `FAIL 2`。バージョンにより変換結果や件数が変わる場合は、件数ではなく実際の出力を確認する。
+期待結果は `FAIL=2`。バージョンにより変換結果や件数が変わる場合は、件数ではなく実際の出力を確認する。
 
 この時点の例は [`_reference_output/before/`](_reference_output/before/) にある。
 
@@ -125,7 +125,7 @@ databricks labs lakebridge transpile \
 python3 tools/check_sql.py out/solution --profile <your-profile>
 ```
 
-期待結果は `FAIL 0`。
+期待結果は `FAIL=0`。
 
 - `NO CYCLE` が削除される
 - `UPDATE ... FROM` が `MERGE INTO` に変換される

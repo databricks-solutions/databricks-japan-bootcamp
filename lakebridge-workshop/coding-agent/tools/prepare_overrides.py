@@ -17,7 +17,7 @@ BASE_CONFIG_GLOB = (
 
 
 def find_base_config() -> Path:
-    candidates = sorted(Path.home().glob(BASE_CONFIG_GLOB))
+    candidates = list(Path.home().glob(BASE_CONFIG_GLOB))
     if not candidates:
         raise SystemExit(
             "エラー: BladeBridge の Teradata ベース設定が見つかりません。"
