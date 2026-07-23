@@ -57,7 +57,7 @@ def split_statements(sql_text: str) -> list[str]:
     index = 0
     length = len(sql_text)
     state = "code"
-    word_pattern = re.compile(r"[A-Za-z_]+")
+    word_pattern = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
 
     while index < length:
         character = sql_text[index]

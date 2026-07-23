@@ -4,6 +4,7 @@ BladeBridge の標準変換で残った Teradata 構文を override で補正し
 
 > **前提**
 > - 共通セットアップ ([SETUP.md](../SETUP.md)) が完了していること
+> - `warehouse_id` に Serverless SQL Warehouse を設定していること。クラシック Warehouse は停止状態からの起動に時間がかかり、構文チェックがタイムアウトして FAIL 扱いになる場合がある
 > - Claude Code / Codex などのコーディングエージェントを利用できること
 
 ## 60分の進め方
