@@ -80,7 +80,15 @@ Lakebridge v0.14.0 での出力例では、次の2か所が残る。
 
 override の設定項目と記述方法は BladeBridge 固有のため、作業時は公式の [BladeBridge Configuration](https://databrickslabs.github.io/lakebridge/docs/transpile/pluggable_transpilers/bladebridge/bladebridge_configuration/) を参照する。この演習では `line_subst` と `block_subst` を使用する。
 
-次のプロンプトを渡す前に、`<your-profile>` を自分の Databricks CLI プロファイル名へ置き換える。
+まず `coding-agent/` ディレクトリでコーディングエージェントを起動する。
+
+```bash
+# lakebridge-workshop/coding-agent/ で実行する (どちらか利用できるもの)
+claude
+codex
+```
+
+起動したら次のプロンプトを渡す。渡す前に、`<your-profile>` を自分の Databricks CLI プロファイル名へ置き換える。
 
 ```text
 input/ は Teradata SQL、out/before/ は BladeBridge の標準変換結果です。
