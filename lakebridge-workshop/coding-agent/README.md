@@ -2,6 +2,8 @@
 
 BladeBridge の標準変換で残った Teradata 構文を override で補正し、同じ入力から変換し直す手順を扱う。変換済みの SQL を手で直すのではなく、再利用できる変換ルールに修正を残す。
 
+override の設定項目と記述方法は公式ドキュメントの [BladeBridge Configuration](https://databrickslabs.github.io/lakebridge/docs/transpile/pluggable_transpilers/bladebridge/bladebridge_configuration/) を参照。
+
 > **前提**
 > - 共通セットアップ ([SETUP.md](../SETUP.md)) が完了していること
 > - `warehouse_id` に Serverless SQL Warehouse を設定していること。クラシック Warehouse は停止状態からの起動に時間がかかり、構文チェックがタイムアウトして FAIL 扱いになる場合がある
