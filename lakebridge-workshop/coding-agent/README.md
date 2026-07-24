@@ -98,6 +98,8 @@ python3 tools/check_sql.py out/before --profile <your-profile>
 の失敗を分析し、同じ input/ から構文チェックを通る SQL を再生成できるように、
 overrides/teradata-overrides.json に BladeBridge override を実装してください。
 
+- override の仕様は次の公式ドキュメントを読んでから実装すること:
+  https://databrickslabs.github.io/lakebridge/docs/transpile/pluggable_transpilers/bladebridge/bladebridge_configuration/
 - out/before/ の SQL を直接編集しないこと
 - input/ の意味を変えないこと
 - inherit_from の __BLADEBRIDGE_BASE_CONFIG__ は変更しないこと
@@ -105,6 +107,8 @@ overrides/teradata-overrides.json に BladeBridge override を実装してくだ
 - 再変換と検証は README.md の「4. override付きで再変換する」を参照すること
 - 変更後の再変換コマンドと検証コマンドを示すこと
 ```
+
+BladeBridge の override 記法は一般的な知識ではないため、エージェント任せにせずドキュメントを読ませるのが確実に進めるポイント。エージェントがインターネットへアクセスできない環境では、上記ページをブラウザで PDF またはテキストとして保存して `coding-agent/` 配下に置き、プロンプトの参照先を URL からそのファイルパスに差し替える。
 
 完成例は [`_reference_output/solution/teradata-overrides.json`](_reference_output/solution/teradata-overrides.json) にある。まずエージェントに作らせてから比較する。
 
