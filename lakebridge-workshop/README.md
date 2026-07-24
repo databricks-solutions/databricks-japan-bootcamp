@@ -1,6 +1,6 @@
 # Lakebridge Workshop
 
-Databricks Labs [Lakebridge](https://databrickslabs.github.io/lakebridge/) を実際に動かして、データウェアハウス / ETL システムから Databricks への移行を体験するハンズオン。
+[Lakebridge](https://databrickslabs.github.io/lakebridge/) を実際に動かして、データウェアハウス / ETL システムから Databricks への移行を体験するハンズオン。
 
 ## ゴール
 
@@ -10,11 +10,12 @@ Lakebridge の主要機能 (Analyzer / Transpile / Reconcile) を手を動かし
 
 | ディレクトリ | 内容 |
 |---|---|
+| [coding-agent/](coding-agent/) | Teradata SQL を BladeBridge で変換し、コーディングエージェントが override を追加して再生成・再検証する改善ループを体験 |
 | [datastage/](datastage/) | IBM DataStage ジョブの XML エクスポートを Analyzer + BladeBridge で PySpark Notebook に変換 |
 | [reconcile/](reconcile/) | 移行前後のテーブル差分検証 (Databricks 内のテーブル同士、ソースシステム不要) |
 | [synapse/](synapse/) | Azure Synapse Analytics (Dedicated SQL Pool) の T-SQL コードを Analyzer + 3 種 Converter (BladeBridge / Morpheus / Switch) で変換、特徴を比較 |
 
-推奨順序は **Synapse → Reconcile → DataStage** だが、各シナリオは独立しているので、興味のあるものから着手しても構わない。シナリオは今後も追加していく予定。
+各シナリオは独立しているため、目的に合うものから着手できる。Lakebridge を初めて使う場合は、3 種の Converter を比較できる `synapse/` が全体像をつかみやすい。シナリオは今後も追加していく予定。
 
 ## セットアップ
 

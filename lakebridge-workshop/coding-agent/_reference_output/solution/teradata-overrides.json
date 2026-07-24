@@ -1,0 +1,15 @@
+{
+  "inherit_from": ["__BLADEBRIDGE_BASE_CONFIG__"],
+  "line_subst": [
+    {
+      "from": "[[:space:]]+NO[[:space:]]+CYCLE",
+      "to": ""
+    }
+  ],
+  "block_subst": [
+    {
+      "from": "UPDATE[[:space:]]+([A-Za-z_][A-Za-z0-9_]*)[[:space:]]+([A-Za-z_][A-Za-z0-9_]*)[[:space:]]+FROM[[:space:]]+([A-Za-z_][A-Za-z0-9_]*)[[:space:]]+([A-Za-z_][A-Za-z0-9_]*)[[:space:]]+SET[[:space:]]+[A-Za-z_][A-Za-z0-9_]*[.]([A-Za-z_][A-Za-z0-9_]*)[[:space:]]*=[[:space:]]*(.*?)[[:space:]]+WHERE[[:space:]]+(.*?);",
+      "to": "MERGE INTO $1 AS $2\nUSING $3 AS $4\nON $7\nWHEN MATCHED THEN UPDATE SET\n  $5 = $6;"
+    }
+  ]
+}
