@@ -11,3 +11,7 @@
 
 | library                                | description             | license    | source                                              |
 |----------------------------------------|-------------------------|------------|-----------------------------------------------------|
+| psycopg 3.3.4                         | PostgreSQL adapter for Python | LGPL-3.0-only | https://github.com/psycopg/psycopg              |
+| psycopg-binary 3.3.4                  | Binary implementation used by psycopg | LGPL-3.0-only | https://github.com/psycopg/psycopg       |
+| typing-extensions 4.16.0              | Backported and experimental typing features | PSF-2.0 | https://github.com/python/typing_extensions |
+| tzdata 2026.3                         | IANA time zone data for Python | Apache-2.0 | https://github.com/python/tzdata                |

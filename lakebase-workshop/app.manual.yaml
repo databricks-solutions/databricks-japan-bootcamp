@@ -1,0 +1,22 @@
+command:
+  - "python"
+  - "app.py"
+
+# ---------------------------------------------------------------
+# Lakebase手動接続設定（フォールバック・初期版互換）
+#
+# このままデプロイするとSQLiteデモモードで起動します。
+# Lakebaseへ接続するときは、Apps UIの環境変数または下記envブロックで
+# LAKEBASE_CONNECTION_STRINGとENDPOINT_NAMEを設定してください。
+#
+# PGUSERは未設定でもDatabricks Appsが渡すDATABRICKS_CLIENT_IDを利用します。
+# PostgreSQL標準のPGHOST / PGDATABASE / PGPORT / PGSSLMODE / PGUSERを
+# 個別設定する従来方式も引き続き利用できます。
+# ---------------------------------------------------------------
+# env:
+#   - name: LAKEBASE_CONNECTION_MODE
+#     value: "manual"
+#   - name: LAKEBASE_CONNECTION_STRING
+#     value: "<Connection detailsのCopy snippetで取得したpostgresql://...>"
+#   - name: ENDPOINT_NAME
+#     value: "projects/<master project>/branches/<自分のbranch>/endpoints/primary"

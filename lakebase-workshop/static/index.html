@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lakebase Workshop Tickets</title>
+    <link rel="stylesheet" href="/assets/styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Databricks Apps + Lakebase</p>
+          <h1>Support Tickets</h1>
+        </div>
+        <div class="health" id="health">接続状態を確認中...</div>
+      </header>
+
+      <section class="toolbar" aria-label="Ticket filters">
+        <div class="filter-group">
+          <button class="filter active" data-status="all">All</button>
+          <button class="filter" data-status="new">New</button>
+          <button class="filter" data-status="in_progress">In Progress</button>
+          <button class="filter" data-status="waiting">Waiting</button>
+          <button class="filter" data-status="resolved">Resolved</button>
+        </div>
+        <div class="admin-tools" aria-label="Workshop admin actions">
+          <span class="admin-label">ワークショップ用</span>
+          <button class="danger-secondary" id="break-scenario" type="button" disabled>
+            シナリオを壊す
+          </button>
+        </div>
+      </section>
+
+      <section class="workspace">
+        <aside class="ticket-list" id="ticket-list" aria-label="Ticket list"></aside>
+
+        <section class="detail-panel" id="detail-panel">
+          <div class="empty-state">
+            <h2>Select a ticket</h2>
+            <p>Ticket details and update controls appear here.</p>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script src="/assets/app.js"></script>
+  </body>
+</html>
