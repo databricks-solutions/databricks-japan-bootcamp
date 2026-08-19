@@ -1,0 +1,28 @@
+command:
+  - "python"
+  - "app.py"
+
+# ---------------------------------------------------------------
+# Lakebase接続設定（Add resource方式・ワークショップ標準）
+#
+# デプロイ前にDatabricks AppsのResourcesでDatabaseを追加してください。
+#
+#   Resource type: Database
+#   Resource key:  lakebase-demo
+#   Project:       講師から割り当てられたmaster project
+#   Branch:        自分のbranch
+#   Database:      databricks_postgres
+#   Permission:    Can connect and create
+#
+# Database resourceからPGHOST / PGDATABASE / PGPORT / PGSSLMODE / PGUSERが
+# 自動設定されます。ENDPOINT_NAMEはresource keyから正式なendpoint resource名を
+# 取得します。パスワードは保存せず、Appが短命credentialを取得します。
+#
+# Add resourceを利用できない環境では、公開リポジトリの手順に従って
+# app.manual.yamlをapp.yamlとして使用してください。
+# ---------------------------------------------------------------
+env:
+  - name: LAKEBASE_CONNECTION_MODE
+    value: "app-resource"
+  - name: ENDPOINT_NAME
+    valueFrom: "lakebase-demo"

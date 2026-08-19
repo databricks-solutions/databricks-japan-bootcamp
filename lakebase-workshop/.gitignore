@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+.databricks/
+.DS_Store
+lakebase_workshop.sqlite3
+local_demo.sqlite3
+dist/
+node_modules/
+npm-debug.log*
