@@ -22,7 +22,7 @@
 
 # COMMAND ----------
 
-CATALOG = "workspace"          # ← 環境に合わせて変更（FE-VM検証時は itoen_demo_catalog）
+CATALOG = "workspace"          # ← 環境に合わせて変更（Free Edition は workspace）
 SCHEMA = "bootcamp_tokyo"
 
 print(f"カタログ : {CATALOG}")

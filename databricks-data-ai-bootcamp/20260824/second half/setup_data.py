@@ -18,13 +18,11 @@
 # MAGIC %md
 # MAGIC ## 設定
 # MAGIC
-# MAGIC `CATALOG` は環境に合わせて変更してください。
-# MAGIC - Free Edition / 本番想定: `workspace`
-# MAGIC - FE-VM（伊藤園デモ環境）で検証する場合: `itoen_demo_catalog`
+# MAGIC `CATALOG` は環境に合わせて変更してください（Free Edition 想定: `workspace`）。
 
 # COMMAND ----------
 
-CATALOG = "workspace"          # ← 環境に合わせて変更（FE-VM検証時は itoen_demo_catalog）
+CATALOG = "workspace"          # ← 環境に合わせて変更（Free Edition は workspace）
 SCHEMA = "bootcamp_tokyo"
 
 # このノートブックと同じ Git フォルダ内の data ディレクトリ
