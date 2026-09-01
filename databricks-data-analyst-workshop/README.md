@@ -230,7 +230,7 @@ Azure ポータルから作成します。
    ```
 3. **スパースチェックアウトモード** にチェックを入れ、**コーンパターン** に以下を貼り付け
    ```
-   data-analyst-workshop
+   databricks-data-analyst-workshop
    ```
 
 <img src="image/7-1-3.png" alt="スパースチェックアウトモードとコーンパターンの設定" width="720">
@@ -239,7 +239,7 @@ Azure ポータルから作成します。
 
 ### 7-2. ノートブックを開く
 
-1. 作成された Git フォルダ配下で `data-analyst-workshop` > `notebook` を開く
+1. 作成された Git フォルダ配下で `databricks-data-analyst-workshop` > `notebook` を開く
 2. `create_demo_data_bricksmart` をクリック
 
 ### 7-3. ノートブックを実行
