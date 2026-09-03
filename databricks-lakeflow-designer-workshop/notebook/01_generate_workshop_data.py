@@ -1008,12 +1008,14 @@ ws.append(["segment_name", "month", "target_amount", "target_order_count"])
 for s, m, a, o in targets_data:
     ws.append([s, m.isoformat(), float(a), int(o)])
 
-# Save locally then copy to volume
-local_excel = "/tmp/segment_targets.xlsx"
-wb.save(local_excel)
-
-# Use dbutils to copy
-dbutils.fs.cp(f"file:{local_excel}", excel_path, recurse=False)
+# Save to in-memory buffer, then write bytes to UC Volume
+import io, os
+if os.path.exists(excel_path):
+    os.remove(excel_path)
+buf = io.BytesIO()
+wb.save(buf)
+with open(excel_path, "wb") as f:
+    f.write(buf.getvalue())
 print(f"Excel exported to: {excel_path}")
 
 # COMMAND ----------
