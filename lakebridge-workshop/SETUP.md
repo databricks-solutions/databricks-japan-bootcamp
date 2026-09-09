@@ -1,8 +1,8 @@
 # セットアップ
 
-各シナリオを始める前に、ローカル環境と Databricks ワークスペースの準備を済ませる。所要時間は 10〜15 分。
+CLIを使う各シナリオを始める前に、ローカル環境と Databricks ワークスペースの準備を済ませる。所要時間は 10〜15 分。
 
-現行の全シナリオはローカルマシンから Lakebridge CLI を実行するため、このセットアップは共通の前提となる。reconcile シナリオのみ、追加のシナリオ固有手順 (`configure-reconcile`) が [reconcile/README.md](reconcile/README.md) の冒頭にある。
+`agentic-migration/` はブラウザだけで実施できるため、このCLIセットアップは不要。[専用README](agentic-migration/README.md) の事前準備を参照する。その他のシナリオはローカルマシンから Lakebridge CLI を実行するため、以下のセットアップを完了させる。reconcile シナリオのみ、追加のシナリオ固有手順 (`configure-reconcile`) が [reconcile/README.md](reconcile/README.md) の冒頭にある。
 
 ## Databricks ワークスペース要件
 
