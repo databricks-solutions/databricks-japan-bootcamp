@@ -13,8 +13,6 @@
 
 ### 概要
 
-このラボガイドの原文（英語）は[こちら](https://github.com/databricks/tmm/blob/main/Lakeflow-DataEng-Workshop/Labguide.md)にあります。
-
 - **Lab 1 — SDP パイプラインを手で組む**: **Python** でストリーミングテーブルを、**SQL** でマテリアライズドビューを作成し、最初から 3 つのデータ品質エクスペクテーションを組み込みます。参照ファイルは [`labs/01-SDP/`](./labs/01-SDP/)。
 - **Lab 2 — データエンジニアとして Genie Code を使う**: 1 つの Genie Code プロンプトから、すべて **SQL** のパイプライン（AutoCDC + Auto Loader + 結合 gold MV）を生成します。実行前に自分でレビューします。参照ファイルは [`labs/02-GenieCode/`](./labs/02-GenieCode/)。
 - **Lab 3 — SDP のリアルタイムモード** *(任意)*: リアルタイムモード (RTM) で動く連続実行パイプラインをデプロイし、サブ秒レイテンシの集計がドライバコンソールに流れる様子を確認し、ドライバログからエンジンのレイテンシを読み取ります。参照バンドルは [`labs/03-SDP-RTM/`](./labs/03-SDP-RTM/)。
@@ -201,7 +199,7 @@ SDP パイプラインと下流のコンシューマーノートブックを、2
 下流アクションを加えたマルチステップワークフローとしてパイプラインを実行したことで、任意のジョブトリガーから呼び出せる本番運用可能なジョブが手に入りました。
 
 
-![Lab 1 — Lakeflow Pipelines Editor でのパイプライン実行完了: ストリーミングテーブル sales_transactions（出力 3.3K 行）がマテリアライズドビュー sales_stats（出力 6 行、3 エクスペクテーション、100% 書き込み、0% ドロップ）へ流れる](https://raw.githubusercontent.com/databricks/tmm/main/Lakeflow-DataEng-Workshop/misc/images/lab1-ui-expectations.png)
+![Lab 1 — Lakeflow Pipelines Editor でのパイプライン実行完了: ストリーミングテーブル sales_transactions（出力 3.3K 行）がマテリアライズドビュー sales_stats（出力 6 行、3 エクスペクテーション、100% 書き込み、0% ドロップ）へ流れる](https://raw.githubusercontent.com/databricks-solutions/databricks-japan-bootcamp/main/databricks-data-ai-bootcamp/20260911/misc/images/lab1-ui-expectations.png)
 
 
 
@@ -281,7 +279,7 @@ Explain the data flow in this pipeline end-to-end. Which node is incrementally m
 
 ### 期待される表示
 
-![Lab 2 — Genie Code が生成した、bronze（bookings, fraud_flags, payments）、silver（bookings_with_fraud）、gold（fraud_by_party_and_method）レイヤーを持つパイプライン（Lakeflow Pipelines Editor）](https://raw.githubusercontent.com/databricks/tmm/main/Lakeflow-DataEng-Workshop/misc/images/lab2-dag.png)
+![Lab 2 — Genie Code が生成した、bronze（bookings, fraud_flags, payments）、silver（bookings_with_fraud）、gold（fraud_by_party_and_method）レイヤーを持つパイプライン（Lakeflow Pipelines Editor）](https://raw.githubusercontent.com/databricks-solutions/databricks-japan-bootcamp/main/databricks-data-ai-bootcamp/20260911/misc/images/lab2-dag.png)
 
 Lakeflow Pipelines Editor は、右に Genie Code の計画、中央に生成された SQL、下に行数付きの解決済み DAG を表示します。3 つの bronze ストリーミングテーブル、1 つの silver ストリーミングテーブル、1 つの gold マテリアライズドビューです。行数を[検証](#検証--最も重要なステップ)セクションと照合するサニティチェックに使ってください。
 
@@ -446,6 +444,5 @@ def temperature_rtm_flow():
 
 * [Get to know Genie Code: Lakeflow and Analytics](https://www.databricks.com/resources/demos/videos/get-know-genie-code)
 * 完全版 [Lakeflow Demo: From messy sales data to AI insights](https://www.databricks.com/resources/demos/videos/lakeflow-action-gourmet-pipeline-demo-daiwt)
-* [OSS Apache SDP, VS Code](https://github.com/databricks/tmm/tree/main/OSS-SDP-OpenSkyNetwork) 入門
 * 見ておきたい RTM デモ: [Air Traffic Control with Apache Spark Structured Streaming — Real-Time Mode](https://www.databricks.com/resources/demos/videos/air-traffic-control-with-apache-spark-structured-streaming-real-time-mode)
 * 次回のデータエンジニアリングワークショップや、DBSQL・AI・Unity Catalog 向けの[その他の Databricks ワークショップ](https://www.databricks.com/events?event_type=workshop&region=all)を探す
