@@ -1,0 +1,37 @@
+# Lab 3 — SDP のリアルタイムモード（任意）
+# Workspace UI の Deployments（ロケット）アイコンから deploy します。
+bundle:
+  name: sdp-rtm-rate-source
+
+variables:
+  catalog_name:
+    description: "UC カタログ（Free Edition の既定 workspace）"
+    default: workspace
+  schema_name:
+    description: "固定スキーマ（workspace.de_workshop）"
+    default: de_workshop
+
+resources:
+  pipelines:
+    sdp_rtm_rate_source:
+      name: sdp-rtm-rate-source
+      catalog: ${var.catalog_name}
+      schema: ${var.schema_name}
+      root_path: ./sdp-rtm-rate-source
+      continuous: true
+      serverless: true
+      channel: PREVIEW
+      configuration:
+        spark.databricks.streaming.realTimeMode.enabled: "true"
+        # 注: spark.shuffle.manager (MultiShuffleManager) はクラシックコンピュート専用の設定。
+        #     サーバーレス / Free Edition では非対応のため設定しない（未設定でも RTM は動作する）。
+      libraries:
+        - file:
+            path: ./sdp-rtm-rate-source/transformations/temperature_rtm.py
+
+targets:
+  prod:
+    mode: production
+    default: true
+    workspace:
+      root_path: /Workspace/Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.target}
