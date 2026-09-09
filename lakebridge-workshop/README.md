@@ -10,6 +10,7 @@ Lakebridge の主要機能 (Analyzer / Transpile / Reconcile) を手を動かし
 
 | ディレクトリ | 内容 |
 |---|---|
+| [agentic-migration/](agentic-migration/) | ブラウザ上の Genie Code で T-SQL を変換し、差分レビューと結果検証を行う30分の演習 |
 | [coding-agent/](coding-agent/) | Teradata SQL を BladeBridge で変換し、コーディングエージェントが override を追加して再生成・再検証する改善ループを体験 |
 | [datastage/](datastage/) | IBM DataStage ジョブの XML エクスポートを Analyzer + BladeBridge で PySpark Notebook に変換 |
 | [reconcile/](reconcile/) | 移行前後のテーブル差分検証 (Databricks 内のテーブル同士、ソースシステム不要) |
@@ -19,7 +20,9 @@ Lakebridge の主要機能 (Analyzer / Transpile / Reconcile) を手を動かし
 
 ## セットアップ
 
-各シナリオを始める前に、共通セットアップ ([SETUP.md](SETUP.md)) を完了させる (所要 10〜15 分。Databricks CLI、Lakebridge、Converter のインストール)。reconcile シナリオのみ、追加のシナリオ固有設定が [reconcile/README.md](reconcile/README.md) の冒頭にある。
+`agentic-migration/` はブラウザだけで実施でき、前提条件は [専用README](agentic-migration/README.md) を参照する。
+
+CLIを使う各シナリオを始める前に、共通セットアップ ([SETUP.md](SETUP.md)) を完了させる (所要 10〜15 分。Databricks CLI、Lakebridge、Converter のインストール)。reconcile シナリオのみ、追加のシナリオ固有設定が [reconcile/README.md](reconcile/README.md) の冒頭にある。
 
 ## 参考
 
