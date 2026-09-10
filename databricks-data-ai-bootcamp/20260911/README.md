@@ -21,7 +21,6 @@ de_workshop/
   30_gold_aggregations.py         … 顧客/加盟店/決済手段/日次の集計（Gold）
   admin/
     01_generate_incremental_data.py       … 増分データ生成（Auto Loader 増分体験用）
-    00_setup_and_generate_initial_data.py … 参考: 初期データ生成のみを行う版（05_setup に統合済みのため通常は不要）
 ```
 
 > データは `05_setup` が **PySpark のみ**で生成します（`workspace.de_workshop.landing` / `master` に Parquet 出力、`t_payments` 約 10 万件）。dbldatagen・手動アップロード・`sample_data` 同梱は不要です。生成は冪等で、既に生成済みならスキップします。
