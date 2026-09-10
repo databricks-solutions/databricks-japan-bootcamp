@@ -2,9 +2,9 @@
 # MAGIC %md
 # MAGIC # 10. Bronze：Auto Loader による取り込み
 # MAGIC
-# MAGIC 共有 Volume に届いた Parquet を **Auto Loader（cloudFiles）** で増分取り込みし、Bronze ファクトテーブルを作る。
-# MAGIC - ソース：共有 landing Volume（全員共通・読み取り）
-# MAGIC - チェックポイント：各自専用 Volume
+# MAGIC 自分の `landing` Volume にアップロードした Parquet を **Auto Loader（cloudFiles）** で増分取り込みし、Bronze ファクトテーブルを作る。
+# MAGIC - ソース：自分の `landing` Volume（`workspace.de_workshop.landing`）
+# MAGIC - チェックポイント：自分の `checkpoints` Volume
 # MAGIC - 取り込み時刻を**東京タイムゾーン**で付与し、増分取り込みを確認する
 # MAGIC - Bronze テーブルにも **Liquid Clustering** を設定する
 
@@ -29,7 +29,7 @@
 # COMMAND ----------
 
 def ingest_fact(table: str):
-    src  = f"{shared_landing}/{table}/"          # 共有 Volume のソースパス（全員共通）
+    src  = f"{landing}/{table}/"                 # 自分の landing Volume（手動アップロード先）
     ckpt = f"{checkpoint_base}/{table}/"         # 自分専用のチェックポイント
     (spark.readStream
         .format("cloudFiles")                                        # ★Auto Loader（増分・自動検出）
@@ -55,8 +55,9 @@ def ingest_fact(table: str):
 # MAGIC このセルを、次の流れで **2 回** 実行する。**同じコードを 2 回実行するのがポイント**。
 # MAGIC
 # MAGIC 1. **【1 回目】** まずこのセルを実行し、初期データを取り込む（件数をメモしておく）
-# MAGIC 2. **【講師の作業を待つ】** 講師が増分データ（7 月分）を共有 Volume に追加する
-# MAGIC 3. **【2 回目】** 講師の追加後、**このセルをもう一度**実行する（コードは変更しない）
+# MAGIC 2. **【増分ファイルをアップロード】** 配布された増分データ（7 月分）の Parquet を、自分の `landing` Volume の
+# MAGIC    各テーブルの `batch=20260707/` サブフォルダにアップロードする（例: `.../landing/t_payments/batch=20260707/`）
+# MAGIC 3. **【2 回目】** アップロード後、**このセルをもう一度**実行する（コードは変更しない）
 # MAGIC
 # MAGIC → 2 回目では、1 回目に取り込んだデータは再処理されず、**追加された増分だけ**が取り込まれる。
 
