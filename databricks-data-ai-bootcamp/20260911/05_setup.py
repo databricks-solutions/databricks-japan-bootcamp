@@ -2,7 +2,7 @@
 # MAGIC %md
 # MAGIC # 05. 初期セットアップ（データ生成込み・Free Edition 版）
 # MAGIC
-# MAGIC このノートブック **単体** で、以下をまとめて実施する（従来の `admin/00` の生成処理を統合）。
+# MAGIC このノートブック **単体** で、以下をまとめて実施する。
 # MAGIC 1. 共通変数の定義（カタログ `workspace` / スキーマ `de_workshop` / Volume パス）
 # MAGIC 2. スキーマと Volume（`landing` / `master` / `checkpoints`）の作成
 # MAGIC 3. **サンプルデータ生成**（マスター 3 表 → `master`、ファクト 4 表 → `landing`）
