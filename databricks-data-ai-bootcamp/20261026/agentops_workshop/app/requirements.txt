@@ -1,0 +1,8 @@
+databricks-agentbricks[langgraph]==0.6.0
+databricks-langchain==0.21.0
+databricks-mcp==0.9.2
+mlflow[databricks]==3.17.1
+mcp<2
+uvicorn>=0.41.0
+python-dotenv>=1.2.1
+pyyaml
