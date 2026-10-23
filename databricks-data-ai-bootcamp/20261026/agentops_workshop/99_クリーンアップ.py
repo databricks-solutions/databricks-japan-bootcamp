@@ -6,10 +6,10 @@
 # MAGIC
 # MAGIC | 削除するもの | 作ったノートブック |
 # MAGIC |---|---|
-# MAGIC | アプリ（`APP_NAME`） | 03・06 |
-# MAGIC | 検索インデックス（`doc_chunks_index` / `past_cases_index`） | 02 |
-# MAGIC | UC関数（`get_product_info`）・テーブル・Volume | 01・02・04 |
-# MAGIC | MLflow の実験と、トレースのテーブル（`agent_otel_*` など） | 03〜06 |
+# MAGIC | アプリ（`APP_NAME`） | 04・07 |
+# MAGIC | 検索インデックス（`doc_chunks_index` / `past_cases_index`） | 03 |
+# MAGIC | UC関数（`get_product_info`）・テーブル・Volume | 01・03・05 |
+# MAGIC | MLflow の実験と、トレースのテーブル（`agent_otel_*` など） | 04〜07 |
 # MAGIC | 設定ファイル `app/config.yaml` | 00_設定 |
 # MAGIC
 # MAGIC AI Search のエンドポイントと、立ち上げ用のダミーのインデックス（`workshop_shared`）は参加者で共有しているので、削除しません。
