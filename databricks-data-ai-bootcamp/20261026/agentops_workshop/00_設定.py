@@ -44,6 +44,8 @@ APP_DIR = f"{NOTEBOOK_DIR}/app"         # デプロイするアプリ（エー�
 
 DOC_INDEX = f"{S}.doc_chunks_index"
 CASE_INDEX = f"{S}.past_cases_index"
+WARMUP_SCHEMA = f"{CATALOG}.workshop_shared"   # AI Search の立ち上げ用のダミーのインデックスを置く場所（参加者で共有。01_準備 で作る）
+WARMUP_INDEX = f"{WARMUP_SCHEMA}.warmup_index"
 PRODUCT_FUNCTION = f"{S}.get_product_info"
 EVAL_DATASET = f"{S}.eval_dataset"
 EXPERIMENT = f"{_nb_dir}/agentops_traces"        # MLflow の実験（ノートブックと同じフォルダ）
@@ -75,7 +77,7 @@ spark.sql(f"USE SCHEMA {SCHEMA}")
 def use_experiment():
     """MLflow の実験を使う。トレースは Unity Catalog のテーブルに保存する（初回だけ実験とテーブルを作る）。
 
-    MLflow 3.14 以上が必要なので、%pip で入れたノートブック（03〜06）から呼ぶ。
+    MLflow 3.14 以上が必要なので、%pip で入れたノートブック（04〜07）から呼ぶ。
     """
     import mlflow
     from mlflow.entities.trace_location import UnityCatalog

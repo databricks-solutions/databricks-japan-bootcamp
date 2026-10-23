@@ -1,6 +1,6 @@
 # Databricks notebook source
 # MAGIC %md
-# MAGIC # 04. 評価: デプロイの前に、初版の品質を数値で確かめる（約12分）
+# MAGIC # 05. 評価: デプロイの前に、初版の品質を数値で確かめる（約12分）
 # MAGIC
 # MAGIC | # | やること | 使う機能 |
 # MAGIC |---|---|---|
@@ -106,7 +106,7 @@ display(table_v1[cols])
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC → `05_改善` で、改善版（v2）を同じ評価データで評価し、初版と比べます。
+# MAGIC → `06_改善` で、改善版（v2）を同じ評価データで評価し、初版と比べます。
 
 # COMMAND ----------
 

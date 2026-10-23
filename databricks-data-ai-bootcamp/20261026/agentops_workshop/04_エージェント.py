@@ -1,6 +1,6 @@
 # Databricks notebook source
 # MAGIC %md
-# MAGIC # 03. エージェントを動かし、トレースで動きを見る（約7分）
+# MAGIC # 04. エージェントを動かし、トレースで動きを見る（約7分）
 # MAGIC
 # MAGIC | # | やること | 使う機能 |
 # MAGIC |---|---|---|
@@ -8,7 +8,21 @@
 # MAGIC | 2 | エージェントのコードを読む | LangGraph・MCP |
 # MAGIC | 3 | オペレーターからの相談を1件入れて、回答とトレースを見る | MLflow Tracing |
 # MAGIC
-# MAGIC エージェントのコードは、このフォルダの `app/` にあります。**ここで評価したコードが、そのまま 06 でアプリとしてデプロイされます。**
+# MAGIC エージェントのコードは、このフォルダの `app/` にあります。**ここで評価したコードが、そのまま 07 でアプリとしてデプロイされます。**
+# MAGIC
+# MAGIC > **注**: 今回は AgentOps に主眼をおくため、エージェントやアプリは弊社で用意した簡易的なサンプルのコードを利用します。なお、今回のサンプルコードはハンズオンでの簡便性を優先しており、一部レガシーな手法が含まれています。今後カスタムのエージェントを開発する場合は、ぜひ [こちらのドキュメント](https://docs.databricks.com/aws/ja/agents/) を参考にして、Agent Bricks をご活用ください。
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ### このノートブックで動かすエージェント（`02_概要` と同じ図）
+
+# COMMAND ----------
+
+# 図の HTML は diagrams.py にある
+from diagrams import agent_flow_html
+
+displayHTML(agent_flow_html())
 
 # COMMAND ----------
 
@@ -29,7 +43,7 @@ print(experiment.experiment_id, experiment.trace_location.full_otel_spans_table_
 
 # MAGIC %md
 # MAGIC ## 1. アプリの作成を先に始めておく
-# MAGIC アプリの計算資源の起動には2〜3分かかるので、ここで作成だけ始めておきます（デプロイは 06 で行います）。
+# MAGIC アプリの計算資源の起動には2〜3分かかるので、ここで作成だけ始めておきます（デプロイは 07 で行います）。
 # MAGIC アプリには、使うもの（モデル・実験・インデックス・UC関数・トレースのテーブル）を **リソース** として宣言します。宣言すると、アプリのサービスプリンシパルに必要な権限が自動で付きます。
 
 # COMMAND ----------
@@ -48,7 +62,7 @@ create_app(_w, APP_SPEC)
 # MAGIC |---|---|
 # MAGIC | `app/tools.py` | ツール: 製品情報の照会（UC関数を **MCP** で呼ぶ）、文書・過去事例の検索（**AI Search**） |
 # MAGIC | `app/agent_v1.py` | 初版のエージェント。LangGraph の `create_agent` に、モデル（Claude）・ツール・システムプロンプトを渡すだけ |
-# MAGIC | `app/agent_v2.py` | 改善版（05 で使う） |
+# MAGIC | `app/agent_v2.py` | 改善版（06 で使う） |
 # MAGIC
 # MAGIC 左のファイルの一覧から `app/agent_v1.py` を開いてみてください。システムプロンプトは2行だけです。
 
@@ -105,4 +119,4 @@ display(spark.sql(f"""
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC → `04_評価` で、評価データを使って初版の品質を数値にします（改善は `05_改善`）。
+# MAGIC → `05_評価` で、評価データを使って初版の品質を数値にします（改善は `06_改善`）。

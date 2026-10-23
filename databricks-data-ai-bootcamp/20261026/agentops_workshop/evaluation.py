@@ -1,4 +1,4 @@
-"""評価で使うもの: 評価データ・採点器・predict_fn・結果の表。04_評価・05_改善 から読み込む。"""
+"""評価で使うもの: 評価データ・採点器・predict_fn・結果の表。05_評価・06_改善 から読み込む。"""
 import json
 import re
 from concurrent.futures import ThreadPoolExecutor

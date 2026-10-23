@@ -1,6 +1,6 @@
 # Databricks notebook source
 # MAGIC %md
-# MAGIC # 02. データパイプライン: 文書と過去の対応を、エージェントが使える形にする（約12分）
+# MAGIC # 03. データパイプライン: 文書と過去の対応を、エージェントが使える形にする（約12分）
 # MAGIC
 # MAGIC | # | 処理 | 使う機能 | できるもの |
 # MAGIC |---|---|---|---|
@@ -15,6 +15,18 @@
 # COMMAND ----------
 
 # MAGIC %run ./00_設定
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ### このノートブックでのデータ処理の流れ
+
+# COMMAND ----------
+
+# 図の HTML は diagrams.py にある（①〜⑤ は、このノートブックの章の番号）
+from diagrams import pipeline_flow_html
+
+displayHTML(pipeline_flow_html(f"{CATALOG}.{SCHEMA}"))
 
 # COMMAND ----------
 
@@ -172,14 +184,64 @@ display(spark.sql("SELECT * FROM past_cases LIMIT 10"))
 # MAGIC
 # MAGIC | インデックス | 元のテーブル | 作り方 |
 # MAGIC |---|---|---|
-# MAGIC | `past_cases_index` | `past_cases`（マスクした過去事例） | 4-1. コードで作る |
-# MAGIC | `doc_chunks_index` | `doc_chunks`（文書のチャンク） | 4-2. 画面（UI）で作る |
+# MAGIC | `doc_chunks_index` | `doc_chunks`（文書のチャンク） | 4-1. 画面（UI）で作る |
+# MAGIC | `past_cases_index` | `past_cases`（マスクした過去事例） | 4-2. コードで作る |
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ### 4-1. コードで作る（過去事例）
-# MAGIC Databricks SDK で作ります。作成を始めるだけで、完了は待ちません（同期のあいだに 4-2 を進めます）。
+# MAGIC ### まず、AI Search のエンドポイントの準備ができているかを確かめる
+# MAGIC エンドポイントを新しく作ったワークスペースでは、最初のインデックス（`01_準備` で作ったダミー）の準備ができるまで20分ほどかかります。準備ができていなければ、このセルで待ちます。
+
+# COMMAND ----------
+
+import time
+
+from databricks.sdk.errors import NotFound
+
+start = time.time()
+while True:
+    state = _w.vector_search_endpoints.get_endpoint(VS_ENDPOINT).endpoint_status.state.value
+    try:
+        warmup = "完了" if _w.vector_search_indexes.get_index(WARMUP_INDEX).status.ready else "準備中"
+    except NotFound:
+        warmup = "なし"   # ダミーのインデックスがない場合は、エンドポイントの状態だけを見る
+    if state in ("OFFLINE", "PROVISIONING_FAILED", "RED_STATE"):
+        raise RuntimeError(f"AI Search のエンドポイント {VS_ENDPOINT} が {state} です。講師か管理者に確認してください")
+    if state == "ONLINE" and warmup != "準備中":
+        print(f"AI Search のエンドポイント {VS_ENDPOINT} の準備ができています")
+        break
+    print(f"{(time.time() - start) / 60:.0f}分経過  エンドポイント: {state} / 最初のインデックス: {warmup}  …待っています")
+    time.sleep(30)
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ### 4-1. 画面（UI）で作る（文書）
+# MAGIC 次のセルを実行して表示されるリンクから `doc_chunks` テーブルを開き、右上の **Create → Vector search index** を選んで、表の値を入れます（表にない項目は既定のまま）。作成を始めたら、完了を待たずに 4-2 に進みます。
+
+# COMMAND ----------
+
+displayHTML(f"""
+<p><a href="/explore/data/{CATALOG}/{SCHEMA}/doc_chunks" target="_blank">doc_chunks テーブルを開く</a>（右上の <b>Create → Vector search index</b>）</p>
+<table border="1" cellpadding="6" style="border-collapse: collapse">
+<tr><th>項目</th><th>入れる値</th></tr>
+<tr><td>名前</td><td><code>{DOC_INDEX}</code></td></tr>
+<tr><td>プライマリーキー</td><td><code>chunk_id</code></td></tr>
+<tr><td>ソースの埋め込み</td><td>コンピュートの埋め込み</td></tr>
+<tr><td>埋め込みソース列</td><td><code>chunk_to_embed</code></td></tr>
+<tr><td>コンピュート済みのエンベディングを保存</td><td>オフのまま</td></tr>
+<tr><td>AI検索エンドポイント</td><td><code>{VS_ENDPOINT}</code></td></tr>
+<tr><td>インデックス更新モード</td><td>Triggered</td></tr>
+<tr><td>高度な設定 → 埋め込みモデル</td><td><code>{EMBEDDING_ENDPOINT}</code>（日本語に対応したモデル。既定のモデルから変える）</td></tr>
+</table>
+<p>作れたら、インデックスの画面で状態が「Online」になるのを確かめます（数分）。</p>""")
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ### 4-2. コードで作る（過去事例）
+# MAGIC Databricks SDK で作ります。作成を始めるだけで、完了は 4-3 で待ちます。
 
 # COMMAND ----------
 
@@ -230,29 +292,6 @@ create_or_sync(CASE_INDEX)
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ### 4-2. 画面（UI）で作る（文書）
-# MAGIC 次のセルを実行して表示されるリンクから `doc_chunks` テーブルを開き、右上の **Create → Vector search index** を選んで、表の値を入れます（表にない項目は既定のまま）。
-
-# COMMAND ----------
-
-displayHTML(f"""
-<p><a href="/explore/data/{CATALOG}/{SCHEMA}/doc_chunks" target="_blank">doc_chunks テーブルを開く</a>（右上の <b>Create → Vector search index</b>）</p>
-<table border="1" cellpadding="6" style="border-collapse: collapse">
-<tr><th>項目</th><th>入れる値</th></tr>
-<tr><td>Name</td><td><code>{DOC_INDEX}</code></td></tr>
-<tr><td>Index type</td><td>既定のまま</td></tr>
-<tr><td>Primary key</td><td><code>chunk_id</code></td></tr>
-<tr><td>Embedding source</td><td>Compute embeddings（列は <code>chunk_to_embed</code>）</td></tr>
-<tr><td>Advanced settings → Embedding model</td><td><code>{EMBEDDING_ENDPOINT}</code>（日本語に対応したモデル。既定のモデルから変える）</td></tr>
-<tr><td>Save computed embeddings</td><td>オフのまま</td></tr>
-<tr><td>Vector Search endpoint</td><td><code>{VS_ENDPOINT}</code></td></tr>
-<tr><td>Sync mode</td><td>Triggered</td></tr>
-</table>
-<p>作れたら、インデックスの画面で状態が「Online」になるのを確かめます（数分）。</p>""")
-
-# COMMAND ----------
-
-# MAGIC %md
 # MAGIC ### 4-3. 2つのインデックスの準備ができるのを待つ
 # MAGIC 画面での作成がうまくいかなかった場合は、`CREATE_DOC_INDEX_BY_CODE` を `True` にして実行すると、同じ設定でコードから作ります。
 
@@ -266,7 +305,7 @@ for name, cfg in INDEXES.items():
     try:
         w.vector_search_indexes.get_index(name)
     except NotFound:
-        raise RuntimeError(f"{name} がまだありません。4-2 の手順で画面から作るか、CREATE_DOC_INDEX_BY_CODE を True にしてください")
+        raise RuntimeError(f"{name} がまだありません。4-1 の手順で画面から作るか、CREATE_DOC_INDEX_BY_CODE を True にしてください")
     rows = spark.table(cfg["source"]).count()   # 元のテーブルの行がすべて入るまで待つ
     for _ in range(120):
         st = w.vector_search_indexes.get_index(name).status
@@ -329,4 +368,4 @@ display(spark.sql(f"SELECT * FROM {S}.get_product_info('RC6-2509A-00321', '2025-
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC → `03_エージェント` で、これらをツールとして使うエージェントを動かします。
+# MAGIC → `04_エージェント` で、これらをツールとして使うエージェントを動かします。

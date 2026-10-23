@@ -1,6 +1,6 @@
 # Databricks notebook source
 # MAGIC %md
-# MAGIC # 06. デプロイと監視: 品質を確かめた v2 をアプリにする（約15分）
+# MAGIC # 07. デプロイと監視: 品質を確かめた v2 をアプリにする（約15分）
 # MAGIC
 # MAGIC | # | やること | 使う機能 |
 # MAGIC |---|---|---|
@@ -12,7 +12,7 @@
 # MAGIC
 # MAGIC | ファイル | 内容 |
 # MAGIC |---|---|
-# MAGIC | `agent_v2.py`・`tools.py` | 05 で評価したエージェント（そのまま使う） |
+# MAGIC | `agent_v2.py`・`tools.py` | 06 で評価したエージェント（そのまま使う） |
 # MAGIC | `agent/agent.py`・`runtime/` | エージェントを HTTP の API（`/api/invocations`）として公開するサーバー（AgentKit の `DurableAgentServer`） |
 # MAGIC | `ui/` | チャット画面 |
 # MAGIC | `app.yaml`・`requirements.txt` | 起動のしかたと、使うパッケージ |
@@ -30,7 +30,7 @@
 
 # MAGIC %md
 # MAGIC ## 1. デプロイする
-# MAGIC 03 で作り始めたアプリに、`app/` のコードをデプロイします（初回は2分ほど）。画面からは、**Compute → Apps → アプリ → Deploy** で、ソースに `app` のフォルダを指定するのと同じです。
+# MAGIC 04 で作り始めたアプリに、`app/` のコードをデプロイします（初回は2分ほど）。画面からは、**Compute → Apps → アプリ → Deploy** で、ソースに `app` のフォルダを指定するのと同じです。
 
 # COMMAND ----------
 
@@ -53,7 +53,7 @@ displayHTML(f'<a href="{app.url}" target="_blank">チャット画面を開く: {
 
 # MAGIC %md
 # MAGIC ## 3. アプリからのやり取りを、トレースで確かめる
-# MAGIC チャット画面で何件か相談したあとに、次のセルを実行します。アプリからのやり取りも、03〜05 と同じ実験に入っています。
+# MAGIC チャット画面で何件か相談したあとに、次のセルを実行します。アプリからのやり取りも、04〜06 と同じ実験に入っています。
 # MAGIC MLflow の画面（Experiments → `agentops_traces` → Traces）でも、1件ずつ開いて確認できます。
 
 # COMMAND ----------

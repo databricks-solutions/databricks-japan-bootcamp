@@ -1,4 +1,4 @@
-"""アプリ（Databricks Apps）の作成とデプロイ。03（作成を先に始める）と 06（デプロイ）から使う。
+"""アプリ（Databricks Apps）の作成とデプロイ。04（作成を先に始める）と 07（デプロイ）から使う。
 
 アプリのリソースとして、使うものを宣言する。宣言すると、アプリのサービスプリンシパルに必要な権限
 （親のカタログ・スキーマの USE も含む）が自動で付くので、権限を手で付ける必要はない。
@@ -45,7 +45,7 @@ def create_app(w: WorkspaceClient, spec: App) -> None:
         print(f"アプリ {spec.name} は作成済みです")
         return
     w.apps.create(app=spec)
-    print(f"アプリ {spec.name} の作成を始めました（起動に2〜3分かかります。06 でデプロイします）")
+    print(f"アプリ {spec.name} の作成を始めました（起動に2〜3分かかります。07 でデプロイします）")
 
 
 def deploy_app(w: WorkspaceClient, spec: App, source_code_path: str):

@@ -1,13 +1,13 @@
 # Databricks notebook source
 # MAGIC %md
-# MAGIC # 05. 改善: 改善版を同じ評価データで評価し、初版と比べる（約10分）
+# MAGIC # 06. 改善: 改善版を同じ評価データで評価し、初版と比べる（約10分）
 # MAGIC
 # MAGIC | # | やること | 使う機能 |
 # MAGIC |---|---|---|
 # MAGIC | 1 | 改善版（v2）で何を変えたかを見る | ― |
 # MAGIC | 2 | 同じ評価データで v2 を評価し、v1 と比べる | 評価の比較（品質・レイテンシ・トークン数） |
 # MAGIC
-# MAGIC `04_評価` を実行したあとに進めます（04 で登録した評価データと、初版の評価結果を使います）。
+# MAGIC `05_評価` を実行したあとに進めます（05 で登録した評価データと、初版の評価結果を使います）。
 
 # COMMAND ----------
 
@@ -34,10 +34,10 @@ import agent_v2
 from evaluation import SCORE_COLUMNS, add_japanese_reasons, assessments_table, make_predict_fn, make_scorers
 from tools import to_text
 
-dataset = ds.get_dataset(name=EVAL_DATASET)   # 04 で登録した評価データ
-scorers = make_scorers(JUDGE_ENDPOINT)        # 04 と同じ採点器
+dataset = ds.get_dataset(name=EVAL_DATASET)   # 05 で登録した評価データ
+scorers = make_scorers(JUDGE_ENDPOINT)        # 05 と同じ採点器
 run_v1 = mlflow.search_runs(filter_string="tags.agent_version = 'v1' and attributes.run_name LIKE 'eval_%'",
-                            order_by=["start_time DESC"], max_results=1, output_format="list")[0]   # 04 の初版の評価
+                            order_by=["start_time DESC"], max_results=1, output_format="list")[0]   # 05 の初版の評価
 print("初版の評価:", run_v1.info.run_name, run_v1.info.run_id)
 
 # COMMAND ----------
@@ -103,4 +103,4 @@ display(table_v2[["question"] + [c for name in SCORE_COLUMNS for c in (name, f"{
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC → 品質を確かめた v2 を、`06_デプロイと監視` でアプリとしてデプロイします。
+# MAGIC → 品質を確かめた v2 を、`07_デプロイと監視` でアプリとしてデプロイします。
