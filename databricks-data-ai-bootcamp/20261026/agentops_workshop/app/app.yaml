@@ -1,0 +1,9 @@
+command: ["python", "-c", "from runtime.main import main; main()"]
+env:
+  - name: MLFLOW_TRACKING_URI
+    value: "databricks"
+  - name: MLFLOW_EXPERIMENT_ID
+    valueFrom: "experiment"
+  # agentbricks deploy を使わないので、実行の状態はプロセスの中に持つ
+  - name: DATABRICKS_AGENTBRICKS_RUNTIME_STORE_LOCAL
+    value: "true"
