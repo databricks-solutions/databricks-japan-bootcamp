@@ -85,8 +85,10 @@ def add_japanese_reasons(table: pd.DataFrame, w, llm_endpoint: str) -> pd.DataFr
             return text
         res = w.api_client.do("POST", f"/serving-endpoints/{llm_endpoint}/invocations", body={"messages": [
             {"role": "user", "content": f"次の文章を自然な日本語に翻訳し、訳文だけを出力してください。\n\n{text}"}]})
-        content = res["choices"][0]["message"]["content"]
-        return content if isinstance(content, str) else "".join(c.get("text", "") for c in content if c.get("type") == "text")
+        content = res["choices"][0]["message"].get("content")
+        if isinstance(content, list):
+            content = "".join(c.get("text", "") for c in content if c.get("type") == "text")
+        return content or text   # 訳文が返らなかったときは、原文（英語）のままにする
 
     table = table.copy()
     with ThreadPoolExecutor(8) as ex:

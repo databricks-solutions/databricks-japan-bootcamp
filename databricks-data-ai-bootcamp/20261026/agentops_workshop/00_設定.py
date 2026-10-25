@@ -27,6 +27,7 @@ import re
 
 import yaml
 from databricks.sdk import WorkspaceClient
+from databricks.sdk.errors import NotFound
 
 _w = WorkspaceClient()
 _user = _w.current_user.me().user_name
@@ -65,10 +66,13 @@ WAREHOUSE_ID = _whs[0].id if _whs else ""
 if WAREHOUSE_ID:
     os.environ["MLFLOW_TRACING_SQL_WAREHOUSE_ID"] = WAREHOUSE_ID
 
-try:   # カタログがなければ作る（作る権限がなければ、管理者に依頼する）
-    spark.sql(f"CREATE CATALOG IF NOT EXISTS {CATALOG}")
-except Exception as e:
-    raise RuntimeError(f"カタログ {CATALOG} がなく、作る権限もありません。管理者に、カタログの作成と USE CATALOG・CREATE SCHEMA の付与を依頼してください") from e
+try:   # カタログがあれば作らない（Default Storage のワークスペースでは、IF NOT EXISTS でもカタログの作成が失敗するため）
+    _w.catalogs.get(CATALOG)
+except NotFound:
+    try:   # カタログがなければ作る（作る権限がなければ、管理者に依頼する）
+        spark.sql(f"CREATE CATALOG IF NOT EXISTS {CATALOG}")
+    except Exception as e:
+        raise RuntimeError(f"カタログ {CATALOG} がなく、作る権限もありません。管理者に、カタログの作成と USE CATALOG・CREATE SCHEMA の付与を依頼してください") from e
 spark.sql(f"USE CATALOG {CATALOG}")
 spark.sql(f"CREATE SCHEMA IF NOT EXISTS {S}")
 spark.sql(f"USE SCHEMA {SCHEMA}")
