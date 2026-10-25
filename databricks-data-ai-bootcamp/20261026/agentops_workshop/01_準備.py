@@ -192,6 +192,16 @@ for fn, sql in [("ai_mask", "SELECT ai_mask('佐藤 花子様（090-1234-5678）
         else:   # 入力が不正などのエラーは、関数そのものは使えるとみなす
             checks.append((f"AI関数 {fn}", "OK", ""))
 
+# 管理 MCP サーバー（エージェントは UC関数を、これ経由で呼ぶ）。自分のスキーマの関数の一覧を取れれば使える
+try:
+    res = _w.api_client.do("POST", f"/api/2.0/mcp/functions/{CATALOG}/{SCHEMA}", body={"jsonrpc": "2.0", "id": 1, "method": "tools/list"},
+                           headers={"Accept": "application/json, text/event-stream", "Content-Type": "application/json"})
+    if "result" in res:
+        checks.append(("管理 MCP サーバー（UC関数）", "OK", ""))
+    else:
+        checks.append(("管理 MCP サーバー（UC関数）", "NG", str(res.get("error", res))[:150]))
+except Exception as e:
+    checks.append(("管理 MCP サーバー（UC関数）", "NG", f"管理者に、管理 MCP サーバーが使えるか確認する（{str(e)[:120]}）"))
 checks.append(("SQL ウェアハウス", "OK" if WAREHOUSE_ID else "NG",
                WAREHOUSE_ID or "トレースを読むのに必要。管理者に、SQL ウェアハウスと CAN USE の付与を依頼する"))
 
