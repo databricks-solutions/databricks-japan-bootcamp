@@ -29,6 +29,11 @@ class FacilitatorSetupNotebookTests(unittest.TestCase):
         self.assertIn('valueFrom: "lakebase-demo"', app_yaml)
         self.assertIn("Resource key: lakebase-demo", notebook)
 
+    def test_does_not_install_psycopg_binary(self) -> None:
+        # psycopg-binary aborts with SIGABRT on aarch64 serverless compute.
+        notebook = SETUP_NOTEBOOK.read_text(encoding="utf-8")
+        self.assertNotRegex(notebook, r"%pip install .*psycopg(\[[^]]*\bbinary\b|-binary)")
+
 
 if __name__ == "__main__":
     unittest.main()

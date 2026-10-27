@@ -58,10 +58,14 @@ dbutils = cast(_DbUtils, globals()["dbutils"])
 # MAGIC 追加インストールは `psycopg` のみ。`databricks-sdk` は DBR 同梱版をそのまま使う
 # MAGIC （`-U databricks-sdk` は protobuf 6.x を引き込み、DBR 同梱の googleapis-common-protos / grpcio-status と競合するため upgrade しない。
 # MAGIC このノートブックは raw REST API しか使わないので同梱版で十分）
+# MAGIC
+# MAGIC `psycopg[binary]` は使わない。Serverless で aarch64 が割り当てられると、binary 同梱の OpenSSL が
+# MAGIC `FATAL FIPS SELFTEST FAILURE` で import 時に SIGABRT し Python カーネルごと落ちるため。
+# MAGIC extra なしの `psycopg` はイメージ同梱のシステム libpq を使う純 Python 実装で動き、x86_64 / aarch64 の両方で動作する
 
 # COMMAND ----------
 
-# MAGIC %pip install "psycopg[binary]" -q
+# MAGIC %pip install psycopg -q
 
 # COMMAND ----------
 
