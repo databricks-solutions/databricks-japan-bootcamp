@@ -1,11 +1,11 @@
 # 概要
 
-Databricks上で**AIガードレール**と**プロンプト管理**を実装するワークショップのハンズオンです。ガードレール付きAIゲートウェイエンドポイントの作成から、簡易エージェントの構築、トレースによる可観測性、Prompt Registryでのプロンプト管理までを一気通貫で実践します。
+Databricks上で**AIガードレール**と**プロンプト管理**を実装するワークショップのハンズオンです。ガードレール付きモデルサービスの作成から、簡易エージェントの構築、トレースによる可観測性、Prompt Registryでのプロンプト管理までを一気通貫で実践します。
 
 | # | セクション | 内容 | 時間 |
 |---|-----------|------|------|
-| 1 | AIゲートウェイとガードレール | エンドポイント作成、ビルトイン+カスタムガードレール設定・検証 | 25分 |
-| 2 | 簡易エージェントの構築 | ガードレール付きエンドポイントで商品検索エージェントを構築 | 15分 |
+| 1 | AIゲートウェイとガードレール | モデルサービス作成、ビルトイン+カスタムガードレール設定・検証 | 25分 |
+| 2 | 簡易エージェントの構築 | ガードレール付きモデルサービスで商品検索エージェントを構築 | 15分 |
 | 3 | トレースによる可観測性 | エージェントの動作をMLflowトレースで可視化、トークン使用量の確認 | 10分 |
 | 4 | プロンプトの登録・バージョン管理 | エージェントのプロンプトをPrompt Registryで管理・デプロイ制御 | 15分 |
 | 5 | まとめ・次のステップ | 推論テーブル・Usage Trackingの紹介、振り返り | 5分 |
@@ -13,8 +13,8 @@ Databricks上で**AIガードレール**と**プロンプト管理**を実装す
 ## 前提条件
 
 - Databricksワークスペースへのアクセス権限
-- Unity AIゲートウェイ(Beta)がAccount Console Previewsで有効化済み
-- MLflow Prompt Registry(Beta)がWorkspace Previewsで有効化済み
+- Unity Gatewayが利用可能で、Unity Gateway Service Policiesプレビューが有効化済み
+- MLflow Prompt Registryが利用可能
 - 作成済みのUnity Catalogカタログ・スキーマと、CAN USE権限のあるSQL Warehouse
 
 プレビュー機能の有効化・カタログ作成・権限設定の詳細な手順は、後述の「事前準備」を参照してください。
@@ -79,17 +79,14 @@ SENSITIVE_INFO_GUARDRAIL_NAME = "block_my_number"
 
 ワークショップ当日までに、管理者側で以下の準備を実施してください。
 
-## プレビュー機能の有効化
+## 機能と配信先の確認
 
-以下の2つのプレビュー機能を有効化します。
+- Unity Gatewayを利用できるワークスペース・リージョンを使用します。
+- ワークスペース管理者が **Unity Gateway Service Policies** プレビューを有効にします。コンプライアンスセキュリティプロファイルを使用しないワークスペースでは、アカウントレベルの **Enhanced Unity Gateway** プレビューでも有効になります。
+- MLflow Prompt Registryが利用できることを確認します。
+- 標準の配信先は `system.ai.meta-llama-3-3-70b-instruct` です。開催環境でモデルへのアクセスとfunction callingが利用できることを事前確認してください。
 
-| 機能 | 有効化場所 | 操作者 |
-|------|-----------|--------|
-| AI Gateway V2 Preview(Beta) | Account Console > プレビュー | アカウント管理者 |
-| Managed MLflow Prompt Registry(Beta) | ワークスペースのユーザーアイコン > プレビュー | ワークスペース管理者 |
-
-- **Account Console**: アカウントコンソールにログインし、左メニューの「プレビュー」から該当機能を検索して有効化してください
-- **Workspace Settings**: ワークスペース右上の「ユーザーアイコン」>「プレビュー」から該当機能を有効化してください
+機能名・有効化条件は変更される場合があります。最新の[サービス・ポリシーの前提条件](https://docs.databricks.com/aws/en/data-governance/unity-catalog/service-policies/create-service-policy#prerequisites)と[モデルサービスの要件](https://docs.databricks.com/aws/en/ai-gateway/model-services#requirements)を確認してください。
 
 ## カタログ・スキーマの作成と権限設定
 
@@ -115,11 +112,21 @@ GRANT USE SCHEMA ON SCHEMA workshop.llmops TO `<参加者グループ>`;
 GRANT CREATE FUNCTION ON SCHEMA workshop.llmops TO `<参加者グループ>`;
 GRANT EXECUTE ON SCHEMA workshop.llmops TO `<参加者グループ>`;
 
+-- 参加者専用モデルサービスの作成
+GRANT CREATE SERVICE ON SCHEMA workshop.llmops TO `<参加者グループ>`;
+
 -- UCトレース保存用（推論ログも有効化する場合は同じ権限を使用）
 GRANT CREATE TABLE ON SCHEMA workshop.llmops TO `<参加者グループ>`;
+
+-- 配信先モデルへのアクセス（既に付与済みの場合は不要）
+GRANT USE CATALOG ON CATALOG system TO `<参加者グループ>`;
+GRANT USE SCHEMA ON SCHEMA system.ai TO `<参加者グループ>`;
+-- 個別モデルへのEXECUTEは、下記のCatalog Explorerの手順で付与
 ```
 
 **権限の用途一覧**
+
+配信先へのアクセスが不足する場合、管理者はCatalog Explorerで `system.ai.meta-llama-3-3-70b-instruct` の **Permissions > Grant** から参加者グループに **EXECUTE** を付与してください。既定の `system.ai` の権限で利用可能なら追加付与は不要です。参考: [モデルサービスのアクセス制御](https://docs.databricks.com/aws/en/ai-gateway/govern-model-services)
 
 | 権限 | 対象 | 用途 |
 |------|------|------|
@@ -127,7 +134,10 @@ GRANT CREATE TABLE ON SCHEMA workshop.llmops TO `<参加者グループ>`;
 | USE SCHEMA | workshop.llmopsスキーマ | スキーマへのアクセス |
 | CREATE FUNCTION | workshop.llmopsスキーマ | Prompt Registry(プロンプト登録) |
 | EXECUTE | workshop.llmopsスキーマ | Prompt Registry(プロンプト読み込み) |
+| CREATE SERVICE | workshop.llmopsスキーマ | 参加者専用モデルサービスの作成 |
 | CREATE TABLE | workshop.llmopsスキーマ | UCトレース・任意の推論ログの保存 |
+| EXECUTE | 配信先モデルサービス | モデルの呼び出し |
+| MANAGE | 作成したモデルサービス | ポリシーの設定（参加者が所有者なら設定可能） |
 
 ## UCトレース用SQL Warehouseと権限
 
@@ -183,8 +193,8 @@ SQL_WAREHOUSE_ID = "<SQL_WAREHOUSE_ID>"
 # 開催回ごとに変更。従来のllmops_workshopとは別のエクスペリメントを作成
 WORKSHOP_ID = "session01"
 
-# AIゲートウェイエンドポイントで使用するモデル名
-MODEL_NAME = "databricks-meta-llama-3-3-70b-instruct"
+# AIゲートウェイの配信先モデルサービス
+MODEL_NAME = "system.ai.meta-llama-3-3-70b-instruct"
 
 # ---------- 企業固有の設定(ここを変更すれば他社でも利用可能) ----------
 
@@ -215,7 +225,7 @@ print(f"競合他社: {', '.join(COMPETITORS)}")
 print(f"商品数: {len(PRODUCT_DATA)}件")
 ```
 
-参加者ごとのユニーク識別子とエンドポイント名を自動生成します。
+参加者ごとのユニーク識別子とモデルサービス名を自動生成します。
 
 ```python
 # 参加者ごとのユニーク識別子(メールアドレスのローカル部分から自動生成)
@@ -226,20 +236,22 @@ USERNAME = (
     .replace("-", "_")
 )
 
-# 参加者専用のAIゲートウェイエンドポイント名(参加者間で競合しない)
-ENDPOINT_NAME = f"ws_{USERNAME}"
+# 参加者専用のモデルサービス名（参加者間で競合しない）
+SERVICE_LEAF_NAME = f"ws_{USERNAME}"
+SERVICE_NAME = f"{CATALOG}.{SCHEMA}.{SERVICE_LEAF_NAME}"
 
 print(f"ユーザー名: {USERNAME}")
-print(f"エンドポイント名: {ENDPOINT_NAME}")
+print(f"モデルサービス名: {SERVICE_NAME}")
 print(f"モデル: {MODEL_NAME}")
 print(f"カタログ.スキーマ: {CATALOG}.{SCHEMA}")
 ```
 
 ## 0.2 クライアントの初期化
 
-Unity AIゲートウェイのエンドポイントは、従来の`/serving-endpoints`ではなく`/ai-gateway/mlflow/v1`をベースURLとして使用します。OpenAI互換のSDKでそのままアクセスできます。
+Unity AIゲートウェイのモデルサービスは、従来の`/serving-endpoints`ではなく`/ai-gateway/mlflow/v1`をベースURLとして使用します。OpenAI互換のSDKでそのままアクセスできます。
+`model` にはモデルサービスの完全修飾名（`catalog.schema.service`）を指定します。
 
-参考: [AIゲートウェイエンドポイントのクエリ](https://docs.databricks.com/ja/ai-gateway/query-endpoints-beta)
+参考: [モデルサービスのクエリ](https://docs.databricks.com/aws/en/ai-gateway/query-model-services)
 
 ```python
 from openai import OpenAI
@@ -267,13 +279,13 @@ client = OpenAI(
 )
 
 
-def query_llm(user_message, system_message=None, endpoint_name=None):
+def query_llm(user_message, system_message=None, service_name=None):
     """
-    AIゲートウェイエンドポイントにリクエストを送信し結果を表示する。
+    モデルサービスにリクエストを送信し結果を表示する。
     ガードレールでブロックされた場合はエラー詳細を表示する。
     """
-    if endpoint_name is None:
-        endpoint_name = ENDPOINT_NAME
+    if service_name is None:
+        service_name = SERVICE_NAME
 
     messages = []
     if system_message:
@@ -282,7 +294,7 @@ def query_llm(user_message, system_message=None, endpoint_name=None):
 
     try:
         response = client.chat.completions.create(
-            model=endpoint_name, messages=messages, max_tokens=500,
+            model=service_name, messages=messages, max_tokens=500,
         )
         content = response.choices[0].message.content
         print("[通過] モデルからの応答:")
@@ -347,27 +359,28 @@ print(f"UCトレース保存先: {experiment.trace_location.full_otel_spans_tabl
 
 # 1. AIゲートウェイとガードレール(25分)
 
-各参加者が自分専用のAIゲートウェイエンドポイントを作成し、ガードレールを設定・検証します。ここで作成したガードレール付きエンドポイントを、セクション2以降のエージェントのLLMバックエンドとして使用します。
+各参加者が自分専用のモデルサービスを作成し、ガードレールを設定・検証します。
+ここで作成したガードレール付きモデルサービスを、セクション2以降のエージェントのLLMバックエンドとして使用します。
 
 参考: [Unity AIゲートウェイの概要](https://docs.databricks.com/ja/ai-gateway/)
 
-## 1.1 AIゲートウェイエンドポイントの作成
+## 1.1 モデルサービスの作成
 
-1. 左サイドバーの**AIゲートウェイ**をクリック
-2. **+ AI Gateway Endpoint**をクリック
-3. 以下を設定:
-   - **名前**: 下のセルに表示される自分専用のエンドポイント名をコピーして貼り付け(作成後の変更不可)
-   - **プロバイダー**: 「Databricksによるホスト」を選択(デフォルト)
-   - **配信先**: 「トークンごとの従量課金制」タブから**Meta Llama 3.3 70B Instruct**を選択
-4. 右側のサマリーで設定内容を確認し、**作成**をクリック
+1. **カタログ**でセクション0.1のカタログ・スキーマを開き、**Create > Service > Model service** を選択します。AI Gatewayの **Create** からも作成できます。
+2. カタログ・スキーマを確認し、**名前**に下のセルの短いサービス名を指定します。
+3. **配信先**に `MODEL_NAME` が示すモデル（標準設定は `system.ai.meta-llama-3-3-70b-instruct`）を選択します。
+4. **作成**をクリックし、完全修飾名が `SERVICE_NAME` と一致することを確認します。
 
-参考: [AIゲートウェイエンドポイントの設定](https://docs.databricks.com/ja/ai-gateway/configure-endpoints-beta)
+配信先は利用リージョンと権限によって異なります。別モデルを使う場合は、Chat Completions APIとfunction callingに対応していることを管理者が確認してください。
+以降は、自分で作成したサービスにポリシーを設定します。
+
+参考: [モデルサービスの作成](https://docs.databricks.com/aws/en/ai-gateway/model-services)
 
 ```python
-print(f"=== あなた専用のエンドポイント名 ===")
-print(f"  {ENDPOINT_NAME}")
-print()
-print(f"選択するモデル: {MODEL_NAME}")
+print(f"カタログ: {CATALOG} / スキーマ: {SCHEMA}")
+print(f"作成時の短いサービス名: {SERVICE_LEAF_NAME}")
+print(f"呼び出しに使う完全修飾名: {SERVICE_NAME}")
+print(f"選択する配信先: {MODEL_NAME}")
 ```
 
 ## 1.2 推論テーブルについて(参考)
@@ -378,7 +391,7 @@ AIゲートウェイでは、エンドポイントへのリクエスト/レス�
 - ガードレールでブロックされたリクエストの**分析・チューニング**
 - LLMの応答品質の**モニタリング・評価**
 
-設定方法: Gateway Endpointの詳細画面 > **推論テーブル** > **セットアップ**からカタログ・スキーマを指定
+設定方法: 作成したモデルサービスの詳細画面から推論ログを有効化し、保存先のカタログ・スキーマを指定
 
 参考: [推論テーブル](https://docs.databricks.com/ja/ai-gateway/inference-tables)
 
@@ -559,15 +572,16 @@ query_llm("おすすめのプランを教えてください。")
 
 # 2. 簡易エージェントの構築(15分)
 
-セクション1で作成したガードレール付きエンドポイントをLLMバックエンドとして、ツール呼び出し(function calling)を使った簡易カスタマーサポートエージェントを構築します。
+セクション1で作成したガードレール付きモデルサービスをLLMバックエンドとして、
+ツール呼び出し（function calling）を使った簡易カスタマーサポートエージェントを構築します。
 
 **構成要素**:
 
-- **LLMバックエンド**: ガードレール付きAIゲートウェイエンドポイント(セクション1で作成済み)
+- **LLMバックエンド**: ガードレール付きモデルサービス（セクション1で作成済み）
 - **ツール**: 商品・サービス検索(ダミーデータ)
 - **システムプロンプト**: カスタマーサポート用(セクション4でPrompt Registryに登録)
 
-参考: [Foundation Model APIでのfunction calling](https://docs.databricks.com/ja/machine-learning/model-serving/function-calling)
+参考: [Foundation Model APIでのfunction calling](https://docs.databricks.com/aws/en/ai-gateway/query-model-services)
 
 ## 2.1 ツールとシステムプロンプトの定義
 
@@ -640,18 +654,18 @@ print(f"\nシステムプロンプト:\n{SYSTEM_PROMPT}")
 ```python
 @mlflow.trace(name="customer_support_agent")
 def run_agent(user_question: str):
-    """ガードレール付きエンドポイントでツール呼び出しを行う簡易エージェント"""
+    """ガードレール付きモデルサービスでツール呼び出しを行う簡易エージェント"""
     messages = [
         {"role": "system", "content": SYSTEM_PROMPT},
         {"role": "user", "content": user_question},
     ]
 
-    # ステップ1: LLM呼び出し(ガードレール付きエンドポイント経由)
+    # ステップ1: LLM呼び出し（ガードレール付きモデルサービス経由）
     # ガードレールはこの時点で入力を評価し、違反があればブロックする
     with mlflow.start_span(name="llm_call_1_tool_selection") as span:
         span.set_inputs({"user_question": user_question})
         response = client.chat.completions.create(
-            model=ENDPOINT_NAME, messages=messages, tools=tools, max_tokens=500,
+            model=SERVICE_NAME, messages=messages, tools=tools, max_tokens=500,
         )
         assistant_msg = response.choices[0].message
         span.set_outputs({"tool_calls": bool(assistant_msg.tool_calls)})
@@ -676,7 +690,7 @@ def run_agent(user_question: str):
         with mlflow.start_span(name="llm_call_2_final_answer") as span:
             span.set_inputs({"tool_results": result})
             response = client.chat.completions.create(
-                model=ENDPOINT_NAME, messages=messages, max_tokens=500,
+                model=SERVICE_NAME, messages=messages, max_tokens=500,
             )
             assistant_msg = response.choices[0].message
             span.set_outputs({"answer": assistant_msg.content[:100]})
@@ -910,7 +924,7 @@ def run_agent_with_registry(user_question: str, alias: str = "production"):
     ]
 
     response = client.chat.completions.create(
-        model=ENDPOINT_NAME, messages=messages, tools=tools, max_tokens=500,
+        model=SERVICE_NAME, messages=messages, tools=tools, max_tokens=500,
     )
     assistant_msg = response.choices[0].message
 
@@ -923,7 +937,7 @@ def run_agent_with_registry(user_question: str, alias: str = "production"):
             messages.append({"role": "tool", "tool_call_id": tool_call.id, "content": result})
 
         response = client.chat.completions.create(
-            model=ENDPOINT_NAME, messages=messages, max_tokens=500,
+            model=SERVICE_NAME, messages=messages, max_tokens=500,
         )
         assistant_msg = response.choices[0].message
 
@@ -954,7 +968,7 @@ run_agent_with_registry("おすすめのプランを教えてください")
 
 冒頭の「構成図」に示したとおり、以下を構築しました。
 
-- ガードレール付きAIゲートウェイエンドポイント(ビルトイン2種 + カスタム2種)
+- ガードレール付きモデルサービス(ビルトイン2種 + カスタム2種)
 - Prompt Registry(`@production`エイリアス)とツール(`search_products`)を組み合わせたエージェント
 - MLflowトレースによる可観測性(スパン構造・トークン使用量の記録)
 
@@ -962,14 +976,14 @@ run_agent_with_registry("おすすめのプランを教えてください")
 
 本番運用では、AIゲートウェイへのリクエストを以下のテーブルで記録・分析できます。
 
-- **推論テーブル**: `<カタログ>.<スキーマ>.<エンドポイント名>_payload` — リクエスト/レスポンスのペイロード
+- **推論テーブル**: モデルサービスの画面に表示されるUCテーブル — リクエスト/レスポンスのペイロード
 - **Usage Tracking**: `system.ai_gateway.usage` — トークン使用量、レイテンシ、ステータスコード
 
 今回の環境では推論テーブルは有効化していないため、以下のクエリは参考として掲載しています。
 
 ```python
 # 【参考】推論テーブルの確認クエリ(今回の環境では推論テーブルを有効化していないためスキップ)
-# inference_table = f"`{CATALOG}`.`{SCHEMA}`.`{ENDPOINT_NAME.replace('-', '_')}_payload`"
+# inference_table = "<カタログ>.<スキーマ>.<画面に表示されたテーブル名>"
 # df = spark.sql(f"SELECT * FROM {inference_table} ORDER BY request_id DESC LIMIT 10")
 # display(df)
 ```
@@ -977,11 +991,11 @@ run_agent_with_registry("おすすめのプランを教えてください")
 ```python
 # 【参考】Usage Tracking の確認クエリ(アカウント管理者権限が必要な場合があります)
 # df = spark.sql(f"""
-#     SELECT endpoint_name, status_code, COUNT(*) AS count,
+#     SELECT service_name, status_code, COUNT(*) AS count,
 #            SUM(input_tokens) AS input_tokens, SUM(output_tokens) AS output_tokens
 #     FROM system.ai_gateway.usage
-#     WHERE endpoint_name = '{ENDPOINT_NAME}' AND DATE(event_time) = current_date()
-#     GROUP BY endpoint_name, status_code ORDER BY status_code
+#     WHERE service_name = '{SERVICE_NAME}' AND DATE(event_time) = current_date()
+#     GROUP BY service_name, status_code ORDER BY status_code
 # """)
 # display(df)
 ```
@@ -998,7 +1012,7 @@ run_agent_with_registry("おすすめのプランを教えてください")
 
 | トピック | リンク |
 |---------|--------|
-| Unity AIゲートウェイ | [概要](https://docs.databricks.com/ja/ai-gateway/) / [エンドポイント設定](https://docs.databricks.com/ja/ai-gateway/configure-endpoints-beta) |
+| Unity AIゲートウェイ | [概要](https://docs.databricks.com/ja/ai-gateway/) / [モデルサービス作成](https://docs.databricks.com/aws/en/ai-gateway/model-services) |
 | ガードレール | [設定ガイド](https://docs.databricks.com/ja/ai-gateway/guardrails) |
 | 推論テーブル | [設定ガイド](https://docs.databricks.com/ja/ai-gateway/inference-tables) |
 | MLflow Prompt Registry | [概要](https://docs.databricks.com/ja/mlflow3/genai/prompt-version-mgmt/prompt-registry/) / [プロンプトの作成](https://docs.databricks.com/ja/mlflow3/genai/prompt-version-mgmt/prompt-registry/create-and-edit-prompts) |
@@ -1009,9 +1023,9 @@ run_agent_with_registry("おすすめのプランを教えてください")
 
 ワークショップ後に作成したリソースを削除する場合は、以下を実行してください。
 
-**1. AIゲートウェイエンドポイントの削除**
+**1. モデルサービスの削除**
 
-左サイドバーの**AIゲートウェイ** > 自分のエンドポイント > 右上のケバブメニュー(⋮) > **削除**から削除してください。
+左サイドバーの**AIゲートウェイ** > 自分のモデルサービス > 右上のケバブメニュー(⋮) > **削除**から削除してください。
 
 **2. プロンプトの削除**
 
@@ -1045,7 +1059,7 @@ except Exception as e:
 **3. 推論テーブルの削除(推論テーブルを有効化した場合のみ)**
 
 ```python
-# inference_table = f"`{CATALOG}`.`{SCHEMA}`.`{ENDPOINT_NAME.replace('-', '_')}_payload`"
+# inference_table = "<カタログ>.<スキーマ>.<画面に表示されたテーブル名>"
 # spark.sql(f"DROP TABLE IF EXISTS {inference_table}")
 # print(f"推論テーブル {inference_table} を削除しました")
 ```
