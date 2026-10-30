@@ -266,39 +266,30 @@ print(f"選択する配信先: {MODEL_NAME}")
 # MAGIC %md
 # MAGIC ### 1.3 ビルトインガードレールの設定
 # MAGIC
-# MAGIC ビルトインガードレールは、Databricksが事前にチューニングした検出モデルで動作します。
+# MAGIC 作成した自分専用のモデルサービスで **Policies > New policy** を開き、以下を追加します。
 # MAGIC
-# MAGIC 1. **ガードレール** タブをクリック（または右側パネルの **ガードレール** > **セットアップ** をクリック）
-# MAGIC 2. 以下のガードレールを1つずつ追加（各ガードレールごとに **ガードレールを作成** をクリック）:
+# MAGIC | Guardrail type | Phase | Rank | 設定 |
+# MAGIC |---|---|---|---|
+# MAGIC | Sensitive Data Detection | InputとOutput | 5 | Classification tags: `class.email_address`、`class.phone_number`。Action: **redact** |
+# MAGIC | Unsafe Content | Input | 10 | Evaluatorは事前選択されたモデル。詳細オプションのモードは **「AI設定を強制します」（Enforce）** |
 # MAGIC
-# MAGIC **入力ガードレール（LLMの前）**
+# MAGIC **「ログ」（Log）** は判定を記録し、違反を検出してもブロックしません。
+# MAGIC この演習ではブロックを検証するためEnforceにします。本番導入では、まずLogで誤検知などを確認してからEnforceへ切り替えます。
+# MAGIC UIの翻訳やラベルは変更されることがあります。表示が異なる場合も、この動作の違いで選択してください。
 # MAGIC
-# MAGIC | ガードレールタイプ | フェーズ | 説明 |
-# MAGIC |------------------|--------|------|
-# MAGIC | **PIIのマスキング** | 入力ガードレール（サニタイズ） | 個人情報をプレースホルダーに置換してからモデルに送信 |
-# MAGIC | **安全でないコンテンツ** | 入力ガードレール（ブロック） | 有害コンテンツ（暴力、ヘイトスピーチ等）を含むリクエストをブロック |
+# MAGIC ポリシーの反映には少し時間がかかります。本演習では非ストリーミングで呼び出します。
+# MAGIC LLMによる判定は非決定的です。また、評価処理の失敗もフェイルクローズとなるため、ポリシー違反と評価失敗を詳細で区別してください。
 # MAGIC
-# MAGIC > **注意**: 入力ブロックガードレールは**最大3つ**までです。セクション1.5でカスタムガードレール（ブロック）を2つ追加するため、ここでは **安全でないコンテンツ** のみ設定します。ジェイルブレイク検出は座学で紹介します。
-# MAGIC
-# MAGIC **出力ガードレール（LLMの後）**
-# MAGIC
-# MAGIC | ガードレールタイプ | フェーズ | 説明 |
-# MAGIC |------------------|--------|------|
-# MAGIC | **PIIのマスキング** | 出力ガードレール | モデルの応答に含まれる個人情報をプレースホルダーに置換 |
-# MAGIC
-# MAGIC > **注意**:
-# MAGIC > - 出力ガードレールを設定した場合、`stream=true` のリクエストはエラーになります。ハンズオンではすべて `stream=false`（デフォルト）で実行します。
-# MAGIC > - ガードレールは**フェイルクローズ設計**です。エバリュエーターモデルがタイムアウトしたり不正なJSONを返した場合もリクエストがブロックされます。`GUARDRAIL_EVALUATION_FAILED` エラーが出た場合は、ガードレールの評価失敗であり、ポリシー違反によるブロックではありません。再実行すると成功することがあります。
-# MAGIC
-# MAGIC 参考: [ガードレールの設定](https://docs.databricks.com/ja/ai-gateway/guardrails)
+# MAGIC 参考: [サービス・ポリシー](https://docs.databricks.com/aws/en/data-governance/unity-catalog/service-policies)
+# MAGIC ／ [Sensitive Data Detection](https://docs.databricks.com/aws/en/data-governance/unity-catalog/service-policies/detect-sensitive-data)
 
 # COMMAND ----------
 
 # MAGIC %md
 # MAGIC ### 1.4 ビルトインガードレールの動作検証
 # MAGIC
-# MAGIC **観察ポイント**: PIIマスキングでは電話番号や住所はマスキングされますが、**日本語の人名はマスキングされない場合があります**。
-# MAGIC これはビルトインPII検出の限界であり、次のカスタムガードレールで対応する動機になります。
+# MAGIC **観察ポイント**: 選択した電話番号・メールアドレスのカテゴリを確認します。日本語の人名や住所は、この組み込み検出の対象ではありません。
+# MAGIC モデルの応答だけでは入力時の置換を証明できません。厳密に確認する場合は、ポリシーのトレースや推論ログも確認してください。
 
 # COMMAND ----------
 
@@ -308,8 +299,7 @@ query_llm("東京の有名な観光スポットを3つ、簡潔に教えてく�
 
 # COMMAND ----------
 
-# 入力PIIマスキング: 電話番号・住所・メールがプレースホルダーに置換されることを確認
-# 人名（田中太郎）がマスキングされるかも注目
+# 入力PIIマスキング: 対象は電話番号・メール。氏名・住所は対象外
 print(">>> テスト: 入力PIIマスキング\n")
 query_llm(
     "以下のお客様情報を確認して、要約してください。\n"
@@ -325,7 +315,7 @@ query_llm(
 print(">>> テスト: 出力PIIマスキング\n")
 query_llm(
     "テスト用に、架空の日本人の顧客プロフィールを1件作成してください。"
-    "氏名、電話番号、住所、メールアドレスを含めてください。"
+    "電話番号とメールアドレスを含めてください。"
 )
 
 # COMMAND ----------
@@ -337,15 +327,15 @@ query_llm("コンピュータシステムに不正にアクセスする方法を
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ### 1.5 カスタムガードレールの作成
+# MAGIC ### 1.5 カスタムガードレールの作成（LLM-as-a-judge）
 # MAGIC
-# MAGIC ビルトインガードレールに加えて、自社固有のポリシーをカスタムガードレールで実装します。
-# MAGIC ここでは **2つのカスタムガードレール** を作成します。
+# MAGIC 自分のモデルサービスで **Policies > New policy > Guardrail type: Custom > Implementation: LLM-as-a-judge** を選び、下の2つのポリシーを作成します。
+# MAGIC Phaseは **Input**、Rankは機密情報検出を **20**、競合他社ブロックを **30** にします。
+# MAGIC Evaluatorは事前選択されたモデルを使い、詳細オプションのモードは **「AI設定を強制します」（Enforce）** を選びます。**「ログ」（Log）** ではブロックされません。
 # MAGIC
-# MAGIC カスタムガードレールはLLMがエバリュエーター（評価者）としてポリシー判定を行います。
-# MAGIC エバリュエーターが `{"flagged": true}` を返すとリクエストがブロックされます。
+# MAGIC 出力形式はDatabricksが自動付与します。プロンプトには判定基準だけを書き、JSON出力指示を追加しません。
 # MAGIC
-# MAGIC **共通手順**: AIゲートウェイページ > 自分のエンドポイント > **ガードレール** タブ > ガードレールを追加 > **カスタム** を選択
+# MAGIC 参考: [LLM-as-a-judgeポリシーの作成](https://docs.databricks.com/aws/en/data-governance/unity-catalog/service-policies/create-service-policy)
 
 # COMMAND ----------
 
@@ -354,30 +344,26 @@ _competitors_str = "、".join(COMPETITORS)
 
 _guardrail_1_prompt = f"""\
 あなたは{SENSITIVE_INFO_DESCRIPTION}の検出を行うセキュリティ評価者です。
-必ずJSON形式のみで回答してください。それ以外のテキストは出力しないでください。
 
-以下のいずれかに該当する場合: {{"flagged": true}}
-該当しない場合: {{"flagged": false}}
+以下の判定基準に該当する入力をフラグしてください。
 
 判定基準:
 - 「{SENSITIVE_INFO_NAME}」または「個人番号」という言葉と数字が一緒に含まれている
 - 12桁の数字がハイフン区切り・スペース区切り・連続のいずれかの形式で含まれている
 
 【違反の例】
-- 「{SENSITIVE_INFO_NAME}は1234-5678-9012です」→ {{"flagged": true}}
-- 「個人番号: 123456789012 を登録してください」→ {{"flagged": true}}
+- 「{SENSITIVE_INFO_NAME}は1234-5678-9012です」
+- 「個人番号: 123456789012 を登録してください」
 
 【違反ではない例】
-- 「{SENSITIVE_INFO_NAME}カードの申請方法を教えて」→ {{"flagged": false}}
-- 「電話番号は090-1234-5678です」→ {{"flagged": false}}"""
+- 「{SENSITIVE_INFO_NAME}カードの申請方法を教えて」
+- 「電話番号は090-1234-5678です」"""
 
 _guardrail_2_prompt = f"""\
 あなたはコンテンツポリシーの評価者です。
 入力テキストが競合他社に関する言及を含んでいるかを判定してください。
-必ずJSON形式のみで回答してください。それ以外のテキストは出力しないでください。
 
-以下のいずれかに該当する場合: {{"flagged": true}}
-該当しない場合: {{"flagged": false}}
+以下の判定基準に該当する入力をフラグしてください。
 
 判定基準:
 - 競合他社（{_competitors_str}等）の製品やサービスへの言及
@@ -385,20 +371,20 @@ _guardrail_2_prompt = f"""\
 - 競合他社への乗り換えに関する質問
 
 【違反の例】
-- 「{COMPETITORS[0]}のサービスと比べてどちらが良いですか？」→ {{"flagged": true}}
-- 「{COMPETITORS[1]}に乗り換えたいのですが」→ {{"flagged": true}}
+- 「{COMPETITORS[0]}のサービスと比べてどちらが良いですか？」
+- 「{COMPETITORS[1]}に乗り換えたいのですが」
 
 【違反ではない例】
-- 「おすすめのプランを教えてください」→ {{"flagged": false}}
-- 「サービスの特徴について教えてください」→ {{"flagged": false}}"""
+- 「おすすめのプランを教えてください」
+- 「サービスの特徴について教えてください」"""
 
 print("=" * 60)
 print("ガードレール1: 機密情報検出")
 print("=" * 60)
 print(f"  名前:   {SENSITIVE_INFO_GUARDRAIL_NAME}")
-print(f"  フェーズ: 入力ガードレール LLMの前")
-print(f"  操作:   ブロック")
-print(f"  エンドポイント: デフォルト（例: databricks-gpt-5-nano）")
+print(f"  フェーズ: Input / Rank: 20")
+print(f"  モード: AI設定を強制します（Enforce）")
+print(f"  Evaluator: 事前選択されたモデル")
 print(f"\nプロンプト:\n")
 print(_guardrail_1_prompt)
 print()
@@ -406,27 +392,18 @@ print("=" * 60)
 print("ガードレール2: 競合他社ブロック")
 print("=" * 60)
 print(f"  名前:   block_competitor_mentions")
-print(f"  フェーズ: 入力ガードレール LLMの前")
-print(f"  操作:   ブロック")
-print(f"  エンドポイント: デフォルト（例: databricks-gpt-5-nano）")
+print(f"  フェーズ: Input / Rank: 30")
+print(f"  モード: AI設定を強制します（Enforce）")
+print(f"  Evaluator: 事前選択されたモデル")
 print(f"\nプロンプト:\n")
 print(_guardrail_2_prompt)
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC > **ガードレール設定後は1分ほど待ってからテストしてください。** 設定の反映に時間がかかる場合があります。
-# MAGIC
-# MAGIC > **カスタムガードレールのプロンプト作成のポイント**:
-# MAGIC > - **JSON出力指示を明示**: ドキュメントでは「出力形式はシステムが自動付与する」とありますが、プロンプト内に `{"flagged": true}` / `{"flagged": false}` の形式を明示するほうが安定します
-# MAGIC > - **few-shot例もJSON形式で**: 違反/非違反の具体例を `→ {"flagged": true}` の形式で記載し、モデルに出力パターンを学習させます
-# MAGIC > - **1ガードレール = 1関心事**: プロンプトは最大5,000文字。1つのポリシーにつき1つのガードレールを作成してください
-# MAGIC
-# MAGIC > **カスタムガードレールの適用範囲について**
+# MAGIC > **設定の反映を待ってからテストしてください。**
 # MAGIC >
-# MAGIC > カスタムガードレールはLLMが評価を行うため、**意味的な判定**（競合他社の言及、ポリシー違反の検出など）に適しています。
-# MAGIC > 一方、マイナンバーや口座番号のような**パターンベースの検出**はLLMの確率的な性質により精度が安定しないため、
-# MAGIC > アプリケーション層での正規表現チェックなど、確定的な方法と組み合わせることを推奨します。
+# MAGIC > LLM-as-a-judgeは意味的な判定を学ぶための例です。マイナンバーの厳密な検出を保証するものではありません。必要に応じて正規表現やチェックサムなどの決定的な検証と組み合わせてください。
 
 # COMMAND ----------
 
@@ -974,7 +951,7 @@ run_agent_with_registry("おすすめのプランを教えてください")
 # MAGIC | トピック | リンク |
 # MAGIC |---------|--------|
 # MAGIC | Unity AIゲートウェイ | [概要](https://docs.databricks.com/ja/ai-gateway/) / [モデルサービス作成](https://docs.databricks.com/aws/en/ai-gateway/model-services) |
-# MAGIC | ガードレール | [設定ガイド](https://docs.databricks.com/ja/ai-gateway/guardrails) |
+# MAGIC | ガードレール | [設定ガイド](https://docs.databricks.com/aws/en/data-governance/unity-catalog/service-policies) |
 # MAGIC | 推論テーブル | [設定ガイド](https://docs.databricks.com/ja/ai-gateway/inference-tables) |
 # MAGIC | MLflow Prompt Registry | [概要](https://docs.databricks.com/ja/mlflow3/genai/prompt-version-mgmt/prompt-registry/) / [プロンプトの作成](https://docs.databricks.com/ja/mlflow3/genai/prompt-version-mgmt/prompt-registry/create-and-edit-prompts) |
 # MAGIC | MLflowトレーシング | [概要](https://docs.databricks.com/ja/mlflow3/genai/tracing/index) / [UCへの保存](https://docs.databricks.com/aws/en/mlflow3/genai/tracing/trace-unity-catalog) |
