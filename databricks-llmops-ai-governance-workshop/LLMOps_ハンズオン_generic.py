@@ -136,6 +136,23 @@ client = OpenAI(
     base_url=f"https://{_host}/ai-gateway/mlflow/v1",
 )
 
+class WorkshopPolicyBlocked(RuntimeError):
+    """HTTP 200で返るサービス・ポリシーの拒否を、通常応答と区別する。"""
+
+    def __init__(self, policy):
+        self.body = policy
+        super().__init__(json.dumps(policy, ensure_ascii=False))
+
+
+def call_gateway(**kwargs):
+    """すべてのモデル呼び出しで、本文中のポリシー拒否も確認する。"""
+    response = client.chat.completions.create(**kwargs)
+    policy = response.model_dump(exclude_none=True).get("databricks_service_policy")
+    if policy is not None:
+        raise WorkshopPolicyBlocked(policy)
+    return response
+
+
 def query_llm(user_message, system_message=None, service_name=None):
     """
     モデルサービスにリクエストを送信し結果を表示する。
@@ -148,7 +165,7 @@ def query_llm(user_message, system_message=None, service_name=None):
         messages.append({"role": "system", "content": system_message})
     messages.append({"role": "user", "content": user_message})
     try:
-        response = client.chat.completions.create(
+        response = call_gateway(
             model=service_name, messages=messages, max_tokens=500,
         )
         content = response.choices[0].message.content
@@ -156,23 +173,16 @@ def query_llm(user_message, system_message=None, service_name=None):
         print("-" * 60)
         print(textwrap.fill(content, width=80))
         print("-" * 60)
-        print(f"トークン数 - 入力: {response.usage.prompt_tokens}, 出力: {response.usage.completion_tokens}")
+        if response.usage:
+            print(f"トークン数 - 入力: {response.usage.prompt_tokens}, 出力: {response.usage.completion_tokens}")
         return response
-    except Exception as e:
-        error_msg = str(e)
-        if "blocked" in error_msg.lower() or "guardrail" in error_msg.lower():
-            print("[ブロック] ガードレールによりリクエストがブロックされました")
-        else:
-            print("[エラー] リクエストが失敗しました")
-        print("-" * 60)
-        try:
-            if hasattr(e, "body"):
-                print(json.dumps(e.body, indent=2, ensure_ascii=False))
-            else:
-                print(error_msg[:500])
-        except Exception:
-            print(error_msg[:500])
+    except WorkshopPolicyBlocked as e:
+        print("[ブロック] サービス・ポリシーにより拒否されました")
+        print(json.dumps(e.body, indent=2, ensure_ascii=False))
         return None
+    except Exception:
+        print("[エラー] リクエストが失敗しました。ポリシー違反とは区別して原因を確認してください")
+        raise
 
 print(f"OpenAI互換クライアントを初期化しました")
 
@@ -403,6 +413,8 @@ print(_guardrail_2_prompt)
 # MAGIC %md
 # MAGIC > **設定の反映を待ってからテストしてください。**
 # MAGIC >
+# MAGIC > ポリシーで拒否されてもHTTP 200が返ることがあります。本演習の `call_gateway()` は本文の `databricks_service_policy` を確認し、エージェントの後続処理を止めます。通常のAPIエラーはブロック成功として扱いません。
+# MAGIC >
 # MAGIC > LLM-as-a-judgeは意味的な判定を学ぶための例です。マイナンバーの厳密な検出を保証するものではありません。必要に応じて正規表現やチェックサムなどの決定的な検証と組み合わせてください。
 
 # COMMAND ----------
@@ -536,7 +548,7 @@ def run_agent(user_question: str):
     # ガードレールはこの時点で入力を評価し、違反があればブロックする
     with mlflow.start_span(name="llm_call_1_tool_selection") as span:
         span.set_inputs({"user_question": user_question})
-        response = client.chat.completions.create(
+        response = call_gateway(
             model=SERVICE_NAME, messages=messages, tools=tools, max_tokens=500,
         )
         assistant_msg = response.choices[0].message
@@ -561,7 +573,7 @@ def run_agent(user_question: str):
         # ステップ3: ツール結果を踏まえた最終回答を生成
         with mlflow.start_span(name="llm_call_2_final_answer") as span:
             span.set_inputs({"tool_results": result})
-            response = client.chat.completions.create(
+            response = call_gateway(
                 model=SERVICE_NAME, messages=messages, max_tokens=500,
             )
             assistant_msg = response.choices[0].message
@@ -587,12 +599,12 @@ run_agent("おすすめのプランを教えてください")
 
 # COMMAND ----------
 
-# ガードレールによるブロック: 機密情報を含むリクエストはエージェントに到達する前にブロック
+# ガードレールによるブロック: 最初のモデル呼び出しで拒否され、商品検索を実行しない
 print(f">>> エージェント: {SENSITIVE_INFO_NAME}を含む問い合わせ（ブロックされるべき）\n")
 try:
     run_agent(f"{SENSITIVE_INFO_NAME}1234-5678-9012で本人確認をお願いします")
-except Exception as e:
-    print(f"[ブロック] ガードレールによりエージェント実行がブロックされました")
+except WorkshopPolicyBlocked as e:
+    print("[ブロック] サービス・ポリシーによりエージェントのモデル呼び出しが拒否されました")
     if hasattr(e, "body"):
         print(json.dumps(e.body, indent=2, ensure_ascii=False))
     else:
@@ -827,7 +839,7 @@ def run_agent_with_registry(user_question: str, alias: str = "production"):
         {"role": "system", "content": system_msg},
         {"role": "user", "content": user_question},
     ]
-    response = client.chat.completions.create(
+    response = call_gateway(
         model=SERVICE_NAME, messages=messages, tools=tools, max_tokens=500,
     )
     assistant_msg = response.choices[0].message
@@ -839,7 +851,7 @@ def run_agent_with_registry(user_question: str, alias: str = "production"):
             result = search_products(**args)
             print(f"[ツール呼び出し] search_products(keyword='{args.get('keyword', '')}')")
             messages.append({"role": "tool", "tool_call_id": tool_call.id, "content": result})
-        response = client.chat.completions.create(
+        response = call_gateway(
             model=SERVICE_NAME, messages=messages, max_tokens=500,
         )
         assistant_msg = response.choices[0].message
