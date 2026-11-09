@@ -1,0 +1,331 @@
+[
+  {
+    "case_id": "case_01",
+    "file_name": "case_01.pdf",
+    "estimate_no": "MD-261008-01",
+    "estimate_date": "2026-10-08",
+    "accident_date": "2026-10-06",
+    "customer": "山本 健一",
+    "shop": "みどり自動車",
+    "damage_part": "後部バンパー",
+    "items": [
+      {
+        "name": "リヤバンパー",
+        "kind": "部品",
+        "qty": 1,
+        "amount": 52000
+      },
+      {
+        "name": "リヤバンパー 脱着・交換",
+        "kind": "工賃",
+        "qty": 1,
+        "amount": 18000
+      },
+      {
+        "name": "リヤパネル 板金修理",
+        "kind": "工賃",
+        "qty": 1,
+        "amount": 30000
+      },
+      {
+        "name": "塗装（リヤバンパー）",
+        "kind": "塗装",
+        "qty": 1,
+        "amount": 48000
+      },
+      {
+        "name": "バックセンサー 点検・調整",
+        "kind": "工賃",
+        "qty": 1,
+        "amount": 10000
+      },
+      {
+        "name": "補助材料",
+        "kind": "その他",
+        "qty": 1,
+        "amount": 8000
+      }
+    ],
+    "subtotal": 166000,
+    "tax": 16600,
+    "total": 182600,
+    "items_sum": 166000,
+    "expected_needs_review": false
+  },
+  {
+    "case_id": "case_02",
+    "file_name": "case_02.pdf",
+    "estimate_no": "AB-2610-0013",
+    "estimate_date": "2026-10-13",
+    "accident_date": "2026-10-11",
+    "customer": "小林 直子",
+    "shop": "あおば自動車整備",
+    "damage_part": "左リヤドア",
+    "items": [
+      {
+        "name": "左リヤドア 板金修理",
+        "kind": "工賃",
+        "qty": 1,
+        "amount": 38000
+      },
+      {
+        "name": "塗装（左リヤドア）",
+        "kind": "塗装",
+        "qty": 1,
+        "amount": 32000
+      },
+      {
+        "name": "ドアモール 脱着",
+        "kind": "工賃",
+        "qty": 1,
+        "amount": 6000
+      },
+      {
+        "name": "磨き・仕上げ",
+        "kind": "工賃",
+        "qty": 1,
+        "amount": 5000
+      },
+      {
+        "name": "補助材料",
+        "kind": "その他",
+        "qty": 1,
+        "amount": 7000
+      }
+    ],
+    "subtotal": 88000,
+    "tax": 8800,
+    "total": 96800,
+    "items_sum": 88000,
+    "expected_needs_review": false
+  },
+  {
+    "case_id": "case_03",
+    "file_name": "case_03.pdf",
+    "estimate_no": "HK-1017-003",
+    "estimate_date": "2026-10-17",
+    "accident_date": "2026-10-15",
+    "customer": "加藤 誠",
+    "shop": "ひかりモータース",
+    "damage_part": "右リヤバンパー",
+    "items": [
+      {
+        "name": "右リヤバンパー 擦り傷修理",
+        "kind": "工賃",
+        "qty": 1,
+        "amount": 22000
+      },
+      {
+        "name": "塗装（リヤバンパー右側）",
+        "kind": "塗装",
+        "qty": 1,
+        "amount": 35000
+      },
+      {
+        "name": "ぼかし塗装",
+        "kind": "塗装",
+        "qty": 1,
+        "amount": 6000
+      },
+      {
+        "name": "補助材料",
+        "kind": "その他",
+        "qty": 1,
+        "amount": 5000
+      }
+    ],
+    "subtotal": 68000,
+    "tax": 6800,
+    "total": 74800,
+    "items_sum": 68000,
+    "expected_needs_review": false
+  },
+  {
+    "case_id": "case_04",
+    "file_name": "case_04.pdf",
+    "estimate_no": "MD-261022-02",
+    "estimate_date": "2026-10-22",
+    "accident_date": "2026-10-20",
+    "customer": "吉田 浩二",
+    "shop": "みどり自動車",
+    "damage_part": "右フロントドア・右リヤドア",
+    "items": [
+      {
+        "name": "右フロントドア",
+        "kind": "部品",
+        "qty": 1,
+        "amount": 128000
+      },
+      {
+        "name": "右リヤドア",
+        "kind": "部品",
+        "qty": 1,
+        "amount": 118000
+      },
+      {
+        "name": "ドア 交換（2枚）",
+        "kind": "工賃",
+        "qty": 2,
+        "amount": 46000
+      },
+      {
+        "name": "塗装（右フロントドア・右リヤドア）",
+        "kind": "塗装",
+        "qty": 1,
+        "amount": 98000
+      },
+      {
+        "name": "ドアモール・内張り 移設",
+        "kind": "工賃",
+        "qty": 1,
+        "amount": 22000
+      },
+      {
+        "name": "補助材料",
+        "kind": "その他",
+        "qty": 1,
+        "amount": 30000
+      }
+    ],
+    "subtotal": 442000,
+    "tax": 44200,
+    "total": 486200,
+    "items_sum": 442000,
+    "expected_needs_review": false
+  },
+  {
+    "case_id": "case_05",
+    "file_name": "case_05.jpg",
+    "estimate_no": "0127",
+    "estimate_date": "2026-10-27",
+    "accident_date": "2026-10-24",
+    "customer": "松本 洋子",
+    "shop": "かわせ板金",
+    "damage_part": "前バンパー左側",
+    "items": [
+      {
+        "name": "フロントバンパー",
+        "kind": "部品",
+        "qty": 1,
+        "amount": 48000
+      },
+      {
+        "name": "バンパー 脱着・交換",
+        "kind": "工賃",
+        "qty": 1,
+        "amount": 16000
+      },
+      {
+        "name": "塗装（フロントバンパー）",
+        "kind": "塗装",
+        "qty": 1,
+        "amount": 42000
+      },
+      {
+        "name": "左フォグカバー",
+        "kind": "部品",
+        "qty": 1,
+        "amount": 4000
+      },
+      {
+        "name": "補助材料",
+        "kind": "その他",
+        "qty": 1,
+        "amount": 7000
+      }
+    ],
+    "subtotal": 118000,
+    "tax": 11700,
+    "total": 128700,
+    "items_sum": 117000,
+    "expected_needs_review": true
+  },
+  {
+    "case_id": "case_06",
+    "file_name": "case_06.pdf",
+    "estimate_no": "AB-2611-0004",
+    "estimate_date": "2026-11-04",
+    "accident_date": "2026-11-01",
+    "customer": "井上 大輔",
+    "shop": "あおば自動車整備",
+    "damage_part": "フロントガラス",
+    "items": [
+      {
+        "name": "フロントガラス",
+        "kind": "部品",
+        "qty": 1,
+        "amount": 98000
+      },
+      {
+        "name": "フロントガラス 交換",
+        "kind": "工賃",
+        "qty": 1,
+        "amount": 32000
+      },
+      {
+        "name": "ガラスモール・ダムラバー",
+        "kind": "部品",
+        "qty": 1,
+        "amount": 9000
+      },
+      {
+        "name": "前方カメラ 調整（エーミング）",
+        "kind": "工賃",
+        "qty": 1,
+        "amount": 11000
+      }
+    ],
+    "subtotal": 150000,
+    "tax": 15000,
+    "total": 165000,
+    "items_sum": 150000,
+    "expected_needs_review": false
+  },
+  {
+    "case_id": "case_07",
+    "file_name": "case_07.pdf",
+    "estimate_no": "HK-1105-007",
+    "estimate_date": "2026-11-05",
+    "accident_date": "2026-11-04",
+    "customer": "木村 恵",
+    "shop": "ひかりモータース",
+    "damage_part": "左フロントドア",
+    "items": [
+      {
+        "name": "左フロントドア 板金修理",
+        "kind": "工賃",
+        "qty": 1,
+        "amount": 42000
+      },
+      {
+        "name": "塗装（左フロントドア）",
+        "kind": "塗装",
+        "qty": 1,
+        "amount": 36000
+      },
+      {
+        "name": "ドアハンドル・モール 脱着",
+        "kind": "工賃",
+        "qty": 1,
+        "amount": 8000
+      },
+      {
+        "name": "ぼかし塗装（左フロントフェンダー）",
+        "kind": "塗装",
+        "qty": 1,
+        "amount": 30000
+      },
+      {
+        "name": "補助材料",
+        "kind": "その他",
+        "qty": 1,
+        "amount": 10000
+      }
+    ],
+    "subtotal": 126000,
+    "tax": 12600,
+    "total": 138600,
+    "items_sum": 126000,
+    "expected_needs_review": false
+  }
+]
