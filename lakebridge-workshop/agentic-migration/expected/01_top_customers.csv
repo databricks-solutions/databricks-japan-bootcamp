@@ -1,0 +1,4 @@
+customer_id,order_count,total_amount
+B,1,200.00
+A,2,150.00
+D,1,150.00
