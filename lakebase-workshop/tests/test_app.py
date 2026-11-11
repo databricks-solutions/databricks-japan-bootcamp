@@ -158,6 +158,54 @@ class InitializationHealthTests(unittest.TestCase):
         self.assertEqual(payload["init_error"], "permission denied for schema public")
 
 
+class CustomerContextTests(unittest.TestCase):
+    """Part2: Synced Table（lab_*.customer_context_synced）があるときだけ顧客属性を JOIN する。"""
+
+    def setUp(self) -> None:
+        app._cc_cache = (None, 0.0)
+
+    def test_sqlite_mode_never_joins(self) -> None:
+        with patch.object(app, "using_postgres", return_value=False):
+            self.assertIsNone(app.customer_context_name())
+            self.assertNotIn("customer_context", app.ticket_query())
+
+    def test_no_synced_table_keeps_handson1_query(self) -> None:
+        with (
+            patch.dict(os.environ, {}, clear=True),
+            patch.object(app, "using_postgres", return_value=True),
+            patch.object(app, "fetch_all", return_value=[]),
+        ):
+            query = app.ticket_query()
+        self.assertNotIn("LEFT JOIN \"", query)
+        self.assertNotIn("customer_plan", query)
+
+    def test_detected_synced_table_is_joined(self) -> None:
+        with (
+            patch.dict(os.environ, {}, clear=True),
+            patch.object(app, "using_postgres", return_value=True),
+            patch.object(app, "fetch_all", return_value=[{"table_schema": "lab_tanaka"}]),
+        ):
+            query = app.ticket_query()
+        self.assertIn('LEFT JOIN "lab_tanaka"."customer_context_synced" cc', query)
+        self.assertIn("cc.plan AS customer_plan", query)
+
+    def test_detection_failure_falls_back_to_handson1_query(self) -> None:
+        with (
+            patch.dict(os.environ, {}, clear=True),
+            patch.object(app, "using_postgres", return_value=True),
+            patch.object(app, "fetch_all", side_effect=RuntimeError("permission denied")),
+        ):
+            self.assertIsNone(app.customer_context_name())
+
+    def test_explicit_table_must_be_schema_dot_table(self) -> None:
+        with (
+            patch.dict(os.environ, {"CUSTOMER_CONTEXT_TABLE": "lab_a.t; DROP TABLE tickets"}, clear=True),
+            patch.object(app, "using_postgres", return_value=True),
+        ):
+            with self.assertRaises(RuntimeError):
+                app.customer_context_name()
+
+
 class RuntimeConfigTests(unittest.TestCase):
     def test_main_prefers_databricks_app_port(self) -> None:
         with (

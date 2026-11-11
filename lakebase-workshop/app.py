@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import sqlite3
 import sys
 import time
@@ -198,6 +199,14 @@ def health_payload() -> dict:
     except Exception as exc:
         payload["ok"] = False
         payload["error_hint"] = sanitize_error_hint(exc)
+        return payload
+
+    # [Part2] 顧客属性（Synced Table）の JOIN 先。None なら Part1 と同じ表示
+    try:
+        payload["customer_context_table"] = customer_context_name()
+    except Exception as exc:
+        payload["customer_context_table"] = None
+        payload["customer_context_error"] = sanitize_error_hint(exc)
 
     return payload
 
@@ -381,18 +390,83 @@ def execute(query: str, params: tuple = ()) -> dict | None:
         return None
 
 
+_CC_AUTO_TABLE = "customer_context_synced"
+_cc_cache: tuple[str | None, float] = (None, 0.0)
+
+
+def _detect_customer_context() -> str | None:
+    """[Part2] 自分のブランチにある Synced Table（lab_*.customer_context_synced）を探す。
+
+    Synced Table は UC のスキーマ名がそのまま Postgres のスキーマ名になる。参加者ごとに
+    スキーマ名（lab_<名前>）が違うので、app.yaml を書き換えなくても見つけられるようにする。
+    見つからないときは None（JOIN しない＝Part1 と同じ表示）。30 秒キャッシュする。
+    """
+    global _cc_cache
+    if _cc_cache[1] > time.time():
+        return _cc_cache[0]
+    found: str | None = None
+    try:
+        rows = fetch_all(
+            "SELECT table_schema FROM information_schema.tables "
+            "WHERE table_name = %s AND table_schema LIKE %s ORDER BY table_schema",
+            (_CC_AUTO_TABLE, "lab\\_%"),
+        )
+        if rows:
+            found = f"{rows[0]['table_schema']}.{_CC_AUTO_TABLE}"
+            if len(rows) > 1:
+                print(f"customer_context: 複数見つかったので {found} を使います", file=sys.stderr)
+    except Exception as exc:  # 権限不足などでも Part1 と同じ表示で動かす
+        print(f"customer_context の自動検出に失敗: {sanitize_error_hint(exc)}", file=sys.stderr)
+    _cc_cache = (found, time.time() + 30)
+    return found
+
+
+def customer_context_name() -> str | None:
+    """[Part2] JOIN する Synced Table の "<schema>.<table>"（引用符なし）。
+
+    CUSTOMER_CONTEXT_TABLE が設定されていればそれを使い、空なら自動検出する。
+    SQLite モードのときは JOIN しない（Part1 と同じ動き）。
+    """
+    if not using_postgres():
+        return None
+    value = _env("CUSTOMER_CONTEXT_TABLE")
+    if not value:
+        return _detect_customer_context()
+    if not re.fullmatch(r"[A-Za-z0-9_]+\.[A-Za-z0-9_]+", value):
+        raise RuntimeError("CUSTOMER_CONTEXT_TABLE は <schema>.<table> の形式で指定します")
+    return value
+
+
+def customer_context_table() -> str | None:
+    """[Part2] Synced Table（Lakehouse の顧客属性）を SQL に埋め込む形 "<schema>"."<table>"。"""
+    value = customer_context_name()
+    if not value:
+        return None
+    schema, table = value.split(".")
+    return f'"{schema}"."{table}"'
+
+
 def ticket_query(where: str = "", order_by: str = "t.updated_at DESC") -> str:
+    cc = customer_context_table()
+    cc_select = (
+        ", cc.industry AS customer_industry, cc.plan AS customer_plan,"
+        " cc.account_manager AS customer_account_manager, cc.support_tier AS customer_support_tier"
+        if cc else ""
+    )
+    cc_join = f"LEFT JOIN {cc} cc ON cc.customer_name = t.customer" if cc else ""
+    cc_group = ", cc.industry, cc.plan, cc.account_manager, cc.support_tier" if cc else ""
     return f"""
         SELECT
             t.id, t.title, t.customer, t.status, t.priority, t.owner, t.category,
             t.description, t.created_at, t.updated_at,
-            COUNT(c.id) AS comment_count
+            COUNT(c.id) AS comment_count{cc_select}
         FROM tickets t
         LEFT JOIN ticket_comments c ON c.ticket_id = t.id
+        {cc_join}
         {where}
         GROUP BY
             t.id, t.title, t.customer, t.status, t.priority, t.owner, t.category,
-            t.description, t.created_at, t.updated_at
+            t.description, t.created_at, t.updated_at{cc_group}
         ORDER BY {order_by}
     """
 

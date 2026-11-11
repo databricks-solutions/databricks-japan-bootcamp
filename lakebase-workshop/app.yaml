@@ -26,3 +26,8 @@ env:
     value: "app-resource"
   - name: ENDPOINT_NAME
     valueFrom: "lakebase-demo"
+  # [Part2] チケット詳細に顧客属性（Lakehouse から Synced Table で同期）を表示する。
+  # 空のままなら、自分のブランチの lab_<名前>.customer_context_synced を自動で探す（書き換え不要）。
+  # 別の名前で作ったときだけ "<UC スキーマ名>.<テーブル名>" を入れる（Postgres のスキーマ名＝UC のスキーマ名）。
+  - name: CUSTOMER_CONTEXT_TABLE
+    value: ""

@@ -191,6 +191,26 @@ function renderList() {
   });
 }
 
+// [Part2] Synced Table（Lakehouse の顧客属性）を JOIN した列があれば表示する
+function customerContext(ticket) {
+  if (!("customer_plan" in ticket)) return "";
+  if (ticket.customer_plan === null && ticket.customer_industry === null) {
+    return `<section class="customer-context"><h3>顧客情報（Lakehouse から同期）</h3><p>この顧客の属性は同期元にありません。</p></section>`;
+  }
+  const item = (label, value) => `<div><dt>${label}</dt><dd>${escapeHtml(value ?? "-")}</dd></div>`;
+  return `
+    <section class="customer-context">
+      <h3>顧客情報（Lakehouse から同期）</h3>
+      <dl>
+        ${item("業種", ticket.customer_industry)}
+        ${item("契約プラン", ticket.customer_plan)}
+        ${item("担当営業", ticket.customer_account_manager)}
+        ${item("サポート区分", ticket.customer_support_tier)}
+      </dl>
+    </section>
+  `;
+}
+
 async function renderDetail(ticketId) {
   try {
     const [ticket, comments] = await Promise.all([
@@ -211,6 +231,8 @@ async function renderDetail(ticketId) {
       </div>
 
       <div class="description">${escapeHtml(ticket.description)}</div>
+
+      ${customerContext(ticket)}
 
       <form class="fields" id="ticket-form">
         <div class="field">

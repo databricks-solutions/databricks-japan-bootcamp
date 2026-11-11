@@ -338,6 +338,38 @@ h1 {
   line-height: 1.65;
 }
 
+/* [Part2] Synced Table の顧客属性 */
+.customer-context {
+  margin-top: 16px;
+  border: 1px solid #99d5cf;
+  border-radius: 8px;
+  background: #f0fdfa;
+  padding: 12px 16px;
+}
+
+.customer-context h3 {
+  margin: 0 0 8px;
+  font-size: 14px;
+  color: var(--brand);
+}
+
+.customer-context dl {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px 16px;
+  margin: 0;
+}
+
+.customer-context dt {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.customer-context dd {
+  margin: 2px 0 0;
+  font-weight: 600;
+}
+
 .actions {
   display: flex;
   align-items: center;

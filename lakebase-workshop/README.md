@@ -35,6 +35,13 @@ Databricks CLI、jq、psqlは不要です。
 1つのprojectでunarchivedのbranchは最大10本です。setup notebookは講師確認用を含めて
 1 projectあたり9本以内に収まるよう、参加者を8名ずつ分割します。
 
+## ハンズオン Part2 Lakehouse との接続
+
+Part1 で作ったブランチとアプリのまま、Synced Table で Lakehouse の顧客属性を Lakebase へ届け、
+Lakebase CDF でアプリの更新を Lakehouse の Delta へ戻します。アプリは自分のブランチにある
+`lab_<名前>.customer_context_synced` を自動で見つけ、チケット詳細に顧客情報を表示します
+（見つからないときは Part1 と同じ表示）。手順の SQL は [`sql/handson2/`](sql/handson2/README.md) にあります。
+
 ## ローカルデモ
 
 ローカルではSQLite demo modeで起動します。Lakebase接続やDatabricks credentialは
@@ -63,6 +70,7 @@ uv run --frozen python -m unittest discover -s tests -v
 - `pyproject.toml`、`uv.lock`: ローカル検証用に固定したPython依存関係
 - `static/`: browser UI
 - `sql/`: PostgreSQL／SQLiteのschemaとsample data
+- `sql/handson2/`: Part2（Synced Table と Lakebase CDF）の SQL
 - `notebooks/facilitator_setup.py`: 講師用の環境作成notebook
 - `notebooks/facilitator_cleanup.py`: 講師用の環境削除notebook
 - `notebooks/participant_connect_helper.py`: 手動接続用の診断helper
