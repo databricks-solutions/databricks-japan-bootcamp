@@ -48,7 +48,7 @@
 # MAGIC
 # MAGIC ### ローカルコース
 # MAGIC
-# MAGIC PCへの導入・通常のOAuth認証・ユーザー設定の適用・終了後の復元まで体験します。ブラウザコースと同じく`UG_SKIP_OS_SETTINGS=1`を使い、OS全体の管理設定への書き込みを省きます。macOS/Linuxのターミナルを想定し、Python 3.12以降、[Databricks CLI](https://docs.databricks.com/aws/en/dev-tools/cli/install)、[uv](https://docs.astral.sh/uv/getting-started/installation/)、[Claude Code](https://code.claude.com/docs/en/setup)を準備します。
+# MAGIC PCへの導入・通常のOAuth認証・ユーザー設定の適用・終了後の復元まで体験します。ブラウザコースと同じく`UG_SKIP_OS_SETTINGS=1`を使い、OS全体の管理設定への書き込みを省きます。macOS/Linuxのターミナルを想定し、Python 3.12以降、[Databricks CLI](https://docs.databricks.com/aws/ja/dev-tools/cli/install)、[uv](https://docs.astral.sh/uv/getting-started/installation/)、[Claude Code](https://code.claude.com/docs/en/setup)を準備します。
 # MAGIC
 # MAGIC ```bash
 # MAGIC python3 --version
@@ -73,9 +73,9 @@
 # MAGIC
 # MAGIC ### 組織の管理端末で使う場合
 # MAGIC
-# MAGIC 会社がClaude CodeやUGの設定・起動方法を管理している場合は、演習用ワークスペースへ切り替えてよいか、終了後の復元方法と担当者を開催前に確認します。会社が案内する起動手順を使い、切り替えが難しい場合はブラウザコースを選びます。組織へのMDM配布はこのワークショップの演習範囲外です。必要なIT管理者は[公式のMDM配布手順](https://docs.databricks.com/aws/en/ai-gateway/coding-agent-rollout)を参照してください。
+# MAGIC 会社がClaude CodeやUGの設定・起動方法を管理している場合は、演習用ワークスペースへ切り替えてよいか、終了後の復元方法と担当者を開催前に確認します。会社が案内する起動手順を使い、切り替えが難しい場合はブラウザコースを選びます。組織へのMDM配布はこのワークショップの演習範囲外です。必要なIT管理者は[公式のMDM配布手順](https://docs.databricks.com/aws/ja/ai-gateway/coding-agent-rollout)を参照してください。
 # MAGIC
-# MAGIC 参考: [ugのセットアップ](https://docs.databricks.com/aws/en/ai-gateway/coding-agent-ug-cli)
+# MAGIC 参考: [ugのセットアップ](https://docs.databricks.com/aws/ja/ai-gateway/coding-agent-ug-cli)
 
 # COMMAND ----------
 
@@ -96,7 +96,7 @@
 # MAGIC
 # MAGIC Smart Routing・ポリシー・Smart defaults・トレースの演習には、それぞれの公開設定・権限・事前準備が必要です。上記の接続検証だけで、予算到達時の切り替えやトレース到着まで確認済みとは扱いません。講師は開催環境で使用する章を事前確認してください。
 # MAGIC
-# MAGIC 参考: [Web Terminalの利用条件](https://docs.databricks.com/aws/en/compute/web-terminal) / [検証したugの認証実装](https://github.com/databricks/unity-gateway/blob/03952a3fec7e6c35e4e90d2528e54b4ec147b41c/src/ucode/databricks.py#L1950) / [ユーザー領域への公開設定適用](https://github.com/databricks/unity-gateway/blob/03952a3fec7e6c35e4e90d2528e54b4ec147b41c/docs/managed-workspace-policy.md)
+# MAGIC 参考: [Web Terminalの利用条件](https://docs.databricks.com/aws/ja/compute/web-terminal) / [検証したugの認証実装](https://github.com/databricks/unity-gateway/blob/03952a3fec7e6c35e4e90d2528e54b4ec147b41c/src/ucode/databricks.py#L1950) / [ユーザー領域への公開設定適用](https://github.com/databricks/unity-gateway/blob/03952a3fec7e6c35e4e90d2528e54b4ec147b41c/docs/managed-workspace-policy.md)
 
 # COMMAND ----------
 
@@ -119,7 +119,7 @@
 # MAGIC
 # MAGIC カタログ・スキーマは利用可能なものを指定します。未作成ならカタログエクスプローラーで **Create catalog**、そのカタログ内で **Create schema** を選んで作成するか、管理者に準備を依頼してください。
 # MAGIC
-# MAGIC 参考: [Coding Agent設定](https://docs.databricks.com/aws/en/ai-gateway/coding-agent-configure-govern) / [予算の権限](https://docs.databricks.com/aws/en/admin/account-settings/budget-permissions) / [モデルサービスの要件](https://docs.databricks.com/aws/en/ai-gateway/model-services#requirements) / [ポリシーの要件](https://docs.databricks.com/aws/en/data-governance/unity-catalog/service-policies/create-service-policy#prerequisites)
+# MAGIC 参考: [Coding Agent設定](https://docs.databricks.com/aws/ja/ai-gateway/coding-agent-configure-govern) / [予算の権限](https://docs.databricks.com/aws/ja/admin/account-settings/budget-permissions) / [モデルサービスの要件](https://docs.databricks.com/aws/ja/ai-gateway/model-services#requirements) / [ポリシーの要件](https://docs.databricks.com/aws/ja/data-governance/unity-catalog/service-policies/create-service-policy#prerequisites)
 
 # COMMAND ----------
 
@@ -128,14 +128,14 @@
 # MAGIC
 # MAGIC ワークスペース側はユーザーメニューの **Previews**、アカウント側はアカウントコンソールの **Previews** で確認します。
 # MAGIC
-# MAGIC **すでに有効なら変更は不要です。** 無効な場合だけ、下表の管理者が有効化します。Betaでも既定で有効な場合があり、[公式のリリース区分](https://docs.databricks.com/aws/en/release-notes/release-types#platform-releases)では、Betaの一般的な既定値はPremiumでON、EnterpriseでOFFと説明されています。個別設定や機能ごとの継承もあるため、利用環境の実際の有効状態を確認してください。
+# MAGIC **すでに有効なら変更は不要です。** 無効な場合だけ、下表の管理者が有効化します。Betaでも既定で有効な場合があり、[公式のリリース区分](https://docs.databricks.com/aws/ja/release-notes/release-types#platform-releases)では、Betaの一般的な既定値はPremiumでON、EnterpriseでOFFと説明されています。個別設定や機能ごとの継承もあるため、利用環境の実際の有効状態を確認してください。
 # MAGIC
 # MAGIC | プレビュー名 | 設定する場所・担当者 | 使用する演習 |
 # MAGIC |---|---|---|
-# MAGIC | **[Unity Gateway Managed Configuration](https://docs.databricks.com/aws/en/ai-gateway/coding-agent-configure-govern)** | ワークスペース／ワークスペース管理者 | セクション1以降のCoding Agent設定。必須 |
-# MAGIC | **[Governance Hub](https://docs.databricks.com/aws/en/admin/governance-hub#enable-governance-hub)** | アカウントコンソール／アカウント管理者 | 本編3の予算作成。開催前に有効化すると、参加者はワークスペース管理者として自分のワークスペースの予算を作成できる |
-# MAGIC | **[Unity Gateway Service Policies](https://docs.databricks.com/aws/en/data-governance/unity-catalog/service-policies/create-service-policy#prerequisites)** | ワークスペース／ワークスペース管理者 | セクション4のポリシー作成・利用。有効化済みならそのまま使用 |
-# MAGIC | **[Enhanced Unity Gateway](https://docs.databricks.com/aws/en/ai-gateway/unified-trace-table#requirements)** | アカウントコンソール／アカウント管理者 | [Smart Routing](https://docs.databricks.com/aws/en/ai-gateway/coding-agent-model-selection#smart-routing)、[Smart defaults](https://docs.databricks.com/aws/en/ai-gateway/coding-agent-costs#adjust-recommendations-as-spending-increases)、[統合トレース](https://docs.databricks.com/aws/en/ai-gateway/unified-trace-table#enable-the-unified-trace-table) |
+# MAGIC | **[Unity Gateway Managed Configuration](https://docs.databricks.com/aws/ja/ai-gateway/coding-agent-configure-govern)** | ワークスペース／ワークスペース管理者 | セクション1以降のCoding Agent設定。必須 |
+# MAGIC | **[Governance Hub](https://docs.databricks.com/aws/ja/admin/governance-hub#enable-governance-hub)** | アカウントコンソール／アカウント管理者 | 本編3の予算作成。開催前に有効化すると、参加者はワークスペース管理者として自分のワークスペースの予算を作成できる |
+# MAGIC | **[Unity Gateway Service Policies](https://docs.databricks.com/aws/ja/data-governance/unity-catalog/service-policies/create-service-policy#prerequisites)** | ワークスペース／ワークスペース管理者 | セクション4のポリシー作成・利用。有効化済みならそのまま使用 |
+# MAGIC | **[Enhanced Unity Gateway](https://docs.databricks.com/aws/ja/ai-gateway/unified-trace-table#requirements)** | アカウントコンソール／アカウント管理者 | [Smart Routing](https://docs.databricks.com/aws/ja/ai-gateway/coding-agent-model-selection#smart-routing)、[Smart defaults](https://docs.databricks.com/aws/ja/ai-gateway/coding-agent-costs#adjust-recommendations-as-spending-increases)、[統合トレース](https://docs.databricks.com/aws/ja/ai-gateway/unified-trace-table#enable-the-unified-trace-table) |
 # MAGIC
 # MAGIC 表の「設定する場所」はプレビューを有効にする場所です。**Enhanced Unity Gatewayはアカウント単位で有効化**しますが、Coding Agentの公開設定はワークスペース単位、統合トレースの保存先はメタストア単位で別途設定します。Smart Routingは有効化後、ワークスペースへの反映に1～2分かかる場合があります。
 # MAGIC
@@ -145,7 +145,7 @@
 # MAGIC
 # MAGIC Smart Routing・Smart defaults・統合トレースの準備ができない場合は、その部分を省略できます。Smart Routingを省略する場合は、本編セクション1のUI設定を`smart_routing.enabled: false`にし、コード例も`smart_routing=False`で作成します。プレビューをONにするだけでは、統合トレースの保存先作成や閲覧権限の付与は完了しません。
 # MAGIC
-# MAGIC 参考: [プレビューの管理](https://docs.databricks.com/aws/en/admin/workspace-settings/manage-previews) / [Service Policiesの要件](https://docs.databricks.com/aws/en/data-governance/unity-catalog/service-policies/create-service-policy#prerequisites)
+# MAGIC 参考: [プレビューの管理](https://docs.databricks.com/aws/ja/admin/workspace-settings/manage-previews) / [Service Policiesの要件](https://docs.databricks.com/aws/ja/data-governance/unity-catalog/service-policies/create-service-policy#prerequisites)
 
 # COMMAND ----------
 
@@ -188,7 +188,7 @@
 # MAGIC
 # MAGIC **本編6で当日の操作を分析する場合は、開発課題を始める前に保存先と閲覧権限を準備してください。** メタストア管理者が **Govern > Traces > Set up tracing** で初期設定します。新しいテーブルでは記録の到着に最大1時間かかる場合があるため、開催前に到着も確認します。有効化前の操作は記録されません。
 # MAGIC
-# MAGIC 保存先にDefault Storageのカタログを使う場合は、**[Zerobus Ingest Default Storage](https://docs.databricks.com/aws/en/ai-gateway/unified-trace-table#requirements)**も確認します。この機能は**一般提供（GA）で、通常は既定で有効**です。コンプライアンスセキュリティプロファイルを使用する環境など、一部のワークスペースではワークスペース管理者が **Previews** から明示的に有効化します。
+# MAGIC 保存先にDefault Storageのカタログを使う場合は、**[Zerobus Ingest Default Storage](https://docs.databricks.com/aws/ja/ai-gateway/unified-trace-table#requirements)**も確認します。この機能は**一般提供（GA）で、通常は既定で有効**です。コンプライアンスセキュリティプロファイルを使用する環境など、一部のワークスペースではワークスペース管理者が **Previews** から明示的に有効化します。
 # MAGIC
 # MAGIC 保存先はメタストア単位の共通テーブルです。同じメタストアに接続されたワークスペースで共有し、参加者ごとに作成する必要はありません。アカウント全体で必ず1つという意味ではありません。MLflowエクスペリメントのトレース保存先とも異なります。
 # MAGIC
@@ -198,7 +198,7 @@
 # MAGIC
 # MAGIC 準備できない場合は分析編を省略するか、閲覧を許可された事前記録で進めます。
 # MAGIC
-# MAGIC 参考: [初期設定と保存先](https://docs.databricks.com/aws/en/ai-gateway/unified-trace-table#enable-the-unified-trace-table) / [閲覧権限](https://docs.databricks.com/aws/en/ai-gateway/unified-trace-table#permissions-and-access-control)
+# MAGIC 参考: [初期設定と保存先](https://docs.databricks.com/aws/ja/ai-gateway/unified-trace-table#enable-the-unified-trace-table) / [閲覧権限](https://docs.databricks.com/aws/ja/ai-gateway/unified-trace-table#permissions-and-access-control)
 # MAGIC
 # MAGIC ### 標準のUsage Dashboard
 # MAGIC
@@ -208,7 +208,7 @@
 # MAGIC
 # MAGIC Usage Dashboardと統合トレースは別のデータソースです。それぞれの権限・対象期間・反映時刻を確認してください。
 # MAGIC
-# MAGIC 参考: [モデルの使用状況・標準ダッシュボード](https://docs.databricks.com/aws/en/ai-gateway/usage-tracking)
+# MAGIC 参考: [モデルの使用状況・標準ダッシュボード](https://docs.databricks.com/aws/ja/ai-gateway/usage-tracking)
 
 # COMMAND ----------
 
@@ -250,6 +250,6 @@
 # MAGIC 会社の配布処理や起動コマンドが設定を再適用する場合は、`ug revert`後も会社の復元手順が必要です。バックアップがない、会社設定へ自動的に戻る、普段の接続へ戻らない場合は、変更前の記録とコマンドの出力を端末管理者へ伝えて確認します。
 # MAGIC 復元後、今のシェルに設定した環境変数を解除する場合は、Agentを終了して`unset UG_SKIP_OS_SETTINGS`を実行します。
 # MAGIC
-# MAGIC 参考: [ugのコマンドとrevert](https://docs.databricks.com/aws/en/ai-gateway/coding-agent-ug-cli) / [検証したugのバックアップ・復元仕様](https://github.com/databricks/unity-gateway/blob/03952a3fec7e6c35e4e90d2528e54b4ec147b41c/docs/os-managed-settings-design.md#backup-model)
+# MAGIC 参考: [ugのコマンドとrevert](https://docs.databricks.com/aws/ja/ai-gateway/coding-agent-ug-cli) / [検証したugのバックアップ・復元仕様](https://github.com/databricks/unity-gateway/blob/03952a3fec7e6c35e4e90d2528e54b4ec147b41c/docs/os-managed-settings-design.md#backup-model)
 # MAGIC
 # MAGIC <a href="$./Unity_Gateway_ハンズオン">本編Notebookへ戻る</a>

@@ -101,12 +101,12 @@ Notebookの設定反映フラグ`APPLY_...`は既定で`False`です。モデル
 
 ## 参考
 
-- [Web Terminalの利用条件](https://docs.databricks.com/aws/en/compute/web-terminal)
-- [Coding Agentの設定](https://docs.databricks.com/aws/en/ai-gateway/coding-agent-configure-govern)
-- [Claude Code・CodexなどでOSSモデルを使う](https://docs.databricks.com/aws/en/ai-gateway/coding-agent-open-source-models)
-- [ugのコマンド](https://docs.databricks.com/aws/en/ai-gateway/coding-agent-ug-cli)
-- [モデルサービスの作成と更新](https://docs.databricks.com/aws/en/ai-gateway/model-services)
-- [統合トレース](https://docs.databricks.com/aws/en/ai-gateway/unified-trace-table)
+- [Web Terminalの利用条件](https://docs.databricks.com/aws/ja/compute/web-terminal)
+- [Coding Agentの設定](https://docs.databricks.com/aws/ja/ai-gateway/coding-agent-configure-govern)
+- [Claude Code・CodexなどでOSSモデルを使う](https://docs.databricks.com/aws/ja/ai-gateway/coding-agent-open-source-models)
+- [ugのコマンド](https://docs.databricks.com/aws/ja/ai-gateway/coding-agent-ug-cli)
+- [モデルサービスの作成と更新](https://docs.databricks.com/aws/ja/ai-gateway/model-services)
+- [統合トレース](https://docs.databricks.com/aws/ja/ai-gateway/unified-trace-table)
 
 ## Support and License
 

@@ -53,7 +53,7 @@
 # MAGIC
 # MAGIC #### ブラウザコース
 # MAGIC
-# MAGIC 1. **この本編Notebook**をServerlessに接続します。右側の **Terminal, Logs** からWeb Terminalを開きます。Web Terminalが無効なら、講師・管理者が[利用条件](https://docs.databricks.com/aws/en/compute/web-terminal)を確認します。
+# MAGIC 1. **この本編Notebook**をServerlessに接続します。右側の **Terminal, Logs** からWeb Terminalを開きます。Web Terminalが無効なら、講師・管理者が[利用条件](https://docs.databricks.com/aws/ja/compute/web-terminal)を確認します。
 # MAGIC 2. 以下をWeb Terminalで実行します。PC側で実行するコマンドではありません。`uv`はこの検証環境に導入済みでした。見つからない場合は[uvの公式手順](https://docs.astral.sh/uv/getting-started/installation/)で、このWeb Terminal内へ導入します。
 # MAGIC 3. **以後も同じNotebookの同じTerminalセッションを使います。** 別Notebookで開いたTerminalは別環境になる場合があります。準備ガイドを読むために画面を切り替えた場合も、Terminal右側のセッション一覧で本編のセッションを選びます。
 # MAGIC
@@ -266,7 +266,7 @@ def messages_supported(service):
 # MAGIC
 # MAGIC 次のセルはUIに設定するJSONの例を表示します。モデル名をUIと合わせてから実行してください。
 # MAGIC
-# MAGIC 参考: [Coding Agentの設定](https://docs.databricks.com/aws/en/ai-gateway/coding-agent-configure-govern) / [設定項目](https://docs.databricks.com/aws/en/ai-gateway/coding-agent-config-schema)
+# MAGIC 参考: [Coding Agentの設定](https://docs.databricks.com/aws/ja/ai-gateway/coding-agent-configure-govern) / [設定項目](https://docs.databricks.com/aws/ja/ai-gateway/coding-agent-config-schema)
 
 # COMMAND ----------
 
@@ -306,7 +306,7 @@ publish_agent_config(w, phase1_baseline, phase1_config, ["enabled_agents"], appl
 # MAGIC
 # MAGIC 他のワークスペースが表示された場合は、`ug configure`に指定したURLと適用先を確認してください。公開設定を変更した後は、同じTerminalで`ug configure --workspace ... --agent claude`を再実行してから起動します。ブラウザコースでは上記の環境変数が設定された状態で実行します。
 # MAGIC
-# MAGIC 参考: [Web Terminal](https://docs.databricks.com/aws/en/compute/web-terminal) / [ugのユーザー設定モード（検証した実装）](https://github.com/databricks/unity-gateway/blob/03952a3fec7e6c35e4e90d2528e54b4ec147b41c/src/ucode/managed_files.py#L187) / [公開設定の適用と保存](https://github.com/databricks/unity-gateway/blob/03952a3fec7e6c35e4e90d2528e54b4ec147b41c/docs/managed-workspace-policy.md)
+# MAGIC 参考: [Web Terminal](https://docs.databricks.com/aws/ja/compute/web-terminal) / [ugのユーザー設定モード（検証した実装）](https://github.com/databricks/unity-gateway/blob/03952a3fec7e6c35e4e90d2528e54b4ec147b41c/src/ucode/managed_files.py#L187) / [公開設定の適用と保存](https://github.com/databricks/unity-gateway/blob/03952a3fec7e6c35e4e90d2528e54b4ec147b41c/docs/managed-workspace-policy.md)
 
 # COMMAND ----------
 
@@ -376,7 +376,7 @@ print(build_terminal_commands(w.config.host, TERMINAL))
 # MAGIC
 # MAGIC 通知を見逃した場合は、Claude Codeを終了し、同じTerminalで`~/.ucode/claude-smart-routing-decisions.jsonl`を確認できます。その後、`ug claude`で再開します。ブラウザコースでは別NotebookのTerminalへ移らないでください。記録がない場合は、設定の再適用とサブエージェントへの作業の委譲を確認してください。
 # MAGIC
-# MAGIC 参考: [Smart Routingの動作と制限](https://docs.databricks.com/aws/en/ai-gateway/coding-agent-costs#understand-smart-routing)
+# MAGIC 参考: [Smart Routingの動作と制限](https://docs.databricks.com/aws/ja/ai-gateway/coding-agent-costs#understand-smart-routing)
 
 # COMMAND ----------
 
@@ -397,7 +397,7 @@ print(build_terminal_commands(w.config.host, TERMINAL))
 # MAGIC
 # MAGIC 予算はGovernance HubのUIで作成します。Unity Gateway側やアカウント全体を対象にした予算作成では、アカウント管理者の権限が必要になります。
 # MAGIC
-# MAGIC 参考: [Governance Hubの利用権限](https://docs.databricks.com/aws/en/admin/governance-hub#access-and-permissions) / [Cost画面の予算管理](https://docs.databricks.com/aws/en/admin/governance-hub/cost#view-and-manage-budgets) / [Unity Gatewayの予算](https://docs.databricks.com/aws/en/ai-gateway/budgets)
+# MAGIC 参考: [Governance Hubの利用権限](https://docs.databricks.com/aws/ja/admin/governance-hub#access-and-permissions) / [Cost画面の予算管理](https://docs.databricks.com/aws/ja/admin/governance-hub/cost#view-and-manage-budgets) / [Unity Gatewayの予算](https://docs.databricks.com/aws/ja/ai-gateway/budgets)
 
 # COMMAND ----------
 
@@ -452,7 +452,7 @@ else:
 # MAGIC
 # MAGIC **作成済みの場合**：セクション0.2の`existing_service`にその完全修飾名を入力し、0.2の設定セルを再実行してください。既存サービスは作り直さず、4.2へ進みます。同名のサービスが既にある場合も、ルーティングと所有者を確認して再利用してください。
 # MAGIC
-# MAGIC 参考: [モデルサービスの作成・必要な権限](https://docs.databricks.com/aws/en/ai-gateway/model-services)
+# MAGIC 参考: [モデルサービスの作成・必要な権限](https://docs.databricks.com/aws/ja/ai-gateway/model-services)
 # MAGIC
 # MAGIC 次のセルは作成する名前を表示するだけです。サービスの作成はUIで行います。
 
@@ -492,7 +492,7 @@ else:
 # MAGIC
 # MAGIC 対応APIにMessages APIがない場合だけ、下記の手順で同じサービスの配信先を変更し、この確認セルを再実行します。既に対応している場合は4.3へ進みます。ポリシーによる拒否が表示されたことだけでは、通常のコード作成にも使えるとは判断できません。
 # MAGIC
-# MAGIC 参考: [OSSモデルをClaude Code・Codexで使う](https://docs.databricks.com/aws/en/ai-gateway/coding-agent-open-source-models) / [Claude Codeの接続・手動設定](https://docs.databricks.com/aws/en/ai-gateway/coding-agent-claude) / [Codexの接続・手動設定](https://docs.databricks.com/aws/en/ai-gateway/coding-agent-codex) / [クライアントごとのAPI要件](https://docs.databricks.com/aws/en/ai-gateway/coding-agent-configure-govern#choose-model-sources-for-each-agent)
+# MAGIC 参考: [OSSモデルをClaude Code・Codexで使う](https://docs.databricks.com/aws/ja/ai-gateway/coding-agent-open-source-models) / [Claude Codeの接続・手動設定](https://docs.databricks.com/aws/ja/ai-gateway/coding-agent-claude) / [Codexの接続・手動設定](https://docs.databricks.com/aws/ja/ai-gateway/coding-agent-codex) / [クライアントごとのAPI要件](https://docs.databricks.com/aws/ja/ai-gateway/coding-agent-configure-govern#choose-model-sources-for-each-agent)
 
 # COMMAND ----------
 
@@ -536,7 +536,7 @@ else:
 # MAGIC
 # MAGIC API対応を確認できても、ツール呼び出しやコード実行を含む動作はモデルごとに確認が必要です。セクション4.5の通常操作とポリシーの両方を試します。サービスの配信先を変更しても、自作サービスがSmart Routingの対象になるわけではありません。
 # MAGIC
-# MAGIC 参考: [モデルサービスの更新と権限](https://docs.databricks.com/aws/en/ai-gateway/model-services#update-a-model-service) / [対応Agentとモデル](https://docs.databricks.com/aws/en/ai-gateway/coding-agent-supported-agents)
+# MAGIC 参考: [モデルサービスの更新と権限](https://docs.databricks.com/aws/ja/ai-gateway/model-services#update-a-model-service) / [対応Agentとモデル](https://docs.databricks.com/aws/ja/ai-gateway/coding-agent-supported-agents)
 
 # COMMAND ----------
 
@@ -564,7 +564,7 @@ else:
 # MAGIC
 # MAGIC 既存のポリシーを再利用する場合は、そのポリシーに指定された競合企業や判定基準に合わせて動作を確認します。この例に合わせて作り直す必要はありません。
 # MAGIC
-# MAGIC 参考: [LLM-as-a-judgeポリシーの作成・検証](https://docs.databricks.com/aws/en/data-governance/unity-catalog/service-policies/create-service-policy#create-an-llm-as-a-judge-policy)
+# MAGIC 参考: [LLM-as-a-judgeポリシーの作成・検証](https://docs.databricks.com/aws/ja/data-governance/unity-catalog/service-policies/create-service-policy#create-an-llm-as-a-judge-policy)
 
 # COMMAND ----------
 
@@ -619,7 +619,7 @@ else:
 # MAGIC
 # MAGIC 統合トレースが未設定の場合、アカウントの **Enhanced Unity Gateway** プレビューを有効にしたうえで、メタストア管理者が **Govern > Traces > Set up tracing** からカタログ・スキーマを選択して保存します。**記録の収集は有効化後に始まるため、設定後に通常の操作とポリシーの確認を再実行します。** 準備できない場合はトレース閲覧を省略してください。設定済みでも記録が表示されない場合は、保存先へのアクセス権限と反映状況を確認します。
 # MAGIC
-# MAGIC 参考: [Coding Agentの利用状況とトレース](https://docs.databricks.com/aws/en/ai-gateway/coding-agent-observability#tracing)
+# MAGIC 参考: [Coding Agentの利用状況とトレース](https://docs.databricks.com/aws/ja/ai-gateway/coding-agent-observability#tracing)
 
 # COMMAND ----------
 
@@ -674,7 +674,7 @@ else:
 # MAGIC
 # MAGIC この標準ダッシュボードは利用状況・支出を把握する入口です。次章では**統合トレースのUCテーブル**を使い、自分の呼び出しやポリシー拒否をGenie Codeで詳しく分析します。ダッシュボードのUsageデータと統合トレースは別のデータソースなので、対象範囲・期間・反映時刻を確認して読み取ります。
 # MAGIC
-# MAGIC 参考: [モデルの使用状況・組み込みダッシュボード](https://docs.databricks.com/aws/en/ai-gateway/usage-tracking)
+# MAGIC 参考: [モデルの使用状況・組み込みダッシュボード](https://docs.databricks.com/aws/ja/ai-gateway/usage-tracking)
 
 # COMMAND ----------
 
@@ -694,7 +694,7 @@ else:
 # MAGIC
 # MAGIC 保存先の`SELECT`・親への`USE CATALOG`・`USE SCHEMA`と、クエリ実行環境の利用権限が必要です。SQLエディターを使う場合は`CAN USE`のあるSQL Warehouseを選択してください。本人への絞り込みは分析条件であり、UCのアクセス制御は管理者が別途設定します。
 # MAGIC
-# MAGIC 参考: [Genie Codeで統合トレースを分析](https://docs.databricks.com/aws/en/ai-gateway/unified-trace-table#write-queries-with-genie-code) / [トレースのスキーマ](https://docs.databricks.com/aws/en/ai-gateway/unified-trace-table-reference)
+# MAGIC 参考: [Genie Codeで統合トレースを分析](https://docs.databricks.com/aws/ja/ai-gateway/unified-trace-table#write-queries-with-genie-code) / [トレースのスキーマ](https://docs.databricks.com/aws/ja/ai-gateway/unified-trace-table-reference)
 
 # COMMAND ----------
 
