@@ -303,30 +303,78 @@ class NotebookTests(unittest.TestCase):
             values = self.run_notebook(["mlflow/v1/chat/completions"], {"budget_id": "test-budget"})
         config = values["smart_defaults_config"]
         self.assertEqual(config["smart_defaults"]["tiers"][0]["spending_percentage"], 0.8)
-        self.assertEqual(config["default_agent"], baseline["default_agent"])
+        self.assertEqual(set(config), {"smart_defaults"})
+        self.assertEqual(baseline["default_agent"], "CODING_AGENT_CODEX")
 
     def test_smart_defaults_with_budget_and_dynamic_models_gives_actionable_error(self):
         with self.assertRaisesRegex(ValueError, "model_services"):
             self.run_notebook(["mlflow/v1/chat/completions"], {"budget_id": "test-budget"})
+
+    def run_smart_defaults_cell(self, response, budget_id, *, values=None):
+        smart_defaults_cell = next(cell for cell in SOURCE.split("# COMMAND ----------")
+                                   if "\nsmart_defaults_config = None\n" in cell)
+        client = Mock()
+
+        def request(method, path):
+            self.assertEqual(method, "GET", "Smart defaultsセルで書き込み要求が発生した")
+            self.assertEqual(path, "/api/ai-gateway/v2/coding-agent-configs")
+            return response
+
+        client.api_client.do.side_effect = request
+        sdk = types.ModuleType("databricks.sdk")
+        sdk.WorkspaceClient = lambda: client
+        values = {} if values is None else values
+        values.setdefault("dbutils", Mock())
+
+        def read_budget_only(name):
+            self.assertEqual(name, "budget_id")
+            return budget_id
+
+        values["dbutils"].widgets.get.side_effect = read_budget_only
+        output = io.StringIO()
+        with patch.dict(sys.modules, {"databricks": types.ModuleType("databricks"), "databricks.sdk": sdk}), \
+                contextlib.redirect_stdout(output):
+            exec(compile(smart_defaults_cell, str(ROOT), "exec"), values)
+        return values, output.getvalue()
+
+    def test_smart_defaults_cell_runs_without_any_setup_globals(self):
+        baseline = baseline_config()
+        baseline["enabled_agents"][1]["config"]["models"] = {
+            "model_services": ["system.ai.claude-haiku-4-5"],
+        }
+        snapshot = copy.deepcopy(baseline)
+        # Notebookを通しで実行せず、dbutilsだけを与えて3.1を実行する。
+        values, output = self.run_smart_defaults_cell({"coding_agent_configs": [baseline]}, "new-budget")
+        config = values["smart_defaults_config"]
+        self.assertEqual(set(config), {"smart_defaults"})
+        self.assertEqual(config["smart_defaults"]["budget_id"], "new-budget")
+        self.assertEqual(config["smart_defaults"]["tiers"][0]["recommended_model"], "system.ai.claude-haiku-4-5")
+        self.assertEqual(baseline, snapshot)
+        self.assertIn('"budget_id": "new-budget"', output)
+        self.assertIn("表示のみ", output)
+
+    def test_smart_defaults_standalone_cell_checks_published_settings(self):
+        for configs, error, message in (
+            ([], ValueError, "セクション1"),
+            ([{}, {}], RuntimeError, "複数"),
+            ([{"enabled_agents": []}], ValueError, "Claude Code"),
+            ([baseline_config()], ValueError, "model_services"),
+        ):
+            with self.subTest(configs=configs), self.assertRaisesRegex(error, message):
+                self.run_smart_defaults_cell({"coding_agent_configs": configs}, "new-budget")
 
     def test_smart_defaults_reads_new_budget_without_rerunning_setup(self):
         baseline = baseline_config()
         baseline["enabled_agents"][1]["config"]["models"] = {
             "model_services": ["system.ai.claude-haiku-4-5"],
         }
-        smart_defaults_cell = next(cell for cell in SOURCE.split("# COMMAND ----------")
-                                   if "\nsmart_defaults_config = None\n" in cell)
         with patch(__name__ + ".baseline_config", return_value=baseline):
             values = self.run_notebook(["mlflow/v1/chat/completions"])
             self.assertIsNone(values["smart_defaults_config"])
             # 予算を作成してパネルへ入力した後、3.1だけ再実行する。
             # 他のパラメータや初期設定セルは読み直さない。
-            def read_budget_only(name):
-                self.assertEqual(name, "budget_id")
-                return "budget-created-after-setup"
-            values["dbutils"].widgets.get.side_effect = read_budget_only
-            with contextlib.redirect_stdout(io.StringIO()):
-                exec(compile(smart_defaults_cell, str(ROOT), "exec"), values)
+            self.run_smart_defaults_cell({"coding_agent_configs": [baseline]},
+                                         "budget-created-after-setup", values=values)
         self.assertEqual(values["smart_defaults_config"]["smart_defaults"]["budget_id"],
                          "budget-created-after-setup")
 

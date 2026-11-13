@@ -407,28 +407,44 @@ print(build_terminal_commands(w.config.host, TERMINAL))
 # MAGIC
 # MAGIC 左側の「パラメータ」パネルの`budget_id`に、直前に作成した予算のIDを入力し、**次のセルだけ**を実行します。IDを変更した場合もこのセルだけ再実行します。セクション0.2へ戻る必要はありません。
 # MAGIC
-# MAGIC 表示された`smart_defaults`を、UIのAgent configurationのJSONへ`enabled_agents`と同じ階層で追加して保存します。HaikuはClaude Codeのモデル一覧にも含めてください。
+# MAGIC このセルは現在公開されている設定を読み取り、追加する`smart_defaults`のJSONだけを表示します。上の準備用セルの再実行は不要です。表示された項目をUIのAgent configurationのJSONへ`enabled_agents`と同じ階層で追加し、既に`smart_defaults`がある場合はその項目を置き換えて保存します。HaikuはClaude Codeのモデル一覧にも含めてください。
 # MAGIC
 # MAGIC この機能はBetaです。アカウントの **Enhanced Unity Gateway** プレビューが必要です。体験が難しい場合は設定内容の確認までで進めてください。
 
 # COMMAND ----------
+
+import json
+from databricks.sdk import WorkspaceClient
 
 BUDGET_ID = dbutils.widgets.get("budget_id").strip()
 smart_defaults_config = None
 if not BUDGET_ID:
     print("Smart defaultsは任意です。試す場合は、左側のパラメータのbudget_idに作成した予算のIDを入力し、このセルだけ再実行してください。")
 else:
-    smart_defaults_baseline = read_agent_config(w)
-    smart_defaults_config = editable_config(smart_defaults_baseline or phase1_config)
-    haiku = next((m for m in configured_claude_models(smart_defaults_config) if "claude-haiku" in m), None)
+    # このセルだけで実行できるよう、接続と設定の取得もここで行います。
+    smart_defaults_client = WorkspaceClient()
+    config_response = smart_defaults_client.api_client.do("GET", "/api/ai-gateway/v2/coding-agent-configs")
+    published_configs = config_response.get("coding_agent_configs", [])
+    if len(published_configs) > 1:
+        raise RuntimeError("複数の公開設定が返りました。対象を管理者に確認してください。")
+    if not published_configs:
+        raise ValueError("先にセクション1でClaude Codeの設定を保存してください。")
+    claude_configs = [a for a in published_configs[0].get("enabled_agents", [])
+                      if a.get("agent") == "CODING_AGENT_CLAUDE_CODE"]
+    if len(claude_configs) != 1:
+        raise ValueError("先にセクション1でClaude Codeの設定を1つ有効にして保存してください。")
+    claude_models = claude_configs[0].get("config", {}).get("models", {}).get("model_services")
+    if not isinstance(claude_models, list) or not claude_models:
+        raise ValueError("先にセクション1でClaude Codeのモデル取得元をmodel_servicesの一覧に設定して保存してください。unity_catalog_locationのままではこの例を生成できません。")
+    haiku = next((m for m in claude_models if "claude-haiku" in m), None)
     if not haiku:
         raise ValueError("先にHaikuをClaude Codeのモデル一覧に追加してください。")
-    smart_defaults_config["smart_defaults"] = {
+    smart_defaults_config = {"smart_defaults": {
         "budget_id": BUDGET_ID,
-        "tiers": [{"spending_percentage": 0.8, "recommended_agent": CLAUDE_AGENT, "recommended_model": haiku}],
-    }
-    APPLY_SMART_DEFAULTS = False
-    publish_agent_config(w, smart_defaults_baseline, smart_defaults_config, ["smart_defaults"], apply=APPLY_SMART_DEFAULTS)
+        "tiers": [{"spending_percentage": 0.8, "recommended_agent": "CODING_AGENT_CLAUDE_CODE", "recommended_model": haiku}],
+    }}
+    print(json.dumps(smart_defaults_config, ensure_ascii=False, indent=2))
+    print("表示のみです。UIのAgent configurationにsmart_defaultsを追加または置き換えて保存してください。")
 
 # COMMAND ----------
 
