@@ -719,10 +719,12 @@ else:
 # MAGIC
 # MAGIC ### 6.1 Genie Codeへの指示を用意する（2分）
 # MAGIC
+# MAGIC まずは「**このワークスペースのunified traceで、自分が利用したモデルのログを確認したい**」と聞いてみます。Genie Codeに保存先の確認と分析を任せられます。演習中の操作に絞る場合は、次の手順で期間・対象サービスを入れた指示を作ります。
+# MAGIC
 # MAGIC 1. **Govern > Traces**で、演習中の自分の呼び出しを確認します。通常の呼び出しと、セクション4のポリシー拒否を探してください。
 # MAGIC 2. 左側の「パラメータ」パネルの`analysis_start_utc`が演習開始前の時刻になっていることを確認し、次のセルを実行します。**対象条件と3つの分析項目をまとめた指示**が表示されます。
 # MAGIC 3. サイドバーから **Genie Code** を開き、**出力全体を一度だけ**貼り付けます。テーブル名の事前入力は不要です。
-# MAGIC 4. Genie Codeが示した保存先を確認します。特定できない場合は、講師・メタストア管理者が控えている保存先を伝えて続けます。
+# MAGIC 4. 保存先が分からないときだけ、講師・メタストア管理者が事前に確認したテーブルの完全修飾名を伝えます。
 # MAGIC
 # MAGIC 分析対象は、前半の`SYSTEM_MODELS`と自分の`WORKSHOP_SERVICE`です。本人のモデル呼び出しを`SPAN_KIND_SERVER`に絞り、Client側のspanとの二重計上を避けます。1行を1つの会話や開発タスクとして数えません。
 # MAGIC
@@ -733,7 +735,7 @@ else:
 # COMMAND ----------
 
 def build_trace_analysis(start_time, end_time, service_name, system_models, workspace_url):
-    """保存先の確認と3つの分析を、共通条件付きの1つの指示にまとめる。"""
+    """演習の対象条件と分析したい内容を、短い自然文の指示にまとめる。"""
     def utc_time(value):
         parsed = datetime.fromisoformat(value.strip().replace("Z", "+00:00"))
         if parsed.tzinfo is None:
@@ -744,31 +746,14 @@ def build_trace_analysis(start_time, end_time, service_name, system_models, work
     if start >= end:
         raise ValueError("分析開始時刻は終了時刻より前にしてください。")
 
-    def sql_string(value):
-        return "'" + value.replace("\\", "\\\\").replace("'", "\\'") + "'"
-
     targets = list(dict.fromkeys([service_name, *system_models]))
-    target_sql = ", ".join(sql_string(name) for name in targets)
-    scope = f"""WHERE time >= to_timestamp({sql_string(start.isoformat())})
-  AND time < to_timestamp({sql_string(end.isoformat())})
-  AND kind = 'SPAN_KIND_SERVER'
-  AND attributes:['enduser.id']::STRING = current_user()
-  AND service_name IN ({target_sql})"""
-
-    return f"""このワークスペース（{workspace_url}）のUnity Gateway統合トレースを分析してください。
-設定・Unity Catalogメタデータから保存先テーブルを確認し、根拠とともに示してください。特定できなければ保存先を確認してください。
-
-すべての分析に次の条件を使います。
-{scope}
-
-次のSELECT文を、このNotebookの新しいSQLセルに追加してください。実行前に内容を確認します。
-1. サービス別の呼び出し件数、ポリシー拒否件数、エラー件数。
-2. サービス別の入力・出力トークン合計とp95応答時間。各指標の記録件数も表示。
-3. サービス名・ポリシー名ごとの拒否件数。
-
-拒否はdatabricks.policy.action = 'DENY'、エラーはstatus.code = 'STATUS_CODE_ERROR'で別々に判定します。
-attributesはattributes:['gen_ai.usage.input_tokens']のように参照し、応答時間はdatabricks.latency_msを使います。欠損値はNULLのまま扱ってください。
-表示は集計結果のみとし、プロンプト・応答本文やユーザー一覧の表示、テーブル・設定の変更は不要です。"""
+    return f"""このワークスペース（{workspace_url}）のUnity Gateway統合トレースで、演習中の自分（current_user()）の利用状況を分析してください。
+期間：{start.isoformat()} 以上、{end.isoformat()} 未満
+対象モデルサービス：{', '.join(targets)}
+サービス別の呼び出し件数・ポリシー拒否件数・エラー件数、入出力トークン数・p95応答時間、ポリシー別の拒否件数を知りたいです。
+呼び出しはServer span（SPAN_KIND_SERVER）を1件と数え、トレース数・ポリシー拒否・エラーは区別してください。
+集計用のSELECT文をこのNotebookに追加してください。実行前にSQLを確認します。
+表示は集計結果のみとし、欠損した指標は不明として扱ってください。"""
 
 
 analysis_end_utc = datetime.now(timezone.utc).isoformat()
@@ -813,6 +798,7 @@ print(analysis_prompt)
 # MAGIC | 状況 | 確認すること |
 # MAGIC |---|---|
 # MAGIC | 0件 | 保存先・開始時刻・対象サービス・本人の条件と、記録の到着を確認。勝手に他の利用者へ対象を広げない |
+# MAGIC | トレース数と呼び出し件数が違う | 1つのトレースに複数のモデル呼び出しを含むことがある。`COUNT(DISTINCT trace_id)`とServer spanの件数を区別する |
 # MAGIC | 拒否が複数件 | Claude Codeの再試行も1回のモデル呼び出しとして記録される。質問した回数とは一致しない場合がある |
 # MAGIC | トークン数がNULL | 拒否などでトークン情報が記録されない場合がある。0トークンと断定せず、正常な呼び出しとも比べる |
 # MAGIC | 対応するサービスの記録がない | Messages API非対応でセクション4を省略した場合は、前半のモデルの記録で進める |

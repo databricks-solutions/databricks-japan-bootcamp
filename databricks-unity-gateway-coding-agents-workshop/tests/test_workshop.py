@@ -413,17 +413,16 @@ class NotebookTests(unittest.TestCase):
         widget_names = {call.args[0] for call in values["dbutils"].widgets.text.call_args_list}
         self.assertNotIn("trace_table", widget_names)
         self.assertIn("https://example.cloud.databricks.com", prompt)
-        self.assertIn("特定できなければ保存先を確認", prompt)
-        self.assertEqual(prompt.count("WHERE time >="), 1)
+        self.assertNotIn("WHERE", prompt)
+        self.assertNotIn("保存先テーブルを確認", prompt)
         self.assertIn("2026-01-01T00:00:00+00:00", prompt)
         self.assertIn(values["analysis_end_utc"], prompt)
-        self.assertIn("attributes:['enduser.id']::STRING = current_user()", prompt)
-        self.assertIn("kind = 'SPAN_KIND_SERVER'", prompt)
+        self.assertIn("自分（current_user()）", prompt)
+        self.assertIn("SPAN_KIND_SERVER", prompt)
         for service in [values["WORKSHOP_SERVICE"], *values["SYSTEM_MODELS"]]:
             self.assertIn(service, prompt)
-        self.assertIn("databricks.policy.action = 'DENY'", prompt)
-        self.assertIn("status.code = 'STATUS_CODE_ERROR'", prompt)
-        self.assertIn("欠損値はNULL", prompt)
+        self.assertIn("ポリシー拒否・エラーは区別", prompt)
+        self.assertIn("欠損した指標は不明", prompt)
 
 
 if __name__ == "__main__":
