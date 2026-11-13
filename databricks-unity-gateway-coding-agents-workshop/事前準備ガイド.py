@@ -36,7 +36,11 @@
 # MAGIC
 # MAGIC **別Notebookで開いたTerminalは別環境になる場合があります。** インストールしたツール・ホームディレクトリ・localhostが同じとは扱いません。全章で同じ本編のセッションを使います。別の資料を開いた後は、Terminalのセッション一覧で本編を選び直してください。
 # MAGIC
-# MAGIC 本編1.1では、Web Terminalに用意された本人の`DATABRICKS_TOKEN`を、ugが受け取る`DATABRICKS_BEARER`へ環境変数で渡します。ブラウザでの追加OAuth認証、PATの発行、認証後URLの手動転送は不要です。表示するコマンドには変数名だけが入り、トークンの値は出力・ファイル保存しません。
+# MAGIC 本編1.1では、Web Terminalに用意された本人の`DATABRICKS_TOKEN`を、ugが受け取る`DATABRICKS_BEARER`へ環境変数で渡します。ブラウザでの追加OAuth認証、PATの発行、認証後URLの手動転送は不要です。掲載コマンドはトークンの値を出力・ファイル保存しません。
+# MAGIC
+# MAGIC **この接続方法は、固定版ug本体の外部bearer認証処理を使い、本教材で実機確認したものです。** 公開のWeb Terminal向けセットアップ手順としての保証は未確認のため、ug更新時には再検証します。認証経路を標準のOAuthに揃える必要がある場合はローカルコースを選びます。
+# MAGIC
+# MAGIC **認証情報はClaude Codeと、そのツールが起動するコマンドにも渡ります。** `env`・`printenv`・`set`などによる環境変数の全表示や、認証情報の出力をAgentへ依頼しないでください。会話・ログ・トレースへ記録される可能性があるため、演習では配布したサンプルコードを使います。通常起動時はug自身も`OAUTH_TOKEN`を設定するので、configure後に`DATABRICKS_BEARER`だけを解除しても認証情報の隔離にはなりません。
 # MAGIC
 # MAGIC `UG_SKIP_OS_SETTINGS=1`を併用すると、ワークスペースの公開設定を読み取り、Serverless環境のユーザー設定へ適用できます。sudoは不要です。公開設定がある環境では`ug configure --user`が拒否されるため、**`--user`は付けません**。このコースでは端末全体への強制適用やMDM配布を行いません。`ug claude`経由で起動します。
 # MAGIC
@@ -201,7 +205,7 @@
 # MAGIC
 # MAGIC Usage Dashboardと統合トレースは別のデータソースです。それぞれの権限・対象期間・反映時刻を確認してください。
 # MAGIC
-# MAGIC 参考: [モデルの使用状況・標準ダッシュボード](https://docs.databricks.com/aws/ja/ai-gateway/usage-tracking)
+# MAGIC 参考: [モデルの使用状況・標準ダッシュボード](https://docs.databricks.com/aws/en/ai-gateway/usage-tracking)
 
 # COMMAND ----------
 

@@ -12,7 +12,7 @@
 # MAGIC
 # MAGIC このワークショップ単独で受講できます。演習用のモデルサービスとポリシーはセクション4で作成します。既存のサービス・ポリシーがある場合は、任意で再利用できます。
 # MAGIC
-# MAGIC 実行環境を選べます。**PCに導入したくない場合はブラウザコース**で、DatabricksのWeb Terminalを使います。**ローカルコース**ではPCへの導入・端末全体への設定適用・終了後の復元まで体験します。どちらも画面の設定はDatabricksで行います。
+# MAGIC 実行環境を選べます。**PCに導入したくない場合はブラウザコース**で、DatabricksのWeb Terminalを使います。**ローカルコース**ではPCへの導入・ユーザー設定の適用・終了後の復元まで体験します。どちらも画面の設定はDatabricksで行います。
 # MAGIC
 # MAGIC | コース | `ug`を実行する場所 | 認証・設定の範囲 |
 # MAGIC |---|---|---|
@@ -23,7 +23,7 @@
 # MAGIC
 # MAGIC | 章 | 内容 | 目安 |
 # MAGIC |---|---|---|
-# MAGIC | 0 | 開始前の確認とugの導入 | 事前準備 |
+# MAGIC | 0 | 開始前の確認とugの導入 | 10〜15分 |
 # MAGIC | 1 | Coding Agent設定・ugで接続 | 20分 |
 # MAGIC | 2 | 開発課題・Smart Routing | 15分 |
 # MAGIC | 3 | 予算管理・Smart defaults | 10分 |
@@ -93,11 +93,15 @@
 # MAGIC 実行後、Notebook左側の「パラメータ」パネルを開き、`terminal`で`browser`または`local`を選びます。既定は`browser`です。`catalog`・`schema`には、セクション4でサービスを作成する保存先を指定します。既定値は`unity-gateway-workshop.hands_on`です。他の入力欄は使う章で案内します。**入力を変更したら、この設定セルを再実行してから先へ進みます。**
 # MAGIC
 # MAGIC 保存先の準備やモデル一覧の変更が必要な場合は、<a href="$./事前準備ガイド">準備ガイドの「4. Notebookの設定」</a>を参照してください。
+# MAGIC SQLでハイフンを含むカタログ名を指定するときは、`` `unity-gateway-workshop`.hands_on ``のように、その名前をバッククォートで囲みます。
 
 # COMMAND ----------
 
 import copy
+import hashlib
 import json
+import re
+import shlex
 from datetime import datetime, timezone
 
 from databricks.sdk import WorkspaceClient
@@ -130,7 +134,12 @@ current_user = w.current_user.me().user_name
 
 def workshop_service_name(catalog, schema, user_name, existing_service=""):
     """通常は演習用の新しい名前を生成し、再利用時は指定された名前を保持する。"""
-    username = user_name.split("@")[0].replace(".", "_").replace("-", "_")
+    local_name = user_name.split("@")[0].lower()
+    username = re.sub(r"[^a-z0-9_]+", "_", local_name).strip("_") or "user"
+    # +などの追加文字を含む名前が、通常の名前と同じサービス名になるのを避ける。
+    if re.search(r"[^a-z0-9_.-]", local_name) or len(username) > 220:
+        suffix = hashlib.sha256(user_name.encode("utf-8")).hexdigest()[:10]
+        username = f"{username[:220]}_{suffix}"
     name = existing_service.strip() or f"{catalog}.{schema}.coding_agent_{username}"
     parts = name.split(".")
     if len(parts) != 3 or any(not part or "/" in part or part != part.strip() for part in parts):
@@ -201,11 +210,22 @@ def configure_claude(config, models, *, smart_routing):
         defaults[f"default_{family}_model"] = match
     claude.setdefault("smart_routing", {})["enabled"] = smart_routing
     claude.setdefault("tracing", {})["enabled"] = True
-    result["default_agent"] = CLAUDE_AGENT
+    result.setdefault("default_agent", CLAUDE_AGENT)
     for tier in result.get("smart_defaults", {}).get("tiers", []):
         if tier.get("recommended_agent") == CLAUDE_AGENT and tier.get("recommended_model") not in models:
             raise ValueError("既存のSmart defaultsが一覧外のモデルを指定しています。UIで確認してください。")
     return result
+
+
+def configured_claude_models(config):
+    """この演習で使用するClaude Codeの明示的なモデル一覧を取得する。"""
+    agents = [a for a in config.get("enabled_agents", []) if a.get("agent") == CLAUDE_AGENT]
+    if len(agents) != 1:
+        raise ValueError("先にセクション1でClaude Codeを有効にしてください。")
+    models = agents[0].get("config", {}).get("models", {}).get("model_services")
+    if not isinstance(models, list) or not models:
+        raise ValueError("先にセクション1でClaude Codeのモデル取得元をmodel_servicesの一覧に設定してください。unity_catalog_locationのままではこの例を生成できません。")
+    return models
 
 
 def publish_agent_config(client, baseline, proposed, fields, *, apply=False):
@@ -218,7 +238,7 @@ def publish_agent_config(client, baseline, proposed, fields, *, apply=False):
         return None
     latest = read_agent_config(client)
     version = lambda c: (c.get("name"), c.get("update_time")) if c else None
-    if version(latest) != version(baseline):
+    if version(latest) != version(baseline) or editable_config(latest) != editable_config(baseline):
         raise RuntimeError("設定が変更されています。作成セルを再実行して内容を確認してください。")
     if latest:
         name = latest["name"]
@@ -243,7 +263,7 @@ def messages_supported(service):
 # MAGIC 1. **Unity Gateway > Govern > Agent configuration > Edit configuration** を開きます。
 # MAGIC 2. Claude Codeを有効にし、モデルの取得元を`models.model_services`の一覧にします。`SYSTEM_MODELS`と同じモデルを指定します。
 # MAGIC 3. `default_models`に一覧内の既定モデルを指定し、`smart_routing.enabled`と`tracing.enabled`を`true`にします。
-# MAGIC 4. **Save** で公開します。既存のCodex・MCP・Skills設定がある場合は残してください。
+# MAGIC 4. **Save** で公開します。既存の既定Agent・Codex・MCP・Skills設定は残してください。この演習では`ug claude`でAgentを明示して起動します。
 # MAGIC
 # MAGIC 次のセルはUIに設定するJSONの例を表示します。モデル名をUIと合わせてから実行してください。
 # MAGIC
@@ -254,7 +274,7 @@ def messages_supported(service):
 phase1_baseline = read_agent_config(w)
 phase1_config = configure_claude(phase1_baseline, SYSTEM_MODELS, smart_routing=True)
 APPLY_PHASE1 = False  # UIで設定済みならFalseのまま。コードで反映する場合だけTrueへ変更。
-publish_agent_config(w, phase1_baseline, phase1_config, ["default_agent", "enabled_agents"], apply=APPLY_PHASE1)
+publish_agent_config(w, phase1_baseline, phase1_config, ["enabled_agents"], apply=APPLY_PHASE1)
 
 # COMMAND ----------
 
@@ -265,7 +285,7 @@ publish_agent_config(w, phase1_baseline, phase1_config, ["default_agent", "enabl
 # MAGIC
 # MAGIC #### ブラウザコースの接続方法
 # MAGIC
-# MAGIC Web Terminalに用意されている本人の`DATABRICKS_TOKEN`を、ug用の`DATABRICKS_BEARER`へ環境変数として渡します。**PATの発行・認証用URLのコピー・別Terminalからのコールバックは不要です。** トークンの値を表示したり、Notebook・ファイルへ貼り付けたりしません。
+# MAGIC Web Terminalに用意されている本人の`DATABRICKS_TOKEN`を、ug用の`DATABRICKS_BEARER`へ環境変数として渡します。**PATの発行・認証用URLのコピー・別Terminalからのコールバックは不要です。** これは固定版ugの実装を利用した検証済みの接続方法です。認証情報はAgentの実行環境にも渡るため、環境変数の全表示を依頼せず、この演習のサンプルコードで進めます。適用範囲と制約は<a href="$./事前準備ガイド">準備ガイド1</a>を確認してください。
 # MAGIC
 # MAGIC `UG_SKIP_OS_SETTINGS=1`により、公開設定を取得してServerless環境のユーザー設定へ適用します。sudoやOS全体の管理設定への書き込みは行いません。**`--user`への置き換えはできません。** 検証したugでは、ワークスペースが公開設定を持つ場合に`--user`は拒否されます。会社のPCの管理設定を解除するための手順ではありません。
 # MAGIC
@@ -293,8 +313,6 @@ publish_agent_config(w, phase1_baseline, phase1_config, ["default_agent", "enabl
 
 def build_terminal_commands(workspace_url, terminal):
     """認証情報の値を取得せず、選択したコースの接続コマンドを表示用に生成する。"""
-    import shlex
-
     if terminal not in {"browser", "local"}:
         raise ValueError("terminalにはbrowserまたはlocalを指定してください。")
     configure = f"ug configure --workspace {shlex.quote(workspace_url)} --agent claude"
@@ -401,8 +419,7 @@ if not BUDGET_ID:
 else:
     smart_defaults_baseline = read_agent_config(w)
     smart_defaults_config = editable_config(smart_defaults_baseline or phase1_config)
-    claude = next(a["config"] for a in smart_defaults_config["enabled_agents"] if a["agent"] == CLAUDE_AGENT)
-    haiku = next((m for m in claude["models"]["model_services"] if "claude-haiku" in m), None)
+    haiku = next((m for m in configured_claude_models(smart_defaults_config) if "claude-haiku" in m), None)
     if not haiku:
         raise ValueError("先にHaikuをClaude Codeのモデル一覧に追加してください。")
     smart_defaults_config["smart_defaults"] = {
@@ -566,14 +583,11 @@ phase2_config = None
 if can_use_in_claude:
     phase2_baseline = read_agent_config(w)
     phase2_source = phase2_baseline or phase1_config
-    current_claude = next((a["config"] for a in phase2_source.get("enabled_agents", []) if a["agent"] == CLAUDE_AGENT), {})
-    current_models = current_claude.get("models", {}).get("model_services")
-    if not current_models:
-        raise ValueError("先にセクション1でClaude Codeのモデル一覧を設定してください。")
+    current_models = configured_claude_models(phase2_source)
     phase2_models = list(dict.fromkeys([*current_models, WORKSHOP_SERVICE]))
     phase2_config = configure_claude(phase2_source, phase2_models, smart_routing=False)
     APPLY_PHASE2 = False
-    publish_agent_config(w, phase2_baseline, phase2_config, ["default_agent", "enabled_agents"], apply=APPLY_PHASE2)
+    publish_agent_config(w, phase2_baseline, phase2_config, ["enabled_agents"], apply=APPLY_PHASE2)
 else:
     print("対応APIの確認が完了するまで、Coding Agent設定への追加は実行しません。")
 
@@ -658,7 +672,7 @@ else:
 # MAGIC
 # MAGIC この標準ダッシュボードは利用状況・支出を把握する入口です。次章では**統合トレースのUCテーブル**を使い、自分の呼び出しやポリシー拒否をGenie Codeで詳しく分析します。ダッシュボードのUsageデータと統合トレースは別のデータソースなので、対象範囲・期間・反映時刻を確認して読み取ります。
 # MAGIC
-# MAGIC 参考: [モデルの使用状況・組み込みダッシュボード](https://docs.databricks.com/aws/ja/ai-gateway/usage-tracking)
+# MAGIC 参考: [モデルの使用状況・組み込みダッシュボード](https://docs.databricks.com/aws/en/ai-gateway/usage-tracking)
 
 # COMMAND ----------
 

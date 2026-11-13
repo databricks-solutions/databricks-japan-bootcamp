@@ -4,9 +4,12 @@ import ast
 import contextlib
 import copy
 from datetime import datetime, timezone
+import hashlib
 import io
 import os
 from pathlib import Path
+import re
+import shlex
 import subprocess
 import sys
 import types
@@ -25,7 +28,8 @@ DEFINITIONS = ast.Module(
                       {"CONFIG_API", "SERVER_FIELDS", "CLAUDE_AGENT"} for t in node.targets))],
     type_ignores=[],
 )
-NAMESPACE = {"copy": copy, "json": __import__("json"), "datetime": datetime, "timezone": timezone}
+NAMESPACE = {"copy": copy, "hashlib": hashlib, "json": __import__("json"), "re": re,
+             "shlex": shlex, "datetime": datetime, "timezone": timezone}
 exec(compile(DEFINITIONS, str(ROOT), "exec"), NAMESPACE)
 
 
@@ -62,6 +66,15 @@ class ConfigTests(unittest.TestCase):
             with self.subTest(invalid=invalid), self.assertRaises(ValueError):
                 choose("training-catalog", "hands_on", "user@example.com", invalid)
 
+    def test_generated_service_names_handle_aliases_case_and_long_names(self):
+        choose = NAMESPACE["workshop_service_name"]
+        self.assertEqual(choose("c", "s", "First.Last-TEST@example.com"),
+                         "c.s.coding_agent_first_last_test")
+        alias = choose("c", "s", "alice+work@example.com")
+        self.assertRegex(alias.split(".")[-1], r"^coding_agent_[a-z0-9_]+$")
+        self.assertNotEqual(alias, choose("c", "s", "alice_work@example.com"))
+        self.assertLessEqual(len(choose("c", "s", "a" * 300 + "@example.com").split(".")[-1]), 255)
+
     def test_merge_preserves_other_agents_and_settings_without_mutating_input(self):
         baseline = baseline_config()
         snapshot = copy.deepcopy(baseline)
@@ -70,6 +83,7 @@ class ConfigTests(unittest.TestCase):
         for key in ("mcp_servers", "skills"):
             self.assertEqual(proposed[key], baseline[key])
         self.assertEqual(proposed["enabled_agents"][0], baseline["enabled_agents"][0])
+        self.assertEqual(proposed["default_agent"], baseline["default_agent"])
         claude = proposed["enabled_agents"][1]["config"]
         self.assertEqual(claude["http_headers"], {"x-team": "workshop"})
         self.assertEqual(claude["agent_native_settings"], baseline["enabled_agents"][1]["config"]["agent_native_settings"])
@@ -77,6 +91,21 @@ class ConfigTests(unittest.TestCase):
         self.assertTrue(set(claude["default_models"].values()) <= set(self.models))
         self.assertTrue(set(proposed).isdisjoint(NAMESPACE["SERVER_FIELDS"]))
         self.assertEqual(proposed, NAMESPACE["configure_claude"](proposed, self.models, smart_routing=True))
+
+    def test_new_config_initializes_default_agent_but_existing_default_is_preserved(self):
+        create = NAMESPACE["configure_claude"](None, self.models, smart_routing=True)
+        self.assertEqual(create["default_agent"], NAMESPACE["CLAUDE_AGENT"])
+        for default_agent in ("CODING_AGENT_CODEX", "CODING_AGENT_GITHUB_COPILOT"):
+            baseline = dict(baseline_config(), default_agent=default_agent)
+            self.assertEqual(NAMESPACE["configure_claude"](baseline, self.models, smart_routing=True)["default_agent"],
+                             default_agent)
+
+    def test_smart_defaults_reports_missing_agent_or_dynamic_models_clearly(self):
+        models = NAMESPACE["configured_claude_models"]
+        with self.assertRaisesRegex(ValueError, "Claude Codeを有効"):
+            models({"enabled_agents": []})
+        with self.assertRaisesRegex(ValueError, "model_services"):
+            models(baseline_config())
 
     def test_routing_rejects_custom_service_and_invalid_smart_defaults(self):
         with self.assertRaises(ValueError):
@@ -124,6 +153,16 @@ class ConfigTests(unittest.TestCase):
     def test_stale_baseline_stops_before_write(self):
         baseline = baseline_config()
         latest = dict(baseline, update_time="2026-11-02T01:00:00Z")
+        client = Mock()
+        client.api_client.do.return_value = {"coding_agent_configs": [latest]}
+        with contextlib.redirect_stdout(io.StringIO()), self.assertRaises(RuntimeError):
+            NAMESPACE["publish_agent_config"](client, baseline, baseline, ["enabled_agents"], apply=True)
+        self.assertEqual(client.api_client.do.call_count, 1)
+
+    def test_changed_content_without_changed_timestamp_stops_before_write(self):
+        baseline = baseline_config()
+        latest = copy.deepcopy(baseline)
+        latest["default_agent"] = NAMESPACE["CLAUDE_AGENT"]
         client = Mock()
         client.api_client.do.return_value = {"coding_agent_configs": [latest]}
         with contextlib.redirect_stdout(io.StringIO()), self.assertRaises(RuntimeError):
@@ -206,7 +245,9 @@ class NotebookTests(unittest.TestCase):
             if path == NAMESPACE["CONFIG_API"]:
                 return {"coding_agent_configs": [baseline_config()]}
             # Get Model Serviceの公式API契約。実機でもこのパスで取得できることを確認。
-            # https://docs.databricks.com/api/ai-gateway/v1/get-model-service
+            # ドキュメントの分類名と実際のHTTPパスは異なる。
+            # https://docs.databricks.com/api/ai-gateway/v1/get-model-service.md
+            # GET /api/2.1/unity-catalog/{name=model-services/*}
             expected_service = (widget_values or {}).get("existing_service", "").strip() or "unity-gateway-workshop.hands_on.coding_agent_first_last"
             self.assertEqual(path, f"/api/2.1/unity-catalog/model-services/{expected_service}")
             if not service_exists:
@@ -250,6 +291,23 @@ class NotebookTests(unittest.TestCase):
             values = self.run_notebook(["anthropic/v1/messages"])
         models = values["phase2_config"]["enabled_agents"][1]["config"]["models"]["model_services"]
         self.assertEqual(models, ["system.ai.custom-choice", values["WORKSHOP_SERVICE"]])
+        self.assertEqual(values["phase1_config"]["default_agent"], baseline["default_agent"])
+        self.assertEqual(values["phase2_config"]["default_agent"], baseline["default_agent"])
+
+    def test_smart_defaults_with_budget_uses_fraction_and_preserves_default_agent(self):
+        baseline = baseline_config()
+        baseline["enabled_agents"][1]["config"]["models"] = {
+            "model_services": ["system.ai.claude-haiku-4-5"],
+        }
+        with patch(__name__ + ".baseline_config", return_value=baseline):
+            values = self.run_notebook(["mlflow/v1/chat/completions"], {"budget_id": "test-budget"})
+        config = values["smart_defaults_config"]
+        self.assertEqual(config["smart_defaults"]["tiers"][0]["spending_percentage"], 0.8)
+        self.assertEqual(config["default_agent"], baseline["default_agent"])
+
+    def test_smart_defaults_with_budget_and_dynamic_models_gives_actionable_error(self):
+        with self.assertRaisesRegex(ValueError, "model_services"):
+            self.run_notebook(["mlflow/v1/chat/completions"], {"budget_id": "test-budget"})
 
     def test_reused_service_is_used_in_config_and_analysis_without_recreation(self):
         existing = "llmops-ai-governance-workshop.team.guardrail_demo_existing_user"
