@@ -5,6 +5,15 @@
 本コンテンツはDatabricks supportの対象とはなりません。バグなどについては GitHub issue を利用いただき、ベストエフォートで内容の確認をいたします。
 
 
+## Unity Gateway・AI Governance関連のワークショップ
+
+| ワークショップ | 内容 |
+|---|---|
+| [AI Governance・LLMOps](./databricks-llmops-ai-governance-workshop/) | ガードレール付きモデルサービス、エージェント、MLflowトレース、Prompt Registry |
+| [Unity Gateway × Coding Agents](./databricks-unity-gateway-coding-agents-workshop/) | Claude Code、対応するOSS系モデル、Smart Routing、予算、ポリシー、統合トレース。ブラウザだけで参加可能 |
+
+それぞれ単独で受講できます。AI Governanceで作成済みのモデルサービスがある場合は、Coding Agentsのワークショップで任意で再利用できます。
+
 ## License
 
 &copy; 2025 Databricks, Inc. All rights reserved. The source in this notebook is provided subject to the Databricks License [https://databricks.com/db-license-source].  All included or referenced third party libraries are subject to the licenses set forth below.
