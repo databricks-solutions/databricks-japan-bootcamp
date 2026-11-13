@@ -184,10 +184,9 @@ class AnalysisTests(unittest.TestCase):
         build = NAMESPACE["build_trace_analysis"]
         args = ("2026-11-10T12:00:00+09:00", "2026-11-10T04:00:00Z",
                 "training.services.mine", ["system.ai.claude-haiku-4-5"], "https://example.cloud.databricks.com")
-        prompts = build(*args)
-        for text in list(prompts.values())[1:]:
-            self.assertIn("2026-11-10T03:00:00+00:00", text)
-            self.assertIn("2026-11-10T04:00:00+00:00", text)
+        text = build(*args)
+        self.assertIn("2026-11-10T03:00:00+00:00", text)
+        self.assertIn("2026-11-10T04:00:00+00:00", text)
         for start in ("2026-11-10T03:00:00", "2026-11-10T04:00:00Z", "2026-11-10T05:00:00Z"):
             with self.subTest(start=start), self.assertRaises(ValueError):
                 build(start, *args[1:])
@@ -391,9 +390,8 @@ class NotebookTests(unittest.TestCase):
         claude = next(a["config"] for a in values["phase2_config"]["enabled_agents"]
                       if a["agent"] == NAMESPACE["CLAUDE_AGENT"])
         self.assertIn(existing, claude["models"]["model_services"])
-        for prompt in list(values["analysis_prompts"].values())[1:]:
-            self.assertIn(existing, prompt)
-            self.assertNotIn("coding_agent_first_last", prompt)
+        self.assertIn(existing, values["analysis_prompt"])
+        self.assertNotIn("coding_agent_first_last", values["analysis_prompt"])
 
     def test_missing_service_does_not_create_or_register_it(self):
         # 新規作成前の全セル実行でも、GET以外を許可しないモックで完走する。
@@ -411,18 +409,21 @@ class NotebookTests(unittest.TestCase):
         values = self.run_notebook(["mlflow/v1/chat/completions"], {
             "analysis_start_utc": "2026-01-01T00:00:00Z",
         })
-        self.assertEqual(len(values["analysis_prompts"]), 4)
+        prompt = values["analysis_prompt"]
         widget_names = {call.args[0] for call in values["dbutils"].widgets.text.call_args_list}
         self.assertNotIn("trace_table", widget_names)
-        discovery = list(values["analysis_prompts"].values())[0]
-        self.assertIn("https://example.cloud.databricks.com", discovery)
-        self.assertIn("複数の候補", discovery)
-        for text in list(values["analysis_prompts"].values())[1:]:
-            self.assertIn("この会話で確認した", text)
-            self.assertIn("attributes:['enduser.id']::STRING = current_user()", text)
-            self.assertIn("kind = 'SPAN_KIND_SERVER'", text)
-            self.assertIn(values["WORKSHOP_SERVICE"], text)
-            self.assertIn(values["analysis_end_utc"], text)
+        self.assertIn("https://example.cloud.databricks.com", prompt)
+        self.assertIn("特定できなければ保存先を確認", prompt)
+        self.assertEqual(prompt.count("WHERE time >="), 1)
+        self.assertIn("2026-01-01T00:00:00+00:00", prompt)
+        self.assertIn(values["analysis_end_utc"], prompt)
+        self.assertIn("attributes:['enduser.id']::STRING = current_user()", prompt)
+        self.assertIn("kind = 'SPAN_KIND_SERVER'", prompt)
+        for service in [values["WORKSHOP_SERVICE"], *values["SYSTEM_MODELS"]]:
+            self.assertIn(service, prompt)
+        self.assertIn("databricks.policy.action = 'DENY'", prompt)
+        self.assertIn("status.code = 'STATUS_CODE_ERROR'", prompt)
+        self.assertIn("欠損値はNULL", prompt)
 
 
 if __name__ == "__main__":
