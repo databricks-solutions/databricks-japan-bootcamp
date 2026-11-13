@@ -88,7 +88,7 @@
 # MAGIC %md
 # MAGIC ### 0.2 Notebookを準備する
 # MAGIC
-# MAGIC まず次のPythonセルを**演習開始前に実行**し、入力欄を作成します。ワークスペースURL・自分のユーザー・サービス名が表示され、分析の開始時刻も初期値として記録されます。
+# MAGIC まず次のPythonセルを**演習開始前に実行**し、入力欄を作成します。ワークスペースURL・自分のユーザー・選択したコースが表示され、分析の開始時刻も初期値として記録されます。
 # MAGIC
 # MAGIC 実行後、Notebook左側の「パラメータ」パネルを開き、`terminal`で`browser`または`local`を選びます。既定は`browser`です。`catalog`・`schema`には、セクション4でサービスを作成する保存先を指定します。既定値は`unity-gateway-workshop.hands_on`です。**コース・保存先・再利用するサービスを変更したら、この設定セルを再実行します。** `budget_id`など他の入力欄は、使う章で案内します。
 # MAGIC
@@ -151,7 +151,6 @@ SERVICE_CATALOG, SERVICE_SCHEMA, SERVICE_ID = WORKSHOP_SERVICE.split(".")
 print(f"ワークスペース: {w.config.host}")
 print(f"ユーザー: {current_user}")
 print(f"コース: {'ブラウザ（このNotebookのWeb Terminal）' if TERMINAL == 'browser' else 'ローカル（PCのターミナル）'}")
-print(f"モデルサービス（{'既存を再利用' if EXISTING_SERVICE else 'セクション4で新規作成'}）: {WORKSHOP_SERVICE}")
 
 # COMMAND ----------
 
@@ -463,7 +462,7 @@ if EXISTING_SERVICE:
 else:
     print(f"カタログ: {SERVICE_CATALOG} / スキーマ: {SERVICE_SCHEMA}")
     print(f"作成時の短いサービス名: {SERVICE_ID}")
-    print(f"呼び出しに使う完全修飾名: {WORKSHOP_SERVICE}")
+    print(f"作成予定の完全修飾名: {WORKSHOP_SERVICE}")
     print("配信先の例: system.ai.databricks-claude-haiku-4-5")
 
 # COMMAND ----------
@@ -573,7 +572,7 @@ else:
 # MAGIC
 # MAGIC 1. **Unity Gateway > Govern > Agent configuration > Edit configuration** を開きます。
 # MAGIC 2. Claude Codeの`smart_routing.enabled`を`false`にします。Smart Routingの対象は`system.ai`だけなので、自作サービスを使う後半では無効にします。
-# MAGIC 3. Claude Codeの`models.model_services`に、0.2で表示された`WORKSHOP_SERVICE`を追加して保存します。新規・再利用のどちらも同じ手順です。既存のモデルも残します。
+# MAGIC 3. Claude Codeの`models.model_services`に、4.1で表示された完全修飾名`WORKSHOP_SERVICE`を追加して保存します。新規・再利用のどちらも同じ手順です。既存のモデルも残します。
 # MAGIC 4. Claude Codeを終了し、**セクション1.1と同じTerminal**で`ug configure --workspace ... --agent claude`を再実行してから、`ug claude`で起動します。ブラウザコースでは環境変数の設定を維持します。Terminalを開き直した場合は、1.1のブロック全体を再実行します。
 # MAGIC 5. `/model`で自分のサービスを選びます。画面の案内に従い、このセッションだけの選択にできます。
 # MAGIC
