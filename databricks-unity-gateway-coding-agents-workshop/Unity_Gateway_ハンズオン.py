@@ -90,7 +90,7 @@
 # MAGIC
 # MAGIC まず次のPythonセルを**演習開始前に実行**し、入力欄を作成します。ワークスペースURL・自分のユーザー・サービス名が表示され、分析の開始時刻も初期値として記録されます。
 # MAGIC
-# MAGIC 実行後、Notebook左側の「パラメータ」パネルを開き、`terminal`で`browser`または`local`を選びます。既定は`browser`です。`catalog`・`schema`には、セクション4でサービスを作成する保存先を指定します。既定値は`unity-gateway-workshop.hands_on`です。他の入力欄は使う章で案内します。**入力を変更したら、この設定セルを再実行してから先へ進みます。**
+# MAGIC 実行後、Notebook左側の「パラメータ」パネルを開き、`terminal`で`browser`または`local`を選びます。既定は`browser`です。`catalog`・`schema`には、セクション4でサービスを作成する保存先を指定します。既定値は`unity-gateway-workshop.hands_on`です。**コース・保存先・再利用するサービスを変更したら、この設定セルを再実行します。** `budget_id`など他の入力欄は、使う章で案内します。
 # MAGIC
 # MAGIC 保存先の準備やモデル一覧の変更が必要な場合は、<a href="$./事前準備ガイド">準備ガイドの「4. Notebookの設定」</a>を参照してください。
 # MAGIC SQLでハイフンを含むカタログ名を指定するときは、`` `unity-gateway-workshop`.hands_on ``のように、その名前をバッククォートで囲みます。
@@ -110,7 +110,7 @@ dbutils.widgets.dropdown("terminal", "browser", ["browser", "local"], "実行す
 dbutils.widgets.text("catalog", "unity-gateway-workshop", "新規サービスのカタログ")
 dbutils.widgets.text("schema", "hands_on", "新規サービスのスキーマ")
 dbutils.widgets.text("existing_service", "", "既存サービスの完全修飾名（再利用する場合のみ）")
-dbutils.widgets.text("budget_id", "", "予算ID（Smart defaultsを試す場合のみ）")
+dbutils.widgets.text("budget_id", "", "予算ID（セクション3.1で入力）")
 dbutils.widgets.text("analysis_start_utc", datetime.now(timezone.utc).isoformat(timespec="seconds"), "分析開始時刻（タイムゾーン付き）")
 
 TERMINAL = dbutils.widgets.get("terminal").strip()
@@ -119,7 +119,6 @@ if TERMINAL not in {"browser", "local"}:
 CATALOG = dbutils.widgets.get("catalog").strip()
 SCHEMA = dbutils.widgets.get("schema").strip()
 EXISTING_SERVICE = dbutils.widgets.get("existing_service").strip()
-BUDGET_ID = dbutils.widgets.get("budget_id").strip()
 
 # UIで選択するモデルと同じ名前にします。個人のサービス名は設定しません。
 SYSTEM_MODELS = [
@@ -384,21 +383,21 @@ print(build_terminal_commands(w.config.host, TERMINAL))
 # MAGIC %md
 # MAGIC ## 3. 予算を設定する
 # MAGIC
-# MAGIC 各参加者が自分の環境で、Unity Gatewayを対象にした予算を準備します。
+# MAGIC **Governance Hubから、自分のワークスペースを対象にしたUnity Gatewayの予算を作成します。** この手順はワークスペース管理者で実施できます。開催前に、アカウント管理者が **Governance Hub** プレビューを有効にしておきます（<a href="$./事前準備ガイド">準備ガイド3</a>）。
 # MAGIC
-# MAGIC 1. ワークスペース管理者は **Governance Hub**、アカウント管理者はアカウントコンソールの予算画面を開きます。
-# MAGIC 2. 対象を **Unity Gateway** と自分のワークスペースに設定します。
-# MAGIC 3. 共有の予算、またはユーザー別の上限を設定します。金額は自分の環境に合わせて決めてください。
-# MAGIC 4. **Send alert** は通知、**Block usage** は利用停止です。違いを確認して保存します。
-# MAGIC 5. 次のSmart defaultsを試す場合は予算の`budget_configuration_id`を控え、左側の「パラメータ」パネルの`budget_id`に設定します。
+# MAGIC 1. ワークスペース上部の切替メニューから **Manage account** を選び、アカウントコンソールを開きます。**Governance > Cost** でGovernance Hubのコスト画面へ進みます。
+# MAGIC 2. 右上のスコープを**自分が管理するワークスペース**にし、**Budgets > View all budgets > Add budget** へ進みます。
+# MAGIC 3. 対象製品を **Unity Gateway**、対象ワークスペースを自分の演習環境に設定します。共有の予算、またはユーザー別の上限を設定します。金額は自分の環境に合わせて決めてください。
+# MAGIC 4. **Send alert** は通知、**Block usage** は利用停止です。違いを確認して保存します。作成者にはその予算の管理権限が付きます。
+# MAGIC 5. Smart defaultsも試す場合は、作成した予算の`budget_configuration_id`を控え、Notebook左側の「パラメータ」パネルの`budget_id`に入力します。そのまま下の**3.1のセルだけ**を実行します。
 # MAGIC
 # MAGIC Claude Codeを終了し、**同じTerminal**で`ug usage`、必要に応じて`ug usage --all`を実行します。確認後は`ug claude`で再開します。ブラウザコースでは、セクション1.1の環境設定が有効な状態で実行します。予算が表示されない場合は、適用対象のユーザー・ワークスペースと **Block usage** の設定を確認してください。
 # MAGIC
 # MAGIC **予算を消化する必要はありません。** 利用停止は近リアルタイムの推定に基づくため、請求額の厳密な上限ではありません。
 # MAGIC
-# MAGIC 予算の作成はUIで行います。アカウント側の権限とAPIが関わるため、Notebookのワークスペース認証だけで作成できるとは扱いません。
+# MAGIC 予算はGovernance HubのUIで作成します。Unity Gateway側やアカウント全体を対象にした予算作成では、アカウント管理者の権限が必要になります。
 # MAGIC
-# MAGIC 参考: [予算の作成](https://docs.databricks.com/aws/en/admin/account-settings/budgets) / [Unity Gatewayの予算](https://docs.databricks.com/aws/en/ai-gateway/budgets)
+# MAGIC 参考: [Governance Hubの利用権限](https://docs.databricks.com/aws/en/admin/governance-hub#access-and-permissions) / [Cost画面の予算管理](https://docs.databricks.com/aws/en/admin/governance-hub/cost#view-and-manage-budgets) / [Unity Gatewayの予算](https://docs.databricks.com/aws/en/ai-gateway/budgets)
 
 # COMMAND ----------
 
@@ -407,15 +406,18 @@ print(build_terminal_commands(w.config.host, TERMINAL))
 # MAGIC
 # MAGIC 例は「予算を80%消化したら、次回起動の既定モデルをHaikuにする」です。実行中の会話のモデルは変わりません。Smart Routingとは別の設定です。
 # MAGIC
-# MAGIC UIのAgent configurationのJSONに、`enabled_agents`と同じ階層で`smart_defaults`を追加します。次のセルでJSONの例を表示できます。HaikuはClaude Codeのモデル一覧にも含めてください。
+# MAGIC 左側の「パラメータ」パネルの`budget_id`に、直前に作成した予算のIDを入力し、**次のセルだけ**を実行します。IDを変更した場合もこのセルだけ再実行します。セクション0.2へ戻る必要はありません。
+# MAGIC
+# MAGIC 表示された`smart_defaults`を、UIのAgent configurationのJSONへ`enabled_agents`と同じ階層で追加して保存します。HaikuはClaude Codeのモデル一覧にも含めてください。
 # MAGIC
 # MAGIC この機能はBetaです。アカウントの **Enhanced Unity Gateway** プレビューが必要です。体験が難しい場合は設定内容の確認までで進めてください。
 
 # COMMAND ----------
 
+BUDGET_ID = dbutils.widgets.get("budget_id").strip()
 smart_defaults_config = None
 if not BUDGET_ID:
-    print("Smart defaultsを試す場合はbudget_idを設定して、セクション0.2から再実行してください。")
+    print("Smart defaultsは任意です。試す場合は、左側のパラメータのbudget_idに作成した予算のIDを入力し、このセルだけ再実行してください。")
 else:
     smart_defaults_baseline = read_agent_config(w)
     smart_defaults_config = editable_config(smart_defaults_baseline or phase1_config)

@@ -109,7 +109,7 @@
 # MAGIC |---|---|
 # MAGIC | ブラウザコースのWeb Terminal | ワークスペースでWeb Terminalが有効。本人が本編Notebookを対応するServerless環境で実行できること |
 # MAGIC | Coding Agent設定の公開・ワークスペースのプレビュー有効化 | ワークスペース管理者 |
-# MAGIC | 予算の作成 | ワークスペース管理者は自分が管理するワークスペースに限定して作成可能。アカウント全体を対象にする場合はアカウント管理者 |
+# MAGIC | 予算の作成（本編3） | Governance HubのCost画面から、ワークスペース管理者が自分のワークスペースに限定して作成。作成者にBudget Managerが付く。Unity Gateway側やアカウント全体の予算作成はアカウント管理者 |
 # MAGIC | モデルの呼び出し | 親カタログの`USE CATALOG`、親スキーマの`USE SCHEMA`、モデルサービスの`EXECUTE`。Smart Routingの候補すべてに必要 |
 # MAGIC | モデルサービスの新規作成 | 保存先スキーマの`CREATE SERVICE`と親への`USE CATALOG`・`USE SCHEMA`。配信先モデルの`EXECUTE`と親へのアクセスも必要 |
 # MAGIC | サービスへのポリシー設定・配信先変更 | 対象サービスの所有者、または`MANAGE`。既定以外のポリシー評価モデルを選ぶ場合は、そのモデルサービスの`EXECUTE`と親への`USE CATALOG`・`USE SCHEMA`も必要 |
@@ -133,10 +133,13 @@
 # MAGIC | プレビュー名 | 設定する場所・担当者 | 使用する演習 |
 # MAGIC |---|---|---|
 # MAGIC | **[Unity Gateway Managed Configuration](https://docs.databricks.com/aws/en/ai-gateway/coding-agent-configure-govern)** | ワークスペース／ワークスペース管理者 | セクション1以降のCoding Agent設定。必須 |
+# MAGIC | **[Governance Hub](https://docs.databricks.com/aws/en/admin/governance-hub#enable-governance-hub)** | アカウントコンソール／アカウント管理者 | 本編3の予算作成。開催前に有効化すると、参加者はワークスペース管理者として自分のワークスペースの予算を作成できる |
 # MAGIC | **[Unity Gateway Service Policies](https://docs.databricks.com/aws/en/data-governance/unity-catalog/service-policies/create-service-policy#prerequisites)** | ワークスペース／ワークスペース管理者 | セクション4のポリシー作成・利用。有効化済みならそのまま使用 |
 # MAGIC | **[Enhanced Unity Gateway](https://docs.databricks.com/aws/en/ai-gateway/unified-trace-table#requirements)** | アカウントコンソール／アカウント管理者 | [Smart Routing](https://docs.databricks.com/aws/en/ai-gateway/coding-agent-model-selection#smart-routing)、[Smart defaults](https://docs.databricks.com/aws/en/ai-gateway/coding-agent-costs#adjust-recommendations-as-spending-increases)、[統合トレース](https://docs.databricks.com/aws/en/ai-gateway/unified-trace-table#enable-the-unified-trace-table) |
 # MAGIC
 # MAGIC 表の「設定する場所」はプレビューを有効にする場所です。**Enhanced Unity Gatewayはアカウント単位で有効化**しますが、Coding Agentの公開設定はワークスペース単位、統合トレースの保存先はメタストア単位で別途設定します。Smart Routingは有効化後、ワークスペースへの反映に1～2分かかる場合があります。
+# MAGIC
+# MAGIC **Governance Hubもアカウント単位のBetaです。** アカウント管理者が開催前に **Previews > Governance Hub** を有効にし、参加者のワークスペース管理者権限で **Governance > Cost > View all budgets** を開けることを確認します。有効化後、データの表示まで最大1日かかる場合があるため、当日直前の準備は避けます。以後のワークスペースに限定した予算作成は、ワークスペース管理者が行えます。
 # MAGIC
 # MAGIC コンプライアンスセキュリティプロファイルを使用していない環境では、**Enhanced Unity Gateway**でもService Policiesが有効になります。必要なプレビューが表示されない場合は、Databricks担当者へ確認してください。
 # MAGIC
@@ -160,7 +163,7 @@
 # MAGIC | `terminal` | `browser`は本編のWeb Terminal、`local`はPC。既定は`browser`。変更後は0.2と1.1のセルを再実行 |
 # MAGIC | `catalog`・`schema` | セクション4でモデルサービスを新規作成する保存先。既定値は`unity-gateway-workshop.hands_on` |
 # MAGIC | `existing_service` | 既存サービスを再利用する場合だけ完全修飾名を指定。通常は空欄 |
-# MAGIC | `budget_id` | セクション3.1でSmart defaultsを試す場合だけ指定。通常は空欄 |
+# MAGIC | `budget_id` | 本編3で予算を作成した後、3.1を試す場合だけ入力。3.1のセルがその場で最新値を読むため、0.2の再実行は不要 |
 # MAGIC | `analysis_start_utc` | 初回実行時刻が初期値。演習開始前に0.2を実行し、過去の記録を使う場合だけ開始時刻を変更 |
 # MAGIC | `SYSTEM_MODELS` | 開催環境で提供される、Messages API対応の`system.ai`モデルを2～3個指定。講師は開催前に確認 |
 # MAGIC

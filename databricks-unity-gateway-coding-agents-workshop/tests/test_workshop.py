@@ -309,6 +309,27 @@ class NotebookTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "model_services"):
             self.run_notebook(["mlflow/v1/chat/completions"], {"budget_id": "test-budget"})
 
+    def test_smart_defaults_reads_new_budget_without_rerunning_setup(self):
+        baseline = baseline_config()
+        baseline["enabled_agents"][1]["config"]["models"] = {
+            "model_services": ["system.ai.claude-haiku-4-5"],
+        }
+        smart_defaults_cell = next(cell for cell in SOURCE.split("# COMMAND ----------")
+                                   if "\nsmart_defaults_config = None\n" in cell)
+        with patch(__name__ + ".baseline_config", return_value=baseline):
+            values = self.run_notebook(["mlflow/v1/chat/completions"])
+            self.assertIsNone(values["smart_defaults_config"])
+            # 予算を作成してパネルへ入力した後、3.1だけ再実行する。
+            # 他のパラメータや初期設定セルは読み直さない。
+            def read_budget_only(name):
+                self.assertEqual(name, "budget_id")
+                return "budget-created-after-setup"
+            values["dbutils"].widgets.get.side_effect = read_budget_only
+            with contextlib.redirect_stdout(io.StringIO()):
+                exec(compile(smart_defaults_cell, str(ROOT), "exec"), values)
+        self.assertEqual(values["smart_defaults_config"]["smart_defaults"]["budget_id"],
+                         "budget-created-after-setup")
+
     def test_reused_service_is_used_in_config_and_analysis_without_recreation(self):
         existing = "llmops-ai-governance-workshop.team.guardrail_demo_existing_user"
         # セクション1完了後の静的モデル一覧を公開済みの状態にする。
