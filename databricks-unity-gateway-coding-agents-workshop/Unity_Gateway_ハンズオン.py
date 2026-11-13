@@ -717,14 +717,17 @@ else:
 # MAGIC
 # MAGIC 今回使ったCoding Agentの呼び出しは、収集を準備した場合、統合トレースのUnity Catalogテーブルに記録されます。**データを別の場所へコピーせず、自然言語でSQLを作り、そのまま分析する**ことを体験します。Genie Codeへ指示するのはDatabricksの画面で行います。開発用のClaude Codeとは入力先が異なります。
 # MAGIC
-# MAGIC ### 6.1 Genie Codeへの指示を用意する（2分）
+# MAGIC ### 6.1 利用したモデルを聞く（2分）
 # MAGIC
-# MAGIC まずは「**このワークスペースのunified traceで、自分が利用したモデルのログを確認したい**」と聞いてみます。Genie Codeに保存先の確認と分析を任せられます。演習中の操作に絞る場合は、次の手順で期間・対象サービスを入れた指示を作ります。
+# MAGIC サイドバーから **Genie Code** を開き、次のように聞いてみます。
 # MAGIC
-# MAGIC 1. **Govern > Traces**で、演習中の自分の呼び出しを確認します。通常の呼び出しと、セクション4のポリシー拒否を探してください。
-# MAGIC 2. 左側の「パラメータ」パネルの`analysis_start_utc`が演習開始前の時刻になっていることを確認し、次のセルを実行します。**対象条件と3つの分析項目をまとめた指示**が表示されます。
-# MAGIC 3. サイドバーから **Genie Code** を開き、**出力全体を一度だけ**貼り付けます。テーブル名の事前入力は不要です。
-# MAGIC 4. 保存先が分からないときだけ、講師・メタストア管理者が事前に確認したテーブルの完全修飾名を伝えます。
+# MAGIC > このワークスペースのunified traceで、自分が利用したモデルのログを確認したい。
+# MAGIC
+# MAGIC Genie Codeに保存先の確認と分析を任せます。保存先が分からない場合は、講師・メタストア管理者が事前に確認したテーブルの完全修飾名を伝えてください。以降は同じ会話で続けます。
+# MAGIC
+# MAGIC **任意：今回の演習中の操作に絞る場合**
+# MAGIC
+# MAGIC 左側の「パラメータ」パネルの`analysis_start_utc`が演習開始前の時刻になっていることを確認し、次のセルを実行します。期間・対象サービスを入れた指示が表示されるので、出力全体をGenie Codeへ貼り付けます。履歴全体の確認から始める場合は、このセルを省略して6.2へ進めます。
 # MAGIC
 # MAGIC 分析対象は、前半の`SYSTEM_MODELS`と自分の`WORKSHOP_SERVICE`です。本人のモデル呼び出しを`SPAN_KIND_SERVER`に絞り、Client側のspanとの二重計上を避けます。1行を1つの会話や開発タスクとして数えません。
 # MAGIC
@@ -766,19 +769,27 @@ print(analysis_prompt)
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ### 6.2 生成されたSQLを確認・実行する（4分）
+# MAGIC ### 6.2 トークン数と応答時間を聞く（4分）
 # MAGIC
-# MAGIC 1. Genie Codeが追加したSQLセルのテーブル名・期間・本人の条件・`SPAN_KIND_SERVER`を確認して実行します。SQLエディターへコピーして実行しても構いません。
-# MAGIC 2. **サービス別の呼び出し・拒否・エラー件数**を確認します。
-# MAGIC 3. **トークン数・応答時間**を確認します。棒グラフが欲しい場合は、同じ会話で「サービス別のトークン数を棒グラフにしてください」と続けます。自作サービスの名前から、実際に配信したモデルを推測しないでください。
+# MAGIC 同じ会話で、次のように続けます。
+# MAGIC
+# MAGIC > サービス別のトークン数と応答時間も分かる？
+# MAGIC
+# MAGIC 棒グラフが欲しい場合は「サービス別のトークン数を棒グラフにしてください」と続けます。記録がない指標は不明として扱います。自作サービスの名前から、実際に配信したモデルを推測しないでください。
+# MAGIC
+# MAGIC SQLをNotebookへ追加したい場合は「集計用のSELECT文を、このNotebookの新しいSQLセルに追加してください」と頼みます。実行前にテーブル名・期間・本人・対象サービスの条件と、集計単位を確認してください。
 # MAGIC
 # MAGIC Smart Routingではメインセッションとサブエージェントで同じモデルが選ばれることもあります。モデルごとの記録があることだけで、Smart Routingによる選択だったとは判断しません。セクション2のルーティング通知と合わせて確認します。
 # MAGIC
 # MAGIC ### 6.3 ポリシー拒否を分析する（3分）
 # MAGIC
-# MAGIC 生成された**サービス・ポリシー別の拒否件数**を確認します。セクション4で使ったサービス名・ポリシー名と一致していることを確認してください。追加の指示を貼り付ける必要はありません。
+# MAGIC 同じ会話で、次のように聞きます。
 # MAGIC
-# MAGIC **ポリシーによる拒否は、HTTP 200や`STATUS_CODE_OK`でも起こる場合があります。** `databricks.policy.action = 'DENY'`を使い、OTelのエラー件数とは分けて数えます。1つの拒否を詳しく調べるときは、Traces画面の`policy_evaluated`イベントも確認できます。
+# MAGIC > ポリシーで拒否されたのあった？
+# MAGIC
+# MAGIC 必要に応じて「どのサービスで、どのポリシーに何件拒否された？」と続けます。セクション4で使ったサービス名・ポリシー名を探してください。履歴全体を対象にした場合は、以前の演習の記録も含まれます。
+# MAGIC
+# MAGIC **ポリシーによる拒否は、HTTP 200や`STATUS_CODE_OK`でも起こる場合があります。** 実際に適用された拒否はServer spanの`databricks.policy.action = 'DENY'`で確認します。`policy_evaluated`イベントの`policy.action`は各ポリシーの評価結果です。何を数えた件数かを確認し、OTelのエラー件数とも区別してください。
 # MAGIC
 # MAGIC ### 生成されたSQLを確認するポイント
 # MAGIC
@@ -788,7 +799,7 @@ print(analysis_prompt)
 # MAGIC | ポリシー拒否件数 | `COUNT_IF(attributes:['databricks.policy.action']::STRING = 'DENY')`。OTelエラー件数と別に集計 |
 # MAGIC | 入出力トークン | `gen_ai.usage.input_tokens`・`gen_ai.usage.output_tokens`の`SUM`。NULLを0へ置換しない |
 # MAGIC | p95応答時間 | `percentile_approx(attributes:['databricks.latency_ms']::DOUBLE, 0.95)` |
-# MAGIC | ポリシー別の拒否 | `DENY`に絞り、`service_name`と`databricks.policy.name`で集計。拒否件数の合計を最初の集計と比べる |
+# MAGIC | ポリシー別の拒否 | 適用された拒否は`databricks.policy.action`・`databricks.policy.name`。評価の内訳は`policy_evaluated`の`policy.action`・`policy.name`・`policy.phase`で確認し、イベント数・トレース数・呼び出し件数を区別する |
 
 # COMMAND ----------
 
