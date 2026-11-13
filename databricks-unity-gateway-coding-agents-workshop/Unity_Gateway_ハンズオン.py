@@ -558,19 +558,38 @@ else:
 # MAGIC %md
 # MAGIC ### 4.3 入力ポリシーを1つ作成する
 # MAGIC
-# MAGIC Claude Codeの通常の開発操作を通しつつ、競合企業の比較を拒否するポリシーを作ります。**既存サービスで同等のポリシーを設定済みの場合は作成不要です。** ポリシー名・判定基準・Enforceモードを確認し、4.4へ進んでください。
+# MAGIC Claude Codeの通常の開発操作を通しつつ、競合製品・サービスの比較や推奨を拒否するポリシーを作ります。特定の2製品の組み合わせに限定せず、対象の競合を含む比較全般を判定します。**既存サービスで同等のポリシーを設定済みの場合は作成不要です。** ポリシー名・判定基準・Enforceモードを確認し、4.4へ進んでください。
 # MAGIC
 # MAGIC 1. 自分のモデルサービスで **Policies > New policy** を開きます。
 # MAGIC 2. **Name**を`block_competitor_comparison`、**Guardrail type**を**Custom**、**Implementation**を**LLM-as-a-judge**にします。
 # MAGIC 3. **Phase**は**Input guardrails（ON CALL）**、**Rank**は`30`にします。**Evaluator model service**は既定の選択を使います。変更する場合は、そのモデルサービスへの権限を確認してください。
-# MAGIC 4. **Prompt**に次の判定基準を入力します。
+# MAGIC 4. **Prompt**に次の判定基準を入力します。対象の競合と例文は、自社の業務に合わせて変更できます。この例では比較・推奨を対象とし、製品名への言及だけでは拒否しません。
 # MAGIC
 # MAGIC ```text
-# MAGIC あなたは業務用コーディングアシスタントへの入力を審査します。
-# MAGIC 入力がDatabricksとBigQueryまたはSnowflakeの機能・価格・優劣の比較を
-# MAGIC 求めている場合にフラグしてください。
+# MAGIC あなたはコンテンツポリシーの評価者です。
+# MAGIC 入力テキストが、対象の競合製品・サービスの比較や推奨を求めているかを判定してください。
+# MAGIC
+# MAGIC 対象の競合製品・サービス:
+# MAGIC - Snowflake
+# MAGIC - Google Cloud BigQuery
+# MAGIC - Amazon Redshift
+# MAGIC
+# MAGIC 以下のいずれかに該当する入力をフラグしてください。
+# MAGIC - 対象の競合を含む、製品・サービスの機能、価格、性能、優劣の比較
+# MAGIC - 対象の競合と比べてどちらを選ぶべきか、または代替製品のおすすめを求める質問
+# MAGIC - 対象の競合への乗り換えの是非や推奨を求める質問
+# MAGIC 自社製品との比較に限らず、競合製品同士の比較も対象です。
+# MAGIC
+# MAGIC 【違反の例】
+# MAGIC - 「自社製品とSnowflakeでは、どちらが良いですか？」
+# MAGIC - 「BigQueryとAmazon Redshiftの価格・性能を比較してください」
+# MAGIC - 「Snowflakeに乗り換えるべきですか？」
+# MAGIC
+# MAGIC 【違反ではない例】
+# MAGIC - 「products.csvを読み、在庫数が最も多い商品を教えてください」
+# MAGIC - 「BigQueryからデータを読み取るPythonコードを作ってください」
 # MAGIC 通常のコード作成、CSVの読み取り、在庫集計、ファイル操作、
-# MAGIC または比較を求めていない単なる製品名の言及はフラグしないでください。
+# MAGIC または比較・推奨を求めていない単なる製品名の言及はフラグしないでください。
 # MAGIC ```
 # MAGIC
 # MAGIC 5. **Mode**を**Enforce**にして **Create policy** を選びます。この演習では自分の演習用サービスで拒否を確認します。反映に1～2分かかる場合があるため、次の接続設定を進めてから検証します。
@@ -616,7 +635,7 @@ else:
 # MAGIC 自分のサービスを選べた場合は、Claude Codeで次を確認します。
 # MAGIC
 # MAGIC 1. **通常の操作**：「products.csvを読み、在庫数が最も多い商品を教えてください」。ファイル読み取りが動き、Mouseと回答できることを確認します。
-# MAGIC 2. **ポリシーによる拒否**：「DatabricksとBigQueryを比較してください」と質問します。既存のポリシーを再利用する場合は、そこで指定した競合企業や判定基準に合わせます。
+# MAGIC 2. **ポリシーによる拒否**：「BigQueryとAmazon Redshiftの価格・性能を比較してください」と質問します。既存のポリシーを再利用する場合は、そこで指定した競合企業や判定基準に合わせます。
 # MAGIC 3. 拒否メッセージに`block_competitor_comparison`、または再利用したポリシー名が表示されることを確認します。Claude Codeが再試行し、複数回拒否される場合があります。
 # MAGIC 4. `/clear`または新しいセッションで、通常の操作に戻れることを確認します。
 # MAGIC
