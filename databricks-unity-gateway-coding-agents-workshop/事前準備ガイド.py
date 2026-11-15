@@ -29,12 +29,22 @@
 # MAGIC
 # MAGIC PCへツールを導入せず、DatabricksのServerless Web Terminalで実施します。講師は、利用者がNotebookをServerlessへ接続できること、ワークスペースでWeb Terminalが有効なこと、GitHubとClaude Codeの配布先への接続を確認します。Serverless環境バージョン1ではWeb Terminalを利用できません。
 # MAGIC
+# MAGIC #### Web Terminalを有効にする（講師・管理者・開催前に確認）
+# MAGIC
+# MAGIC **Web Terminalはデフォルトで無効です。** プレビューではなく、通常の機能設定です。開催前に、ワークスペース管理者が **Settings > Compute > Web terminal** を確認し、有効にします。すでに有効なら変更は不要です。
+# MAGIC
+# MAGIC アカウント全体で無効に固定されている場合は、ワークスペース側で変更できません。アカウント管理者に、アカウントコンソールの **Settings > Feature enablement > Web Terminal** で設定を変更してもらいます。
+# MAGIC
+# MAGIC 変更後は反映まで数分待ち、Notebookを再読み込みして、参加者と同じ権限でTerminalが開けることを確認します。手順は[Web Terminalを有効にする](https://docs.databricks.com/aws/ja/admin/clusters/web-terminal)を参照してください。
+# MAGIC
+# MAGIC #### 参加者の準備
+# MAGIC
 # MAGIC 1. <a href="$./Unity_Gateway_ハンズオン">本編Notebook</a>を開いてServerlessに接続します。
 # MAGIC 2. 本編の **Terminal, Logs** からTerminalを開き、本編0.1の導入コマンドを実行します。ugはPython 3.12以降を使い、Claude Codeはnpm不要のネイティブ版を導入します。検証したugのコミットとClaude Codeのバージョンは本編で固定しています。
 # MAGIC 3. 本編0.2の設定セルを実行して入力欄を作り、左側の「パラメータ」パネルで`terminal`を`browser`にします。入力を変更した場合は設定セルを再実行します。
 # MAGIC 4. 本編セクション1でCoding Agent設定を公開した後、1.1に表示されるブロック全体を同じTerminalで実行します。
 # MAGIC
-# MAGIC **別Notebookで開いたTerminalは別環境になる場合があります。** インストールしたツール・ホームディレクトリ・localhostが同じとは扱いません。全章で同じ本編のセッションを使います。別の資料を開いた後は、Terminalのセッション一覧で本編を選び直してください。
+# MAGIC **別Notebookで開いたTerminalは別環境になる場合があります。** 全章で同じ本編のセッションを使います。別の資料を開いた後は、Terminalのセッション一覧で本編を選び直してください。
 # MAGIC
 # MAGIC 本編1.1では、Web Terminalに用意された本人の`DATABRICKS_TOKEN`を、ugが受け取る`DATABRICKS_BEARER`へ環境変数で渡します。ブラウザでの追加OAuth認証、PATの発行、認証後URLの手動転送は不要です。掲載コマンドはトークンの値を出力・ファイル保存しません。
 # MAGIC
@@ -73,7 +83,7 @@
 # MAGIC
 # MAGIC ### 組織の管理端末で使う場合
 # MAGIC
-# MAGIC 会社がClaude CodeやUGの設定・起動方法を管理している場合は、演習用ワークスペースへ切り替えてよいか、終了後の復元方法と担当者を開催前に確認します。会社が案内する起動手順を使い、切り替えが難しい場合はブラウザコースを選びます。組織へのMDM配布はこのワークショップの演習範囲外です。必要なIT管理者は[公式のMDM配布手順](https://docs.databricks.com/aws/ja/ai-gateway/coding-agent-rollout)を参照してください。
+# MAGIC 会社がClaude CodeやUGの設定・起動方法を管理している場合は、演習用ワークスペースへ切り替えてよいか、終了後の復元方法と担当者を開催前に確認します。会社が案内する起動手順を使い、切り替えが難しい場合はブラウザコースを選びます。
 # MAGIC
 # MAGIC 参考: [ugのセットアップ](https://docs.databricks.com/aws/ja/ai-gateway/coding-agent-ug-cli)
 
@@ -92,9 +102,7 @@
 # MAGIC | しばらく使った後に認証エラー | Terminalを再接続し、1.1の環境設定と接続をやり直す。古いトークンをコピーして使い続けない |
 # MAGIC | Claude Desktopについての警告 | この演習の対象はTerminal内のClaude Code。`Configuration Complete`と通常の応答を確認する |
 # MAGIC
-# MAGIC 2026年11月13日にServerless環境バージョン6、Python 3.12.3、ug `0.2.1+137.g03952a3`、Claude Code `2.1.323`で、追加ブラウザ認証・sudoなしの設定適用、モデル応答、CSV読み取り、コード作成、Pythonでの在庫集計、`ug usage --all`を確認しました。在庫数22・在庫金額572,000の出力を、作成されたコードの独立実行でも確認しています。サブエージェントへの読み取り作業の委譲も完了し、ルーティング記録に`system.ai.glm-5-3`が選ばれたことを確認しました。生成されたug・Claudeの設定ファイルに、今回使用した認証トークンの値が保存されていないことも確認しました。ワークスペースの共通設定・権限・予算・サービスを変更せずに行った検証です。
-# MAGIC
-# MAGIC Smart Routing・ポリシー・Smart defaults・トレースの演習には、それぞれの公開設定・権限・事前準備が必要です。上記の接続検証だけで、予算到達時の切り替えやトレース到着まで確認済みとは扱いません。講師は開催環境で使用する章を事前確認してください。
+# MAGIC 検証環境（2026年11月13日）：Serverless環境バージョン6、Python 3.12.3、ug `0.2.1+137.g03952a3`、Claude Code `2.1.323`。追加OAuth認証・sudoなしでの設定と応答、CSV読み取り・コード作成・Python実行、`ug usage --all`、サブエージェントへの委譲とSmart Routingの記録を確認しています。講師は開催環境で使用する章を事前に通し確認してください。予算を消化して切り替えを発生させる必要はありません。
 # MAGIC
 # MAGIC 参考: [Web Terminalの利用条件](https://docs.databricks.com/aws/ja/compute/web-terminal) / [検証したugの認証実装](https://github.com/databricks/unity-gateway/blob/03952a3fec7e6c35e4e90d2528e54b4ec147b41c/src/ucode/databricks.py#L1950) / [ユーザー領域への公開設定適用](https://github.com/databricks/unity-gateway/blob/03952a3fec7e6c35e4e90d2528e54b4ec147b41c/docs/managed-workspace-policy.md)
 
@@ -107,7 +115,7 @@
 # MAGIC
 # MAGIC | 操作 | 必要な権限・担当者 |
 # MAGIC |---|---|
-# MAGIC | ブラウザコースのWeb Terminal | ワークスペースでWeb Terminalが有効。本人が本編Notebookを対応するServerless環境で実行できること |
+# MAGIC | ブラウザコースのWeb Terminal | 開催前にワークスペース管理者が有効化を確認。アカウント全体で無効に固定されている場合はアカウント管理者の変更が必要。本人が本編Notebookを対応するServerless環境で実行できること |
 # MAGIC | Coding Agent設定の公開・ワークスペースのプレビュー有効化 | ワークスペース管理者 |
 # MAGIC | 予算の作成（本編3） | Governance HubのCost画面から、ワークスペース管理者が自分のワークスペースに限定して作成。作成者にBudget Managerが付く。Unity Gateway側やアカウント全体の予算作成はアカウント管理者 |
 # MAGIC | モデルの呼び出し | 親カタログの`USE CATALOG`、親スキーマの`USE SCHEMA`、モデルサービスの`EXECUTE`。Smart Routingの候補すべてに必要 |
@@ -128,7 +136,7 @@
 # MAGIC
 # MAGIC ワークスペース側はユーザーメニューの **Previews**、アカウント側はアカウントコンソールの **Previews** で確認します。
 # MAGIC
-# MAGIC **すでに有効なら変更は不要です。** 無効な場合だけ、下表の管理者が有効化します。Betaでも既定で有効な場合があり、[公式のリリース区分](https://docs.databricks.com/aws/ja/release-notes/release-types#platform-releases)では、Betaの一般的な既定値はPremiumでON、EnterpriseでOFFと説明されています。個別設定や機能ごとの継承もあるため、利用環境の実際の有効状態を確認してください。
+# MAGIC **すでに有効なら変更は不要です。** 無効な場合だけ、下表の管理者が有効化します。
 # MAGIC
 # MAGIC | プレビュー名 | 設定する場所・担当者 | 使用する演習 |
 # MAGIC |---|---|---|

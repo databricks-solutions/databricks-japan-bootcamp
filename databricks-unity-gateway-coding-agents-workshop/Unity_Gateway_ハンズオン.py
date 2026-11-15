@@ -23,14 +23,16 @@
 # MAGIC
 # MAGIC | 章 | 内容 | 目安 |
 # MAGIC |---|---|---|
-# MAGIC | 0 | 開始前の確認とugの導入 | 10〜15分 |
-# MAGIC | 1 | Coding Agent設定・ugで接続 | 20分 |
-# MAGIC | 2 | 開発課題・Smart Routing | 15分 |
-# MAGIC | 3 | 予算管理・Smart defaults | 10分 |
-# MAGIC | 4 | モデルサービス・ポリシーの作成とClaude Codeからの利用 | 25分 |
-# MAGIC | 5 | 予算フォールバック・標準のUsage Dashboard | 10分 |
-# MAGIC | 6 | 統合トレースをGenie Codeで分析 | 10分 |
-# MAGIC | 7 | 振り返り・復元 | 10分 |
+# MAGIC | 0 | コース別の環境準備、既存設定・接続先の確認 | 10分 |
+# MAGIC | 1 | Coding Agent設定、ugで接続、Claude Codeの起動 | 15分 |
+# MAGIC | 2 | 小さな開発課題とSmart Routing | 5分 |
+# MAGIC | 3 | 予算、ug usage、Smart defaults | 10分 |
+# MAGIC | 4 | モデルサービス・ポリシーの作成または再利用、対応APIとOSS系モデル | 10分 |
+# MAGIC | 5 | 予算フォールバックと標準のUsage Dashboard | 10分 |
+# MAGIC | 6 | 統合トレースをGenie Codeで分析 | 15分 |
+# MAGIC | 7 | 振り返りと設定の復元 | 10分 |
+# MAGIC
+# MAGIC **合計85分（質疑を含めて90分枠）を想定しています。** 権限・機能の有効化、カタログ・スキーマ、トレース収集・閲覧、Usage Dashboardは開催前に準備します。ローカルコースのPython・CLIなども導入済みにします。章4の標準演習はMessages API対応サービスと入力ポリシー1つの作成・利用です。OSS系モデルへの切り替えや既存サービスのAPI移行は発展とし、時間に応じて講師デモで紹介します。
 # MAGIC
 # MAGIC 本編は画面操作が中心です。Pythonセルは手順に沿って実行し、表示されたJSONやコマンドを使います。準備の詳細は、<a href="$./事前準備ガイド">別の事前準備ガイド</a>で確認できます。
 # MAGIC 本編と準備ガイドの2つを、ファイル名を変えずに同じWorkspaceフォルダへPython Notebookとしてインポートしてください。
@@ -53,7 +55,7 @@
 # MAGIC
 # MAGIC #### ブラウザコース
 # MAGIC
-# MAGIC 1. **この本編Notebook**をServerlessに接続します。右側の **Terminal, Logs** からWeb Terminalを開きます。Web Terminalが無効なら、講師・管理者が[利用条件](https://docs.databricks.com/aws/ja/compute/web-terminal)を確認します。
+# MAGIC 1. **この本編Notebook**をServerlessに接続します。右側の **Terminal, Logs** からWeb Terminalを開きます。Web Terminalが無効なら、<a href="$./事前準備ガイド">準備ガイド1の有効化手順</a>を確認します。
 # MAGIC 2. 以下をWeb Terminalで実行します。PC側で実行するコマンドではありません。`uv`はこの検証環境に導入済みでした。見つからない場合は[uvの公式手順](https://docs.astral.sh/uv/getting-started/installation/)で、このWeb Terminal内へ導入します。
 # MAGIC 3. **以後も同じNotebookの同じTerminalセッションを使います。** 別Notebookで開いたTerminalは別環境になる場合があります。準備ガイドを読むために画面を切り替えた場合も、Terminal右側のセッション一覧で本編のセッションを選びます。
 # MAGIC
@@ -285,7 +287,7 @@ publish_agent_config(w, phase1_baseline, phase1_config, ["enabled_agents"], appl
 # MAGIC
 # MAGIC Web Terminalに用意されている本人の`DATABRICKS_TOKEN`を、ug用の`DATABRICKS_BEARER`へ環境変数として渡します。**PATの発行・認証用URLのコピー・別Terminalからのコールバックは不要です。** これは固定版ugの実装を利用した検証済みの接続方法です。認証情報はAgentの実行環境にも渡るため、環境変数の全表示を依頼せず、この演習のサンプルコードで進めます。適用範囲と制約は<a href="$./事前準備ガイド">準備ガイド1</a>を確認してください。
 # MAGIC
-# MAGIC `UG_SKIP_OS_SETTINGS=1`により、公開設定を取得してServerless環境のユーザー設定へ適用します。sudoやOS全体の管理設定への書き込みは行いません。**`--user`への置き換えはできません。** 検証したugでは、ワークスペースが公開設定を持つ場合に`--user`は拒否されます。会社のPCの管理設定を解除するための手順ではありません。
+# MAGIC `UG_SKIP_OS_SETTINGS=1`により、公開設定を取得してServerless環境のユーザー設定へ適用します。sudoやOS全体の管理設定への書き込みは行いません。**`--user`への置き換えはできません。** 検証したugでは、ワークスペースが公開設定を持つ場合に`--user`は拒否されます。
 # MAGIC
 # MAGIC この設定は今のTerminalセッション内で有効です。Terminalを新しく開いたら、同じブロックを再実行します。認証が期限切れになった場合はTerminalを再接続してから実行してください。常に`ug claude`経由で起動します。
 # MAGIC
@@ -531,7 +533,7 @@ else:
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC #### Messages APIに非対応の場合だけ配信先を変更する
+# MAGIC #### 発展：Messages APIに非対応の既存サービスやOSS系モデルを使う
 # MAGIC
 # MAGIC ここでは、**サービス名と付与済みのポリシーを引き継ぎ、配信先のモデルを変更する**ことを体験します。Claude Codeに接続するために、別のサービスを作り直す必要はありません。既にMessages APIに対応している場合は変更不要です。
 # MAGIC
@@ -717,7 +719,7 @@ else:
 # MAGIC
 # MAGIC 今回使ったCoding Agentの呼び出しは、収集を準備した場合、統合トレースのUnity Catalogテーブルに記録されます。**データを別の場所へコピーせず、自然言語でSQLを作り、そのまま分析する**ことを体験します。Genie Codeへ指示するのはDatabricksの画面で行います。開発用のClaude Codeとは入力先が異なります。
 # MAGIC
-# MAGIC ### 6.1 利用したモデルを聞く（2分）
+# MAGIC ### 6.1 利用したモデルを聞く（4分）
 # MAGIC
 # MAGIC サイドバーから **Genie Code** を開き、次のように聞いてみます。
 # MAGIC
@@ -781,7 +783,7 @@ print(analysis_prompt)
 # MAGIC
 # MAGIC Smart Routingではメインセッションとサブエージェントで同じモデルが選ばれることもあります。モデルごとの記録があることだけで、Smart Routingによる選択だったとは判断しません。セクション2のルーティング通知と合わせて確認します。
 # MAGIC
-# MAGIC ### 6.3 ポリシー拒否を分析する（3分）
+# MAGIC ### 6.3 ポリシー拒否を分析する（5分）
 # MAGIC
 # MAGIC 同じ会話で、次のように聞きます。
 # MAGIC
@@ -818,7 +820,7 @@ print(analysis_prompt)
 # MAGIC
 # MAGIC 記録はbest-effortなので、ここで見えた件数を全リクエストの完全な監査記録とは扱いません。トークン数だけから請求額や開発者の生産性も断定しません。
 # MAGIC
-# MAGIC ### 6.4 同じデータをチームで活用する（1分）
+# MAGIC ### 6.4 同じデータをチームで活用する（2分）
 # MAGIC
 # MAGIC 同じUCテーブルや分析用VIEWを **Genie Agent** に登録すれば、管理者やチームの利用者が自然言語で継続的に分析できます。**AI/BIダッシュボード**で利用状況を可視化することもできます。共有する範囲・本文の扱い・UCのアクセス制御を準備してから展開します。この演習では、まずGenie Codeで同じ記録を分析できれば完了です。
 
@@ -840,26 +842,9 @@ print(analysis_prompt)
 # MAGIC
 # MAGIC Claude Codeを終了し、まずワークスペースのAgent configurationを開始前に保存したJSONへ戻します。作成した予算の扱いは環境の管理者と確認してください。セクション4でモデルサービスの配信先を変更した場合は、保存しておいたルーティングをUIで復元し、サービス名・ポリシーと復元後の対応APIを確認します。
 # MAGIC
-# MAGIC **ブラウザコース**：PCの設定の復元は不要です。作成したコードを残す場合は、Terminalを閉じる前に自分のWorkspaceフォルダやGitへ保存してください。`$HOME/ug-workshop`や導入したツール・設定は、Serverless環境を作り直した後も残るとは扱いません。環境変数を外す場合は、Claude Codeを終了して`unset DATABRICKS_BEARER UG_SKIP_OS_SETTINGS`を実行します。ワークスペース側の設定・予算・サービスの復元は、このコースでも別途必要です。
+# MAGIC **ブラウザコース**：Claude Codeを終了し、作成したコードを自分のWorkspaceフォルダやGitへ保存します。環境の終了に備えて、保存先を確認してください。
 # MAGIC
-# MAGIC **ローカルコース**：PCの設定は演習前の利用状況に合う方法を1つ選んで戻します。会社がClaude CodeやUGの設定・起動方法を管理している場合は、会社の手順を優先してください。
-# MAGIC
-# MAGIC | 演習前の利用状況 | PCの戻し方 |
-# MAGIC |---|---|
-# MAGIC | ugを使っていなかった | 準備ガイド6の影響範囲を確認して`ug revert`を実行し、UGのバックアップから復元します。その後、普段の方法でClaude Codeを起動します |
-# MAGIC | 既にugを使っていた | 下のコマンドで普段のワークスペースへ再設定し、`ug claude`で起動します。続けて`ug revert`は実行しません |
-# MAGIC | 会社がClaude CodeやUGの設定・起動方法を管理 | 会社が案内する設定・復元・起動手順に従います |
-# MAGIC
-# MAGIC **既存のug利用者向け：** 保存しておいた普段のワークスペースURLへ置き換えて実行します。
-# MAGIC
-# MAGIC ```bash
-# MAGIC ug configure --workspace https://普段のワークスペースURL --agent claude
-# MAGIC ug claude
-# MAGIC ```
-# MAGIC
-# MAGIC 再設定は、そのワークスペースで現在公開されている設定の適用です。演習前のローカルの手動調整まで完全に復元するものではありません。起動後は`/status`で接続先・モデルを、通常の呼び出しで認証を確認してください。`ug revert`はClaudeだけに限定されず、他のUG管理Agent・MCP設定にも影響します。バックアップの基準と会社が管理している場合の扱いは、<a href="$./事前準備ガイド">準備ガイドの「6. 開始前の記録と終了後の復元」</a>を参照してください。
-# MAGIC ローカルコースで復元・確認を終え、今のシェルに設定した環境変数を解除する場合は、Agentを終了して`unset UG_SKIP_OS_SETTINGS`を実行します。
+# MAGIC **ローカルコース**：演習前のug利用状況に応じて、普段のワークスペースへ再設定するか、バックアップから復元します。手順と`ug revert`の影響範囲は、<a href="$./事前準備ガイド">準備ガイドの「6. 開始前の記録と終了後の復元」</a>を参照してください。会社が設定・起動方法を管理している場合は、その手順に従います。
 # MAGIC
 # MAGIC 新規作成したサービス・ポリシーは、継続利用する場合は残して構いません。不要なら、Agent configurationから参照を外し、他の利用者・アプリからの参照がないことを確認してからUIで削除します。**既存のサービス・ポリシーを再利用した場合は削除しません。** Notebookのコードセルはサービス・ポリシーの作成・配信先変更・削除を実行しません。
 # MAGIC
-# MAGIC 補足テーマ：Codex、MCP、Skills、既存Claudeサブスクでの利用。まずは今回のClaude Codeの流れを確認してから追加します。
